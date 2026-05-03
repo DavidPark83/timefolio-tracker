@@ -1,0 +1,303 @@
+"""
+TIMEFOLIO ACTIVE ETF 일일 크롤러
+================================
+역할: 매일 오후 6시(KST), 18개 ETF의 그날 구성종목과 NAV를 수집하여 Supabase에 저장
+실행: GitHub Actions가 .github/workflows/crawl.yml 스케줄에 따라 자동 호출
+
+핵심 설계 원칙:
+1. timeetf.co.kr의 엑셀 다운로드 엔드포인트(pdf_excel.php)를 사용
+   → HTML 파싱보다 안정적이고 페이지 구조 변경에 강함
+2. 요청 사이 1초 딜레이 → 차단 방지
+3. 실패해도 다른 ETF는 계속 진행 → 부분 성공 허용
+4. upsert(있으면 갱신, 없으면 삽입) → 같은 날 재실행해도 안전
+"""
+
+import os
+import sys
+import time
+import io
+from datetime import date, datetime
+from typing import List, Dict, Optional
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+from supabase import create_client
+
+
+# ============================================================
+# 설정
+# ============================================================
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")  # service_role 키
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("❌ 환경변수 SUPABASE_URL / SUPABASE_KEY 미설정")
+    sys.exit(1)
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+    "Referer": "https://timeetf.co.kr/",
+}
+
+REQUEST_TIMEOUT = 20         # 초
+DELAY_BETWEEN_REQUESTS = 1.5 # 초 (차단 방지)
+MAX_RETRY = 3
+
+# 18개 ETF 목록
+ETF_LIST = [
+    {"idx": 22, "etf_name": "글로벌탑픽액티브"},
+    {"idx": 6,  "etf_name": "글로벌AI인공지능액티브"},
+    {"idx": 20, "etf_name": "글로벌우주테크&방산액티브"},
+    {"idx": 8,  "etf_name": "글로벌소비트렌드액티브"},
+    {"idx": 9,  "etf_name": "글로벌바이오액티브"},
+    {"idx": 2,  "etf_name": "미국나스닥100액티브"},
+    {"idx": 5,  "etf_name": "미국S&P500액티브"},
+    {"idx": 18, "etf_name": "미국배당다우존스액티브"},
+    {"idx": 10, "etf_name": "미국나스닥100채권혼합50액티브"},
+    {"idx": 12, "etf_name": "Korea플러스배당액티브"},
+    {"idx": 15, "etf_name": "코리아밸류업액티브"},
+    {"idx": 11, "etf_name": "코스피액티브"},
+    {"idx": 24, "etf_name": "코스닥액티브"},
+    {"idx": 13, "etf_name": "K바이오액티브"},
+    {"idx": 16, "etf_name": "K신재생에너지액티브"},
+    {"idx": 17, "etf_name": "K이노베이션액티브"},
+    {"idx": 1,  "etf_name": "K컬처액티브"},
+    {"idx": 19, "etf_name": "차이나AI테크액티브"},
+]
+
+
+# ============================================================
+# 유틸 함수
+# ============================================================
+def to_int(s) -> int:
+    """문자열을 정수로 안전하게 변환 (콤마, 공백 제거)"""
+    if s is None:
+        return 0
+    s = str(s).replace(",", "").replace(" ", "").strip()
+    if not s or s == "-":
+        return 0
+    try:
+        return int(float(s))
+    except (ValueError, TypeError):
+        return 0
+
+
+def to_float(s) -> float:
+    """문자열을 실수로 안전하게 변환"""
+    if s is None:
+        return 0.0
+    s = str(s).replace(",", "").replace("%", "").replace(" ", "").strip()
+    if not s or s == "-":
+        return 0.0
+    try:
+        return float(s)
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def fetch_with_retry(url: str, max_retry: int = MAX_RETRY) -> Optional[requests.Response]:
+    """재시도 로직 포함 HTTP GET"""
+    for attempt in range(1, max_retry + 1):
+        try:
+            res = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+            if res.status_code == 200:
+                return res
+            print(f"    ⚠️ HTTP {res.status_code} (시도 {attempt}/{max_retry})")
+        except Exception as e:
+            print(f"    ⚠️ 요청 실패: {e} (시도 {attempt}/{max_retry})")
+        if attempt < max_retry:
+            time.sleep(2 * attempt)  # 지수 백오프
+    return None
+
+
+# ============================================================
+# 구성종목 크롤링 (엑셀 다운로드 사용)
+# ============================================================
+def crawl_holdings(idx: int, etf_name: str, target_date: str) -> List[Dict]:
+    """
+    엑셀 다운로드 URL에서 구성종목 데이터를 가져온다.
+    URL 예시: https://timeetf.co.kr/pdf_excel.php?idx=22&pdfDate=2025-12-30
+    """
+    url = f"https://timeetf.co.kr/pdf_excel.php?idx={idx}&pdfDate={target_date}"
+    res = fetch_with_retry(url)
+    if not res or not res.content:
+        return []
+
+    # 엑셀 파일은 .xls (HTML 형식) 또는 .xlsx 가능
+    # pandas가 자동 판별
+    try:
+        # 1차: pandas로 직접 시도
+        df = pd.read_html(io.BytesIO(res.content))[0]
+    except Exception:
+        try:
+            # 2차: 엑셀 형식 시도
+            df = pd.read_excel(io.BytesIO(res.content))
+        except Exception as e:
+            print(f"    ❌ 엑셀 파싱 실패: {e}")
+            return []
+
+    if df.empty:
+        return []
+
+    # 컬럼명 표준화 (사이트가 한글 헤더 사용)
+    df.columns = [str(c).strip() for c in df.columns]
+    col_map = {}
+    for col in df.columns:
+        if "종목코드" in col:    col_map[col] = "code"
+        elif "종목명" in col:    col_map[col] = "name"
+        elif "수량" in col:      col_map[col] = "qty"
+        elif "평가금액" in col:  col_map[col] = "value"
+        elif "비중" in col:      col_map[col] = "weight"
+    df = df.rename(columns=col_map)
+
+    required = {"name", "weight"}
+    if not required.issubset(df.columns):
+        print(f"    ❌ 필수 컬럼 누락: 보유 컬럼={list(df.columns)}")
+        return []
+
+    holdings = []
+    for _, row in df.iterrows():
+        name = str(row.get("name", "")).strip()
+        if not name or name.lower() in ("nan", "none", ""):
+            continue
+
+        code = str(row.get("code", "")).strip()
+        if not code or code.lower() == "nan":
+            code = "CASH" if "현금" in name else f"UNKNOWN_{name[:10]}"
+
+        holdings.append({
+            "date":     target_date,
+            "etf_idx":  idx,
+            "etf_name": etf_name,
+            "code":     code,
+            "name":     name,
+            "qty":      to_int(row.get("qty")),
+            "value":    to_int(row.get("value")),
+            "weight":   to_float(row.get("weight")),
+        })
+
+    return holdings
+
+
+# ============================================================
+# NAV(순자산총액/기준가) 크롤링
+# ============================================================
+def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
+    """
+    상세 페이지에서 순자산총액과 기준가를 추출.
+    """
+    url = f"https://timeetf.co.kr/m11_view.php?idx={idx}&pdfDate={target_date}"
+    res = fetch_with_retry(url)
+    if not res:
+        return None
+
+    soup = BeautifulSoup(res.text, "html.parser")
+    text = soup.get_text(separator="\n")
+
+    # 순자산총액: "순자산총액 : 980 억원" 같은 패턴
+    nav_total = None
+    nav_price = None
+
+    import re
+    # "순자산총액" 다음에 나오는 숫자(억원)
+    m = re.search(r"순자산총액[^0-9]*([0-9,]+)\s*억", text)
+    if m:
+        nav_total = to_int(m.group(1)) * 100_000_000  # 억 → 원
+
+    # "기준가" 패턴 (실시간 기준가가 아닌 일별 기준가)
+    m = re.search(r"기준가\s*\(원\)\s*[:\s]*([0-9,]+\.?[0-9]*)", text)
+    if m:
+        nav_price = to_float(m.group(1))
+
+    if nav_total is None and nav_price is None:
+        return None
+
+    return {
+        "date":      target_date,
+        "etf_idx":   idx,
+        "etf_name":  etf_name,
+        "nav_total": nav_total,
+        "nav_price": nav_price,
+    }
+
+
+# ============================================================
+# 한 ETF, 한 날짜 처리
+# ============================================================
+def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
+    """반환: (저장된 종목 수, NAV 저장 여부)"""
+    print(f"  📊 [{etf_name}] {target_date}")
+
+    # 1) 구성종목
+    holdings = crawl_holdings(idx, etf_name, target_date)
+    time.sleep(DELAY_BETWEEN_REQUESTS)
+
+    # 2) NAV
+    nav = crawl_nav(idx, etf_name, target_date)
+    time.sleep(DELAY_BETWEEN_REQUESTS)
+
+    # 데이터 없는 날(주말/공휴일) 스킵
+    if not holdings and not nav:
+        print(f"    ⏭️  데이터 없음 (주말/공휴일 추정)")
+        return 0, False
+
+    # Supabase 저장
+    if holdings:
+        try:
+            supabase.table("holdings").upsert(
+                holdings, on_conflict="date,etf_idx,code"
+            ).execute()
+            print(f"    ✅ holdings: {len(holdings)}개 저장")
+        except Exception as e:
+            print(f"    ❌ holdings 저장 실패: {e}")
+            holdings = []
+
+    nav_saved = False
+    if nav:
+        try:
+            supabase.table("etf_daily").upsert(
+                [nav], on_conflict="date,etf_idx"
+            ).execute()
+            print(f"    ✅ NAV 저장 (총액: {nav.get('nav_total')}, 기준가: {nav.get('nav_price')})")
+            nav_saved = True
+        except Exception as e:
+            print(f"    ❌ NAV 저장 실패: {e}")
+
+    return len(holdings), nav_saved
+
+
+# ============================================================
+# 메인
+# ============================================================
+def main():
+    target_date = os.environ.get("TARGET_DATE") or str(date.today())
+    print(f"🚀 크롤링 시작: {target_date}")
+    print(f"   대상 ETF: {len(ETF_LIST)}개")
+    print("=" * 60)
+
+    total_holdings = 0
+    success_etfs = 0
+
+    for etf in ETF_LIST:
+        try:
+            n, _ = process_one(etf["idx"], etf["etf_name"], target_date)
+            total_holdings += n
+            if n > 0:
+                success_etfs += 1
+        except Exception as e:
+            print(f"  ❌ [{etf['etf_name']}] 예외: {e}")
+
+    print("=" * 60)
+    print(f"✅ 완료: {success_etfs}/{len(ETF_LIST)} ETF, 총 {total_holdings}개 종목")
+
+
+if __name__ == "__main__":
+    main()
