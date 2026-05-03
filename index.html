@@ -1,0 +1,54 @@
+name: Daily ETF Crawler
+
+on:
+  # 매 평일 오후 6시(KST) = UTC 09:00
+  schedule:
+    - cron: '0 9 * * 1-5'
+  # 수동 실행 가능 (특정 날짜 지정 가능)
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: '수집할 날짜 (YYYY-MM-DD), 빈 칸이면 오늘'
+        required: false
+        default: ''
+      mode:
+        description: '실행 모드'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily      # crawler.py 실행
+          - backfill   # backfill.py 실행
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run crawler
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TARGET_DATE:  ${{ github.event.inputs.target_date }}
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          if [ "$MODE" = "backfill" ]; then
+            python backfill.py
+          else
+            python crawler.py
+          fi
