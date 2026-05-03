@@ -4,26 +4,36 @@ on:
   # 매 평일 오후 6시(KST) = UTC 09:00
   schedule:
     - cron: '0 9 * * 1-5'
-  # 수동 실행 가능 (특정 날짜 지정 가능)
+  # 수동 실행 (기간 지정 백필 가능)
   workflow_dispatch:
     inputs:
-      target_date:
-        description: '수집할 날짜 (YYYY-MM-DD), 빈 칸이면 오늘'
-        required: false
-        default: ''
       mode:
         description: '실행 모드'
         required: true
         default: 'daily'
         type: choice
         options:
-          - daily      # crawler.py 실행
-          - backfill   # backfill.py 실행
+          - daily      # crawler.py 실행 (오늘 또는 target_date)
+          - backfill   # backfill.py 실행 (start_date ~ end_date)
+      target_date:
+        description: '[daily] 수집할 날짜 (YYYY-MM-DD), 빈 칸이면 오늘'
+        required: false
+        default: ''
+      start_date:
+        description: '[backfill] 시작일 (YYYY-MM-DD)'
+        required: false
+        default: ''
+      end_date:
+        description: '[backfill] 종료일 (YYYY-MM-DD), 빈 칸이면 어제'
+        required: false
+        default: ''
 
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 백필도 충분히 끝낼 수 있게 5시간으로 확대
+    # (GitHub Actions 무료 플랜은 작업당 최대 6시간 허용)
+    timeout-minutes: 300
 
     steps:
       - name: Checkout
@@ -47,8 +57,23 @@ jobs:
           TARGET_DATE:  ${{ github.event.inputs.target_date }}
         run: |
           MODE="${{ github.event.inputs.mode }}"
+          START="${{ github.event.inputs.start_date }}"
+          END="${{ github.event.inputs.end_date }}"
+
           if [ "$MODE" = "backfill" ]; then
-            python backfill.py
+            if [ -n "$START" ] && [ -n "$END" ]; then
+              echo "🔄 청크 백필: $START ~ $END"
+              python backfill.py "$START" "$END"
+            elif [ -n "$START" ]; then
+              # 종료일 미지정 시 어제까지
+              YESTERDAY=$(date -u -d 'yesterday' '+%Y-%m-%d')
+              echo "🔄 백필: $START ~ $YESTERDAY"
+              python backfill.py "$START" "$YESTERDAY"
+            else
+              echo "🔄 전체 백필: 2026-01-01 ~ 어제"
+              python backfill.py
+            fi
           else
+            echo "📊 일일 크롤링"
             python crawler.py
           fi
