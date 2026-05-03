@@ -1,54 +1,488 @@
-name: Daily ETF Crawler
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TIMEFOLIO Active ETF-Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0e1a; color: #e2e8f0; font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+    header { background: #111827; border-bottom: 1px solid #1e2d4a; padding: 20px 32px; position: sticky; top: 0; z-index: 10; }
+    header h1 { font-size: 20px; font-weight: 700; }
+    header p  { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
 
-on:
-  # 매 평일 오후 6시(KST) = UTC 09:00
-  schedule:
-    - cron: '0 9 * * 1-5'
-  # 수동 실행 가능 (특정 날짜 지정 가능)
-  workflow_dispatch:
-    inputs:
-      target_date:
-        description: '수집할 날짜 (YYYY-MM-DD), 빈 칸이면 오늘'
-        required: false
-        default: ''
-      mode:
-        description: '실행 모드'
-        required: true
-        default: 'daily'
-        type: choice
-        options:
-          - daily      # crawler.py 실행
-          - backfill   # backfill.py 실행
+    .etf-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .etf-tab { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #2d3748; background: #131929; color: #94a3b8; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .etf-tab:hover { border-color: #4a5568; color: #e2e8f0; }
+    .etf-tab.active { background: rgba(0,212,170,0.1); border-color: #00D4AA; color: #00D4AA; }
+    .tab-section-label { font-size: 11px; color: #475569; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; width: 100%; }
 
-jobs:
-  crawl:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    .controls { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
+    .ctrl-group label { font-size: 11px; color: #64748b; display: block; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
+    select, button { background: #131929; border: 1px solid #2d3748; color: #e2e8f0; padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
+    button:hover { border-color: #00D4AA; color: #00D4AA; }
+    .download-btn { background: rgba(0,212,170,0.1); border-color: #00D4AA; color: #00D4AA; }
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1e2d4a; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+    .stat { background: #0d1526; padding: 16px 20px; }
+    .stat-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+    .stat-value { font-size: 20px; font-weight: 700; font-family: monospace; color: #f8fafc; }
+    .stat-sub { font-size: 11px; color: #64748b; margin-top: 4px; }
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+    .card { background: #0d1526; border: 1px solid #1e2d4a; border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+    .card-header { padding: 14px 20px; background: #111827; border-bottom: 1px solid #1e2d4a; font-size: 13px; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th { text-align: left; font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; padding: 10px 14px; background: #111827; border-bottom: 1px solid #1e2d4a; white-space: nowrap; cursor: pointer; user-select: none; }
+    th:hover { color: #00D4AA; }
+    th.sort-asc::after  { content: " ▲"; font-size: 9px; color: #00D4AA; }
+    th.sort-desc::after { content: " ▼"; font-size: 9px; color: #00D4AA; }
+    td { padding: 12px 14px; border-bottom: 1px solid #1a2235; font-size: 13px; white-space: nowrap; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .new  { background: rgba(0,212,170,0.15);  color: #00D4AA; }
+    .up   { background: rgba(52,211,153,0.15); color: #34d399; }
+    .down { background: rgba(248,113,113,0.15);color: #f87171; }
+    .gone { background: rgba(239,68,68,0.1);   color: #ef4444; }
+    .same { background: rgba(100,116,139,0.1); color: #64748b; }
 
-      - name: Run crawler
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          TARGET_DATE:  ${{ github.event.inputs.target_date }}
-        run: |
-          MODE="${{ github.event.inputs.mode }}"
-          if [ "$MODE" = "backfill" ]; then
-            python backfill.py
-          else
-            python crawler.py
-          fi
+    .bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .bar-bg   { width: 80px; height: 5px; background: #1e2433; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+    .bar-fill { height: 100%; border-radius: 3px; }
+
+    .loading  { text-align: center; padding: 60px; color: #475569; font-size: 14px; }
+    .pos { color: #34d399; font-family: monospace; }
+    .neg { color: #f87171; font-family: monospace; }
+    .neu { color: #64748b; font-family: monospace; }
+    .dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+    .info-box { padding: 16px 20px; background: rgba(255,255,255,0.02); border: 1px solid #1e2433; border-radius: 12px; margin-bottom: 20px; }
+    .info-row { display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px; }
+    .info-item .il { color: #64748b; margin-right: 8px; }
+    .info-item .iv { color: #e2e8f0; font-weight: 600; }
+
+    .footer { margin-top: 16px; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid #1e2433; font-size: 11px; color: #475569; line-height: 1.6; }
+
+    @media (max-width: 700px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>TIMEFOLIO Active ETF-Tracker</h1>
+  <p>타임폴리오 전체 액티브 ETF 구성종목 변화 추적 · 매 평일 오후 6시 자동 업데이트</p>
+</header>
+
+<div class="container">
+
+  <div class="etf-tabs" id="etfTabs">
+    <div class="tab-section-label">해외투자</div>
+    <div class="etf-tab active" data-idx="22" onclick="selectEtf(this)">글로벌탑픽액티브</div>
+    <div class="etf-tab" data-idx="2"  onclick="selectEtf(this)">미국나스닥100액티브</div>
+    <div class="etf-tab" data-idx="5"  onclick="selectEtf(this)">미국S&P500액티브</div>
+    <div class="etf-tab" data-idx="6"  onclick="selectEtf(this)">글로벌AI인공지능액티브</div>
+    <div class="etf-tab" data-idx="9"  onclick="selectEtf(this)">글로벌바이오액티브</div>
+    <div class="etf-tab" data-idx="20" onclick="selectEtf(this)">글로벌우주테크&방산액티브</div>
+    <div class="etf-tab" data-idx="19" onclick="selectEtf(this)">차이나AI테크액티브</div>
+    <div class="etf-tab" data-idx="18" onclick="selectEtf(this)">미국배당다우존스액티브</div>
+    <div class="etf-tab" data-idx="10" onclick="selectEtf(this)">미국나스닥100채권혼합50액티브</div>
+    <div class="etf-tab" data-idx="8"  onclick="selectEtf(this)">글로벌소비트렌드액티브</div>
+    <div class="tab-section-label" style="margin-top:8px">국내투자</div>
+    <div class="etf-tab" data-idx="12" onclick="selectEtf(this)">Korea플러스배당액티브</div>
+    <div class="etf-tab" data-idx="11" onclick="selectEtf(this)">코스피액티브</div>
+    <div class="etf-tab" data-idx="15" onclick="selectEtf(this)">코리아밸류업액티브</div>
+    <div class="etf-tab" data-idx="24" onclick="selectEtf(this)">코스닥액티브</div>
+    <div class="etf-tab" data-idx="16" onclick="selectEtf(this)">K신재생에너지액티브</div>
+    <div class="etf-tab" data-idx="13" onclick="selectEtf(this)">K바이오액티브</div>
+    <div class="etf-tab" data-idx="17" onclick="selectEtf(this)">K이노베이션액티브</div>
+    <div class="etf-tab" data-idx="1"  onclick="selectEtf(this)">K컬처액티브</div>
+  </div>
+
+  <!-- ETF 고정정보 -->
+  <div class="info-box" id="infoBox" style="display:none">
+    <div class="info-row">
+      <div class="info-item"><span class="il">상품명</span><span class="iv" id="infoName">—</span></div>
+      <div class="info-item"><span class="il">상장일</span><span class="iv" id="infoListDate">—</span></div>
+      <div class="info-item"><span class="il">위험등급</span><span class="iv" id="infoRisk">—</span></div>
+      <div class="info-item"><span class="il">비교지수</span><span class="iv" id="infoBench">—</span></div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:#94a3b8" id="infoDesc">—</div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>기준일</label>
+      <select id="dateSelect" onchange="loadData()"><option>로딩 중...</option></select>
+    </div>
+    <div style="padding-bottom:8px;color:#475569;font-size:18px">↔</div>
+    <div class="ctrl-group">
+      <label>비교일</label>
+      <select id="compareSelect" onchange="loadData()"><option value="">비교 안함</option></select>
+    </div>
+    <div class="ctrl-group" style="margin-left:auto">
+      <label>&nbsp;</label>
+      <button class="download-btn" onclick="downloadCSV()">📥 CSV 다운로드</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">종목 수</div>
+      <div class="stat-value" id="statCount">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">순자산총액</div>
+      <div class="stat-value" id="statNav" style="font-size:16px;padding-top:4px">—</div>
+      <div class="stat-sub" id="statNavDiff">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">최대 비중 종목</div>
+      <div class="stat-value" id="statTop" style="font-size:13px;padding-top:4px">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">변화 종목 수</div>
+      <div class="stat-value" id="statChanged">—</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span id="cardTitle">구성종목</span>
+      <span id="cardDate" style="font-size:11px;color:#475569"></span>
+    </div>
+    <div class="tbl-wrap">
+      <div id="tableArea"><div class="loading">데이터 불러오는 중...</div></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    데이터 출처: timeetf.co.kr 공시 기준 · 매 평일 오후 6시 자동 업데이트 · 총 18개 ETF 추적 중<br>
+    ※ 본 사이트는 비공식 정보 제공 도구이며, 투자 판단의 책임은 본인에게 있습니다.
+  </div>
+</div>
+
+<script>
+  // =========================================================
+  // 설정 (배포 시 본인 값으로 교체)
+  // =========================================================
+  const SUPABASE_URL = "[https://lqpqummcoujmymydftlg.supabase.co](https://lqpqummcoujmymydftlg.supabase.co/)";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxcHF1bW1jb3VqbXlteWRmdGxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDQxMDAsImV4cCI6MjA5MzMyMDEwMH0.n6iaxMNx0pDR5vp3ed1Cat8kHqM5PVwxyFNMh9sWIw0";  // service_role 아닌 anon 키!
+
+  // =========================================================
+  // ETF 고정 메타정보 (사이트에서 가끔 바뀌니 분기별 점검)
+  // =========================================================
+  const ETF_META = {
+    22: { code: "0113D0", listDate: "2025.10.28", risk: "2등급(높은 위험)",
+          bench: "Bloomberg World Large, Mid & Small Cap Index PR(원화환산)",
+          desc: "전 세계 핵심 ETF만 선별하여 투자하는 초분산 액티브 포트폴리오 ETF" },
+    // 나머지 17개는 실제 페이지에서 확인 후 추가 (없어도 동작)
+  };
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const COLORS = ["#00D4AA","#3B82F6","#F59E0B","#EF4444","#8B5CF6","#EC4899","#14B8A6","#F97316","#06B6D4","#84CC16"];
+
+  let currentIdx = 22;
+  let currentData = [];   // 현재 화면에 그려진 행 (CSV 다운로드, 정렬에 사용)
+  let currentDate = "";
+  let compareDate = "";
+  let sortKey = null;     // 정렬 키
+  let sortDir = "desc";
+
+  function selectEtf(el) {
+    document.querySelectorAll('.etf-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentIdx = parseInt(el.dataset.idx);
+    sortKey = null;
+    loadDates();
+    renderInfo();
+  }
+
+  function renderInfo() {
+    const meta = ETF_META[currentIdx];
+    const box = document.getElementById("infoBox");
+    if (!meta) { box.style.display = "none"; return; }
+    box.style.display = "block";
+    document.getElementById("infoName").textContent = "TIME " + (document.querySelector('.etf-tab.active')?.textContent || "");
+    document.getElementById("infoListDate").textContent = meta.listDate || "—";
+    document.getElementById("infoRisk").textContent = meta.risk || "—";
+    document.getElementById("infoBench").textContent = meta.bench || "—";
+    document.getElementById("infoDesc").textContent = meta.desc || "";
+  }
+
+  async function loadDates() {
+    document.getElementById("tableArea").innerHTML = '<div class="loading">불러오는 중...</div>';
+    const { data, error } = await db
+      .from("holdings")
+      .select("date")
+      .eq("etf_idx", currentIdx)
+      .order("date", { ascending: false })
+      .limit(2000);
+
+    if (error || !data || data.length === 0) {
+      document.getElementById("tableArea").innerHTML = '<div class="loading">데이터가 없습니다</div>';
+      return;
+    }
+
+    const dates = [...new Set(data.map(d => d.date))];
+    const s1 = document.getElementById("dateSelect");
+    const s2 = document.getElementById("compareSelect");
+    s1.innerHTML = dates.map(d => `<option value="${d}">${d}</option>`).join("");
+    s2.innerHTML = '<option value="">비교 안함</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join("");
+    if (dates.length > 1) s2.value = dates[1];
+    loadData();
+  }
+
+  async function loadData() {
+    currentDate = document.getElementById("dateSelect").value;
+    compareDate = document.getElementById("compareSelect").value;
+    if (!currentDate) return;
+
+    const [r1, r2, n1, n2] = await Promise.all([
+      db.from("holdings").select("*").eq("etf_idx", currentIdx).eq("date", currentDate).order("weight", { ascending: false }),
+      compareDate ? db.from("holdings").select("*").eq("etf_idx", currentIdx).eq("date", compareDate) : Promise.resolve({ data: [] }),
+      db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", currentDate).maybeSingle(),
+      compareDate ? db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", compareDate).maybeSingle() : Promise.resolve({ data: null }),
+    ]);
+
+    const cur = r1.data || [];
+    const cmp = r2.data || [];
+    const navCur = n1.data;
+    const navCmp = n2.data;
+
+    const etfName = cur[0]?.etf_name || "";
+    document.getElementById("cardTitle").textContent = `TIME ${etfName} 구성종목`;
+    document.getElementById("cardDate").textContent = currentDate + (compareDate ? ` (비교: ${compareDate})` : "");
+
+    renderStats(cur, cmp, navCur, navCmp);
+    buildRows(cur, cmp);
+    renderTable();
+  }
+
+  function fmt(n) {
+    if (n === null || n === undefined) return "—";
+    return Number(n).toLocaleString("ko-KR");
+  }
+
+  function fmtNav(v) {
+    if (v === null || v === undefined) return "—";
+    const eok = v / 100_000_000;
+    if (eok >= 1) return eok.toFixed(0) + " 억원";
+    return fmt(v) + " 원";
+  }
+
+  function renderStats(cur, cmp, navCur, navCmp) {
+    document.getElementById("statCount").textContent = cur.length + "개";
+    document.getElementById("statTop").textContent = cur[0] ? cur[0].name.slice(0, 20) : "—";
+
+    document.getElementById("statNav").textContent = fmtNav(navCur?.nav_total);
+    if (navCur?.nav_total && navCmp?.nav_total) {
+      const diff = navCur.nav_total - navCmp.nav_total;
+      const pct = (diff / navCmp.nav_total) * 100;
+      const cls = diff > 0 ? "pos" : diff < 0 ? "neg" : "neu";
+      const sign = diff > 0 ? "+" : "";
+      document.getElementById("statNavDiff").innerHTML =
+        `<span class="${cls}">${sign}${fmtNav(diff)} (${sign}${pct.toFixed(2)}%)</span>`;
+    } else {
+      document.getElementById("statNavDiff").textContent = compareDate ? "비교 데이터 없음" : "—";
+    }
+
+    const changed = cur.filter(h => {
+      const p = cmp.find(c => c.code === h.code);
+      return !p || Math.abs(h.weight - p.weight) > 0.5;
+    }).length + cmp.filter(c => !cur.find(h => h.code === c.code)).length;
+    document.getElementById("statChanged").textContent = cmp.length ? changed + "개" : "—";
+  }
+
+  // =========================================================
+  // 행 데이터 구성 (정렬을 위해 데이터-뷰 분리)
+  // =========================================================
+  function buildRows(cur, cmp) {
+    const cmpMap = Object.fromEntries(cmp.map(h => [h.code, h]));
+    const removed = cmp.filter(c => !cur.find(h => h.code === c.code));
+    const hasCompare = cmp.length > 0;
+
+    const rows = cur.map((h, i) => {
+      const prev = cmpMap[h.code];
+      const weightDiff = prev ? (h.weight - prev.weight) : null;
+      const qtyDiff    = prev ? (h.qty - prev.qty)       : null;
+      const isNew      = !prev && hasCompare;
+
+      let status = "—";
+      if (isNew) status = "신규";
+      else if (weightDiff !== null && weightDiff > 0.5)  status = "증가";
+      else if (weightDiff !== null && weightDiff < -0.5) status = "감소";
+      else if (weightDiff !== null) status = "유지";
+
+      return {
+        rank: i + 1,
+        code: h.code,
+        name: h.name,
+        weight: h.weight,
+        weightDiff,
+        qty: h.qty,
+        qtyDiff,
+        value: h.value,
+        status,
+        removed: false,
+      };
+    });
+
+    removed.forEach(h => {
+      rows.push({
+        rank: 999,
+        code: h.code,
+        name: h.name,
+        weight: 0,
+        weightDiff: -h.weight,
+        qty: 0,
+        qtyDiff: -h.qty,
+        value: 0,
+        status: "제외",
+        removed: true,
+      });
+    });
+
+    currentData = rows;
+  }
+
+  // =========================================================
+  // 테이블 렌더링 + 정렬
+  // =========================================================
+  function setSort(key) {
+    if (sortKey === key) sortDir = sortDir === "asc" ? "desc" : "asc";
+    else { sortKey = key; sortDir = "desc"; }
+    renderTable();
+  }
+
+  function sortedRows() {
+    if (!sortKey) return currentData;
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...currentData].sort((a, b) => {
+      const va = a[sortKey], vb = b[sortKey];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === "string") return va.localeCompare(vb, "ko") * dir;
+      return (va - vb) * dir;
+    });
+  }
+
+  function diffSpan(v, isPercent = false) {
+    if (v === null || v === undefined) return '<span style="color:#475569">—</span>';
+    const cls = v > 0 ? "pos" : v < 0 ? "neg" : "neu";
+    const sign = v > 0 ? "+" : "";
+    const txt = isPercent ? `${sign}${v.toFixed(2)}%` : `${sign}${Number(v).toLocaleString("ko-KR")}`;
+    return `<span class="${cls}">${txt}</span>`;
+  }
+
+  function statusBadge(s) {
+    const map = { "신규": "new", "증가": "up", "감소": "down", "유지": "same", "제외": "gone" };
+    const cls = map[s];
+    if (!cls) return "—";
+    const arrow = s === "증가" ? "▲ " : s === "감소" ? "▼ " : "";
+    return `<span class="badge ${cls}">${arrow}${s}</span>`;
+  }
+
+  function renderTable() {
+    const rows = sortedRows();
+    if (!rows.length) {
+      document.getElementById("tableArea").innerHTML = '<div class="loading">데이터가 없습니다</div>';
+      return;
+    }
+
+    const trs = rows.map((r, i) => {
+      const color = COLORS[i % COLORS.length];
+      const opacity = r.removed ? "opacity:0.5" : "";
+      return `<tr style="${opacity}">
+        <td style="color:#475569;font-family:monospace">${r.removed ? "—" : (i+1)}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="dot" style="background:${r.removed ? '#475569' : color}"></div>
+            <div>
+              <div style="font-weight:600;color:${r.removed ? '#94a3b8' : '#f1f5f9'}">${r.name}</div>
+              <div style="font-size:10px;color:#475569;font-family:monospace">${r.code}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="bar-wrap">
+            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(r.weight,100)}%;background:${color}"></div></div>
+            <span style="font-family:monospace;font-size:13px;min-width:48px;text-align:right">${r.weight.toFixed(2)}%</span>
+          </div>
+        </td>
+        <td>${diffSpan(r.weightDiff, true)}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td style="font-family:monospace;text-align:right;color:#e2e8f0">${fmt(r.qty)}</td>
+        <td style="text-align:right">${diffSpan(r.qtyDiff)}</td>
+        <td style="font-family:monospace;text-align:right;color:#94a3b8">${fmt(r.value)}</td>
+      </tr>`;
+    });
+
+    const headers = [
+      { key: "rank",       label: "#", align: "left" },
+      { key: "name",       label: "종목명", align: "left" },
+      { key: "weight",     label: "비중", align: "left" },
+      { key: "weightDiff", label: "비중변화", align: "left" },
+      { key: "status",     label: "상태", align: "left" },
+      { key: "qty",        label: "수량", align: "right" },
+      { key: "qtyDiff",    label: "수량변화", align: "right" },
+      { key: "value",      label: "평가금액", align: "right" },
+    ];
+
+    const ths = headers.map(h => {
+      const cls = sortKey === h.key ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
+      const align = h.align === "right" ? "text-align:right" : "";
+      return `<th class="${cls}" style="${align}" onclick="setSort('${h.key}')">${h.label}</th>`;
+    }).join("");
+
+    document.getElementById("tableArea").innerHTML = `
+      <table>
+        <thead><tr>${ths}</tr></thead>
+        <tbody>${trs.join("")}</tbody>
+      </table>`;
+  }
+
+  // =========================================================
+  // CSV 다운로드 (개인 분석용 - Issue 2 해결)
+  // =========================================================
+  function downloadCSV() {
+    if (!currentData.length) { alert("다운로드할 데이터가 없습니다"); return; }
+    const header = ["순위","종목코드","종목명","비중(%)","비중변화","상태","수량","수량변화","평가금액"];
+    const lines = [header.join(",")];
+    currentData.forEach((r, i) => {
+      const row = [
+        r.removed ? "" : (i+1),
+        r.code,
+        `"${(r.name || "").replace(/"/g, '""')}"`,
+        r.weight,
+        r.weightDiff ?? "",
+        r.status,
+        r.qty,
+        r.qtyDiff ?? "",
+        r.value,
+      ];
+      lines.push(row.join(","));
+    });
+    const csv = "\uFEFF" + lines.join("\n");  // UTF-8 BOM (엑셀 한글 깨짐 방지)
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const etfName = document.querySelector('.etf-tab.active')?.textContent || "etf";
+    a.href = url;
+    a.download = `TIME_${etfName}_${currentDate}${compareDate ? "_vs_" + compareDate : ""}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // 시작
+  loadDates();
+  renderInfo();
+</script>
+</body>
+</html>
