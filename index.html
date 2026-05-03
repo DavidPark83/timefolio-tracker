@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TIMEFOLIO Active ETF-Tracker</title>
+  <title>TIME 액티브 ETF 트래커</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,7 +23,6 @@
     .ctrl-group label { font-size: 11px; color: #64748b; display: block; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
     select, button { background: #131929; border: 1px solid #2d3748; color: #e2e8f0; padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
     button:hover { border-color: #00D4AA; color: #00D4AA; }
-    .download-btn { background: rgba(0,212,170,0.1); border-color: #00D4AA; color: #00D4AA; }
 
     .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1e2d4a; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
     .stat { background: #0d1526; padding: 16px 20px; }
@@ -74,7 +73,7 @@
 <body>
 
 <header>
-  <h1>TIMEFOLIO Active ETF-Tracker</h1>
+  <h1>TIME 액티브 ETF 트래커</h1>
   <p>타임폴리오 전체 액티브 ETF 구성종목 변화 추적 · 매 평일 오후 6시 자동 업데이트</p>
 </header>
 
@@ -124,11 +123,10 @@
       <label>비교일</label>
       <select id="compareSelect" onchange="loadData()"><option value="">비교 안함</option></select>
     </div>
-    <div class="ctrl-group" style="margin-left:auto">
-      <label>&nbsp;</label>
-      <button class="download-btn" onclick="downloadCSV()">📥 CSV 다운로드</button>
-    </div>
   </div>
+
+  <!-- 진단용 에러 표시 영역 (문제 있을 때만 보임) -->
+  <div id="errorBox" style="display:none;padding:14px 18px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:10px;margin-bottom:16px;font-size:13px;color:#fca5a5;line-height:1.6"></div>
 
   <div class="stats">
     <div class="stat">
@@ -170,8 +168,8 @@
   // =========================================================
   // 설정 (배포 시 본인 값으로 교체)
   // =========================================================
-  const SUPABASE_URL = "[https://lqpqummcoujmymydftlg.supabase.co](https://lqpqummcoujmymydftlg.supabase.co/)";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxcHF1bW1jb3VqbXlteWRmdGxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDQxMDAsImV4cCI6MjA5MzMyMDEwMH0.n6iaxMNx0pDR5vp3ed1Cat8kHqM5PVwxyFNMh9sWIw0";  // service_role 아닌 anon 키!
+  const SUPABASE_URL = "여기에_Project_URL_입력";
+  const SUPABASE_KEY = "여기에_anon_public_key_입력";  // service_role 아닌 anon 키!
 
   // =========================================================
   // ETF 고정 메타정보 (사이트에서 가끔 바뀌니 분기별 점검)
@@ -217,6 +215,19 @@
 
   async function loadDates() {
     document.getElementById("tableArea").innerHTML = '<div class="loading">불러오는 중...</div>';
+
+    // 키 미설정 사전 체크
+    if (SUPABASE_URL.includes("여기에_") || SUPABASE_KEY.includes("여기에_") ||
+        !SUPABASE_URL.startsWith("https://") || SUPABASE_KEY.length < 30) {
+      showError(
+        "Supabase 설정이 안 되어 있습니다",
+        `index.html 파일 상단의 SUPABASE_URL / SUPABASE_KEY 두 줄을 본인 값으로 교체한 뒤 다시 배포해 주세요.<br>` +
+        `<br><b>Project URL</b>: Supabase Settings → API → Project URL` +
+        `<br><b>SUPABASE_KEY</b>: Settings → API → <code>anon public</code> 키 (service_role 아님!)`
+      );
+      return;
+    }
+
     const { data, error } = await db
       .from("holdings")
       .select("date")
@@ -224,11 +235,44 @@
       .order("date", { ascending: false })
       .limit(2000);
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      // 에러 종류별 진단 메시지
+      const msg = error.message || "";
+      let hint = "";
+      if (msg.includes("relation") && msg.includes("does not exist")) {
+        hint = "Supabase에 <code>holdings</code> 테이블이 없습니다. SQL Editor에서 schema.sql을 실행해 주세요.";
+      } else if (msg.includes("Invalid API key") || msg.includes("JWT")) {
+        hint = "API 키가 잘못되었습니다. <code>anon public</code> 키 전체를 다시 복사해 주세요.";
+      } else if (msg.includes("Failed to fetch")) {
+        hint = "Supabase URL이 잘못되었거나 네트워크 문제일 수 있습니다.";
+      } else {
+        hint = "F12 → Console 탭에서 자세한 에러를 확인할 수 있습니다.";
+      }
+      showError(`데이터 조회 실패: ${msg}`, hint);
+      document.getElementById("tableArea").innerHTML = '<div class="loading">데이터를 불러올 수 없습니다</div>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      // 모든 ETF 통합으로 진짜 데이터가 0개인지 확인
+      const { count } = await db.from("holdings").select("*", { count: "exact", head: true });
+      if (!count) {
+        showError(
+          "DB가 비어있습니다",
+          `Supabase의 <code>holdings</code> 테이블에 데이터가 없습니다. ` +
+          `GitHub Actions에서 <b>backfill</b> 또는 <b>daily</b> 워크플로우를 한 번이라도 실행해 주세요.`
+        );
+      } else {
+        showError(
+          `이 ETF(idx=${currentIdx})의 데이터가 없습니다`,
+          `다른 ETF에는 ${count}건의 데이터가 있습니다. 다른 탭을 클릭해 보세요.`
+        );
+      }
       document.getElementById("tableArea").innerHTML = '<div class="loading">데이터가 없습니다</div>';
       return;
     }
 
+    hideError();
     const dates = [...new Set(data.map(d => d.date))];
     const s1 = document.getElementById("dateSelect");
     const s2 = document.getElementById("compareSelect");
@@ -236,6 +280,16 @@
     s2.innerHTML = '<option value="">비교 안함</option>' + dates.map(d => `<option value="${d}">${d}</option>`).join("");
     if (dates.length > 1) s2.value = dates[1];
     loadData();
+  }
+
+  function showError(title, hint) {
+    const box = document.getElementById("errorBox");
+    box.innerHTML = `<div style="font-weight:700;margin-bottom:6px">⚠️ ${title}</div><div style="color:#fcd5d5">${hint}</div>`;
+    box.style.display = "block";
+  }
+
+  function hideError() {
+    document.getElementById("errorBox").style.display = "none";
   }
 
   async function loadData() {
@@ -446,38 +500,6 @@
         <thead><tr>${ths}</tr></thead>
         <tbody>${trs.join("")}</tbody>
       </table>`;
-  }
-
-  // =========================================================
-  // CSV 다운로드 (개인 분석용 - Issue 2 해결)
-  // =========================================================
-  function downloadCSV() {
-    if (!currentData.length) { alert("다운로드할 데이터가 없습니다"); return; }
-    const header = ["순위","종목코드","종목명","비중(%)","비중변화","상태","수량","수량변화","평가금액"];
-    const lines = [header.join(",")];
-    currentData.forEach((r, i) => {
-      const row = [
-        r.removed ? "" : (i+1),
-        r.code,
-        `"${(r.name || "").replace(/"/g, '""')}"`,
-        r.weight,
-        r.weightDiff ?? "",
-        r.status,
-        r.qty,
-        r.qtyDiff ?? "",
-        r.value,
-      ];
-      lines.push(row.join(","));
-    });
-    const csv = "\uFEFF" + lines.join("\n");  // UTF-8 BOM (엑셀 한글 깨짐 방지)
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const etfName = document.querySelector('.etf-tab.active')?.textContent || "etf";
-    a.href = url;
-    a.download = `TIME_${etfName}_${currentDate}${compareDate ? "_vs_" + compareDate : ""}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   }
 
   // 시작
