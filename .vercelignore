@@ -1,0 +1,20 @@
+# Vercel 배포 시 제외할 파일들
+# (HTML만 배포되도록 정적 사이트로 운영)
+
+# Python 백엔드 파일 (GitHub Actions 전용, 웹 노출 금지)
+*.py
+requirements.txt
+
+# DB 스키마 (Supabase에서 한 번 실행 후 끝, 웹에 둘 필요 없음)
+schema.sql
+
+# GitHub Actions 설정 (Vercel과 무관)
+.github/
+
+# 개발/문서용
+README.md
+*.md
+.gitignore
+__pycache__/
+.env
+.env.*
