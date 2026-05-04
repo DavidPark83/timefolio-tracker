@@ -277,16 +277,81 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
 # ============================================================
 # 메인
 # ============================================================
+
+# 자동 실행 시 "충분히 수집됨"으로 간주할 ETF 수 (18개 중 X개 이상)
+ENOUGH_ETF_COUNT = 17  # 17개 이상이면 1차에서 거의 다 받은 것 → 2차 스킵
+
+
+def count_saved_etfs(target_date: str) -> int:
+    """해당 날짜에 holdings에 데이터가 있는 ETF 개수를 반환"""
+    try:
+        res = (
+            supabase.table("holdings")
+            .select("etf_idx")
+            .eq("date", target_date)
+            .limit(2000)
+            .execute()
+        )
+        rows = res.data or []
+        unique_etfs = set(r["etf_idx"] for r in rows)
+        return len(unique_etfs)
+    except Exception as e:
+        print(f"  ⚠️  사전 체크 실패 (계속 진행): {e}")
+        return 0
+
+
+def get_missing_etfs(target_date: str) -> list:
+    """해당 날짜에 아직 데이터가 없는 ETF 목록 반환"""
+    try:
+        res = (
+            supabase.table("holdings")
+            .select("etf_idx")
+            .eq("date", target_date)
+            .limit(2000)
+            .execute()
+        )
+        rows = res.data or []
+        saved_idx = set(r["etf_idx"] for r in rows)
+        return [etf for etf in ETF_LIST if etf["idx"] not in saved_idx]
+    except Exception as e:
+        print(f"  ⚠️  누락 ETF 조회 실패 (전체 재시도): {e}")
+        return ETF_LIST
+
+
 def main():
     target_date = os.environ.get("TARGET_DATE") or str(date.today())
+    is_manual = bool(os.environ.get("TARGET_DATE"))  # 수동 실행 여부
+
     print(f"🚀 크롤링 시작: {target_date}")
     print(f"   대상 ETF: {len(ETF_LIST)}개")
+    print(f"   실행 모드: {'수동(특정날짜)' if is_manual else '자동(오늘)'}")
     print("=" * 60)
+
+    # 자동 실행일 때만: 이미 충분히 수집됐으면 스킵
+    # (수동 실행은 강제 재수집 의도이므로 항상 진행)
+    if not is_manual:
+        already = count_saved_etfs(target_date)
+        print(f"📊 사전 체크: 이미 {already}/{len(ETF_LIST)}개 ETF 수집됨")
+        if already >= ENOUGH_ETF_COUNT:
+            print(f"✅ {ENOUGH_ETF_COUNT}개 이상 수집 완료 상태 → 이번 실행은 스킵합니다")
+            print("   (1차 cron이 성공했거나 이미 처리된 날짜)")
+            return
+
+        # 일부만 수집됐으면 누락된 ETF만 처리
+        if already > 0:
+            missing = get_missing_etfs(target_date)
+            print(f"🔄 일부만 수집됨 → 누락된 {len(missing)}개 ETF만 재시도")
+            target_etfs = missing
+        else:
+            target_etfs = ETF_LIST
+    else:
+        # 수동 실행은 항상 전체 ETF
+        target_etfs = ETF_LIST
 
     total_holdings = 0
     success_etfs = 0
 
-    for etf in ETF_LIST:
+    for etf in target_etfs:
         try:
             n, _ = process_one(etf["idx"], etf["etf_name"], target_date)
             total_holdings += n
@@ -296,7 +361,7 @@ def main():
             print(f"  ❌ [{etf['etf_name']}] 예외: {e}")
 
     print("=" * 60)
-    print(f"✅ 완료: {success_etfs}/{len(ETF_LIST)} ETF, 총 {total_holdings}개 종목")
+    print(f"✅ 완료: {success_etfs}/{len(target_etfs)} ETF, 총 {total_holdings}개 종목")
 
 
 if __name__ == "__main__":
