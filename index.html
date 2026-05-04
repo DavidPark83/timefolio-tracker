@@ -797,7 +797,7 @@ async function loadHighlights() {
       let from = 0;
       while (true) {
         const { data } = await db.from("holdings")
-          .select("etf_idx, code, name, weight")
+          .select("etf_idx, code, name, weight, value")
           .eq("date", date)
           .range(from, from + 999);
         if (!data?.length) break;
@@ -808,11 +808,13 @@ async function loadHighlights() {
       return all;
     };
 
+    // weight 합산 (변화 감지용) + value 합산 (보유 TOP용) 동시 처리
     const aggregate = (rows) => {
       const map = {};
       for (const r of rows) {
-        if (!map[r.code]) map[r.code] = { code: r.code, name: r.name, weight: 0, etfCount: 0 };
-        map[r.code].weight += (r.weight || 0);
+        if (!map[r.code]) map[r.code] = { code: r.code, name: r.name, weight: 0, value: 0, etfCount: 0 };
+        map[r.code].weight   += (r.weight || 0);
+        map[r.code].value    += (r.value  || 0);
         map[r.code].etfCount += 1;
       }
       return map;
@@ -821,8 +823,18 @@ async function loadHighlights() {
     const curAll = await fetchAll(latest);
     const curMap = aggregate(curAll);
 
-    // ── 현재 보유 TOP: 최신일 기준 비중 합산 상위
-    const holdItems = Object.values(curMap).sort((a, b) => b.weight - a.weight);
+    // ── 현재 보유 TOP: 평가금액 합산 기준 정렬
+    const holdItems = Object.values(curMap).sort((a, b) => b.value - a.value);
+
+    // ── 평가금액 포맷: 억원 단위
+    const fmtValue = (v) => {
+      if (!v) return "—";
+      const eok = v / 100_000_000;
+      if (eok >= 1000) return (eok / 1000).toFixed(1) + "조원";
+      if (eok >= 1)    return eok.toFixed(0) + "억원";
+      const man = v / 10_000;
+      return man.toFixed(0) + "만원";
+    };
 
     if (!prev) {
       ["hlNew","hlUp","hlDown","hlGone"].forEach(id =>
@@ -879,7 +891,7 @@ async function loadHighlights() {
       renderList("hlGone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
     }
 
-    // ── 현재 보유 TOP 렌더링 (비교 여부와 무관하게 항상 표시)
+    // ── 현재 보유 TOP 렌더링
     const elHold = document.getElementById("hlHold");
     elHold.innerHTML = holdItems.slice(0, 5).map(x => {
       const safeName = x.name.replace(/'/g, "\\'");
@@ -889,7 +901,7 @@ async function loadHighlights() {
         : "";
       return `<div class="hl-row">
         <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-        <span class="hl-val" style="color:#00D4AA;font-family:monospace">${x.weight.toFixed(1)}%</span>
+        <span class="hl-val" style="color:#00D4AA;font-family:monospace">${fmtValue(x.value)}</span>
       </div>`;
     }).join("");
 
