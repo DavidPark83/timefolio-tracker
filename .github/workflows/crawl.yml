@@ -1,9 +1,11 @@
 name: Daily ETF Crawler
 
 on:
-  # 매 평일 오후 6시(KST) = UTC 09:00
+  # 매 평일 오전 9시(KST) = UTC 00:00 (1차 시도)
+  # 매 평일 오전 10시(KST) = UTC 01:00 (2차 시도, 1차 성공 시 자동 스킵)
   schedule:
-    - cron: '0 9 * * 1-5'
+    - cron: '0 0 * * 1-5'
+    - cron: '0 1 * * 1-5'
   # 수동 실행 (기간 지정 백필 가능)
   workflow_dispatch:
     inputs:
