@@ -779,92 +779,126 @@
   }
 
   // =========================================================
-  // ① 오늘의 변화 하이라이트
+  // ① 오늘의 변화 하이라이트 (18개 ETF 전체 합산, 종목 중복 제거)
   // =========================================================
-  async function loadHighlights() {
-    if (!db) return;
-    try {
-      // 1) 전체 최신 날짜 (모든 ETF 통합)
-      const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-      if (!latestRows?.length) return;
-      const latest = latestRows[0].date;
-
-      // 2) 직전 영업일
-      const { data: prevRows } = await db.from("holdings").select("date").lt("date", latest).order("date", { ascending: false }).limit(1);
-      const prev = prevRows?.[0]?.date;
-      if (!prev) {
-        ["hlNew","hlUp","hlDown","hlGone"].forEach(id => document.getElementById(id).innerHTML = '<div class="hl-empty">비교할 이전 데이터가 없습니다</div>');
+async function loadHighlights() {
+  if (!db) return;
+  try {
+    // 1) 전체 최신 날짜
+    const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
+    if (!latestRows?.length) return;
+    const latest = latestRows[0].date;
+ 
+    // 2) 직전 영업일
+    const { data: prevRows } = await db.from("holdings").select("date").lt("date", latest).order("date", { ascending: false }).limit(1);
+    const prev = prevRows?.[0]?.date;
+    if (!prev) {
+      ["hlNew","hlUp","hlDown","hlGone"].forEach(id =>
+        document.getElementById(id).innerHTML = '<div class="hl-empty">비교할 이전 데이터가 없습니다</div>'
+      );
+      return;
+    }
+ 
+    // 3) 두 날짜 전체 데이터 (페이지네이션)
+    const fetchAll = async (date) => {
+      const all = [];
+      let from = 0;
+      while (true) {
+        const { data } = await db.from("holdings")
+          .select("etf_idx, code, name, weight")
+          .eq("date", date)
+          .range(from, from + 999);
+        if (!data?.length) break;
+        all.push(...data);
+        if (data.length < 1000) break;
+        from += 1000;
+      }
+      return all;
+    };
+    const [curAll, prevAll] = await Promise.all([fetchAll(latest), fetchAll(prev)]);
+ 
+    // 4) 종목 코드 기준으로 합산
+    //    같은 종목이 여러 ETF에 있으면 weight 합산, etfCount로 몇 개 ETF에 있는지 기록
+    const aggregate = (rows) => {
+      const map = {};
+      for (const r of rows) {
+        if (!map[r.code]) {
+          map[r.code] = { code: r.code, name: r.name, weight: 0, etfCount: 0 };
+        }
+        map[r.code].weight += (r.weight || 0);
+        map[r.code].etfCount += 1;
+      }
+      return map; // { code -> { code, name, weight, etfCount } }
+    };
+ 
+    const curMap  = aggregate(curAll);
+    const prevMap = aggregate(prevAll);
+ 
+    const newItems  = [];
+    const upItems   = [];
+    const downItems = [];
+    const goneItems = [];
+ 
+    // 현재 기준 순회
+    for (const code of Object.keys(curMap)) {
+      const cur  = curMap[code];
+      const prv  = prevMap[code];
+ 
+      if (!prv) {
+        // 신규 편입 (이전에 없던 종목)
+        newItems.push({ ...cur, change: cur.weight });
+      } else {
+        const diff = cur.weight - prv.weight;
+        if (diff > 0.3) {
+          upItems.push({ ...cur, change: diff });
+        } else if (diff < -0.3) {
+          downItems.push({ ...cur, change: diff });
+        }
+      }
+    }
+ 
+    // 제외 종목 (현재에 없는데 이전에 있던 것)
+    for (const code of Object.keys(prevMap)) {
+      if (!curMap[code]) {
+        const prv = prevMap[code];
+        goneItems.push({ ...prv, change: -prv.weight });
+      }
+    }
+ 
+    newItems.sort((a, b)  => b.change - a.change);
+    upItems.sort((a, b)   => b.change - a.change);
+    downItems.sort((a, b) => a.change - b.change);
+    goneItems.sort((a, b) => a.change - b.change);
+ 
+    const renderList = (id, items, fmtChange) => {
+      const el = document.getElementById(id);
+      if (!items.length) {
+        el.innerHTML = '<div class="hl-empty">변화 없음</div>';
         return;
       }
-
-      // 3) 두 날짜 데이터 가져오기 (페이지네이션)
-      const fetchAll = async (date) => {
-        const all = [];
-        let from = 0;
-        while (true) {
-          const { data } = await db.from("holdings").select("etf_idx, etf_name, code, name, weight, qty").eq("date", date).range(from, from + 999);
-          if (!data?.length) break;
-          all.push(...data);
-          if (data.length < 1000) break;
-          from += 1000;
-        }
-        return all;
-      };
-      const [curAll, prevAll] = await Promise.all([fetchAll(latest), fetchAll(prev)]);
-
-      // 4) ETF별로 변화 계산
-      const newItems = [], upItems = [], downItems = [], goneItems = [];
-      const groupBy = (arr, keyFn) => arr.reduce((m, x) => { const k = keyFn(x); (m[k] = m[k] || []).push(x); return m; }, {});
-      const curByEtf = groupBy(curAll, x => x.etf_idx);
-      const prevByEtf = groupBy(prevAll, x => x.etf_idx);
-
-      for (const etfIdx of Object.keys(curByEtf)) {
-        const cur = curByEtf[etfIdx];
-        const prv = prevByEtf[etfIdx] || [];
-        const prvMap = Object.fromEntries(prv.map(x => [x.code, x]));
-        const curMap = Object.fromEntries(cur.map(x => [x.code, x]));
-        const etfName = cur[0]?.etf_name || `ETF ${etfIdx}`;
-
-        for (const c of cur) {
-          const p = prvMap[c.code];
-          if (!p) {
-            newItems.push({ ...c, etfIdx: parseInt(etfIdx), etfName, change: c.weight });
-          } else {
-            const diff = c.weight - p.weight;
-            if (diff > 0.3) upItems.push({ ...c, etfIdx: parseInt(etfIdx), etfName, change: diff });
-            else if (diff < -0.3) downItems.push({ ...c, etfIdx: parseInt(etfIdx), etfName, change: diff });
-          }
-        }
-        for (const p of prv) {
-          if (!curMap[p.code]) goneItems.push({ ...p, etfIdx: parseInt(etfIdx), etfName, change: -p.weight });
-        }
-      }
-
-      newItems.sort((a, b) => b.change - a.change);
-      upItems.sort((a, b) => b.change - a.change);
-      downItems.sort((a, b) => a.change - b.change);
-      goneItems.sort((a, b) => a.change - b.change);
-
-      const renderList = (id, items, fmtChange) => {
-        const el = document.getElementById(id);
-        if (!items.length) { el.innerHTML = '<div class="hl-empty">변화 없음</div>'; return; }
-        el.innerHTML = items.slice(0, 5).map(x => {
-          const safeName = x.name.replace(/'/g, "\\'");
-          const safeCode = (x.code || "").replace(/'/g, "\\'");
-          return `<div class="hl-row">
-            <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')" title="${x.etfName}">${x.name}</span>
-            <span class="hl-val">${fmtChange(x.change)}</span>
-          </div>`;
-        }).join("");
-      };
-      renderList("hlNew",  newItems,  v => `<span class="pos">${v.toFixed(1)}%</span>`);
-      renderList("hlUp",   upItems,   v => `<span class="pos">+${v.toFixed(2)}%</span>`);
-      renderList("hlDown", downItems, v => `<span class="neg">${v.toFixed(2)}%</span>`);
-      renderList("hlGone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
-    } catch (e) {
-      console.error("Highlights 로딩 실패:", e);
-    }
+      el.innerHTML = items.slice(0, 5).map(x => {
+        const safeName = x.name.replace(/'/g, "\\'");
+        const safeCode = (x.code || "").replace(/'/g, "\\'");
+        // etfCount > 1 이면 "(n개 ETF)" 표시
+        const etfBadge = x.etfCount > 1
+          ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+          : "";
+        return `<div class="hl-row">
+          <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
+          <span class="hl-val">${fmtChange(x.change)}</span>
+        </div>`;
+      }).join("");
+    };
+ 
+    renderList("hlNew",  newItems,  v => `<span class="pos">${v.toFixed(1)}%</span>`);
+    renderList("hlUp",   upItems,   v => `<span class="pos">+${v.toFixed(2)}%</span>`);
+    renderList("hlDown", downItems, v => `<span class="neg">${v.toFixed(2)}%</span>`);
+    renderList("hlGone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
+ 
+  } catch (e) {
+    console.error("Highlights 로딩 실패:", e);
   }
+}
 
   // =========================================================
   // ② 종목 모달 + ④ 추이 차트
