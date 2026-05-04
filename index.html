@@ -189,6 +189,22 @@
       .header-row { flex-direction: column; align-items: flex-start; }
       .search-wrap { max-width: 100%; }
     }
+      /* ===== 기존 CSS 블록 안에 추가) ===== */
+  .hl-tabs {
+    display: flex; gap: 0; margin-bottom: 10px;
+    background: rgba(255,255,255,0.03); border-radius: 8px; padding: 2px;
+  }
+  .hl-tab {
+    flex: 1; padding: 4px 0; text-align: center; font-size: 11px; font-weight: 700;
+    cursor: pointer; border-radius: 6px; color: #475569; transition: all 0.18s;
+    letter-spacing: 0.5px;
+  }
+  .hl-tab.active {
+    background: rgba(0,212,170,0.12); color: #00D4AA;
+  }
+  .hl-pane { display: none; }
+  .hl-pane.active { display: block; }
+    
   </style>
 </head>
 <body>
@@ -214,13 +230,64 @@
   <div id="errorBox" style="display:none;padding:14px 18px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:10px;margin-bottom:16px;font-size:13px;color:#fca5a5;line-height:1.6"></div>
 
   <!-- ① 오늘의 변화 하이라이트 -->
-  <div class="highlights" id="highlights">
-    <div class="hl-card"><div class="hl-title"><span class="hl-icon">🏆</span>현재 보유 TOP</div><div class="hl-list" id="hlHold"><div class="hl-empty">로딩 중...</div></div></div>
-    <div class="hl-card"><div class="hl-title"><span class="hl-icon">✨</span>신규 편입 TOP</div><div class="hl-list" id="hlNew"><div class="hl-empty">로딩 중...</div></div></div>
-    <div class="hl-card"><div class="hl-title"><span class="hl-icon">📈</span>비중 증가 TOP</div><div class="hl-list" id="hlUp"><div class="hl-empty">로딩 중...</div></div></div>
-    <div class="hl-card"><div class="hl-title"><span class="hl-icon">📉</span>비중 감소 TOP</div><div class="hl-list" id="hlDown"><div class="hl-empty">로딩 중...</div></div></div>
-    <div class="hl-card"><div class="hl-title"><span class="hl-icon">🚪</span>제외 종목 TOP</div><div class="hl-list" id="hlGone"><div class="hl-empty">로딩 중...</div></div></div>
+<div class="highlights" id="highlights">
+
+  <!-- 현재 보유 TOP -->
+  <div class="hl-card">
+    <div class="hl-title"><span class="hl-icon">🏆</span>현재 보유 TOP</div>
+    <div class="hl-tabs">
+      <div class="hl-tab active" onclick="switchHlTab('hold','kr',this)">🇰🇷 국내</div>
+      <div class="hl-tab"        onclick="switchHlTab('hold','gl',this)">🌍 해외</div>
+    </div>
+    <div class="hl-pane active" id="hlHold-kr"></div>
+    <div class="hl-pane"        id="hlHold-gl"></div>
   </div>
+
+  <!-- 신규 편입 TOP -->
+  <div class="hl-card">
+    <div class="hl-title"><span class="hl-icon">✨</span>신규 편입 TOP</div>
+    <div class="hl-tabs">
+      <div class="hl-tab active" onclick="switchHlTab('new','kr',this)">🇰🇷 국내</div>
+      <div class="hl-tab"        onclick="switchHlTab('new','gl',this)">🌍 해외</div>
+    </div>
+    <div class="hl-pane active" id="hlNew-kr"></div>
+    <div class="hl-pane"        id="hlNew-gl"></div>
+  </div>
+
+  <!-- 비중 증가 TOP -->
+  <div class="hl-card">
+    <div class="hl-title"><span class="hl-icon">📈</span>비중 증가 TOP</div>
+    <div class="hl-tabs">
+      <div class="hl-tab active" onclick="switchHlTab('up','kr',this)">🇰🇷 국내</div>
+      <div class="hl-tab"        onclick="switchHlTab('up','gl',this)">🌍 해외</div>
+    </div>
+    <div class="hl-pane active" id="hlUp-kr"></div>
+    <div class="hl-pane"        id="hlUp-gl"></div>
+  </div>
+
+  <!-- 비중 감소 TOP -->
+  <div class="hl-card">
+    <div class="hl-title"><span class="hl-icon">📉</span>비중 감소 TOP</div>
+    <div class="hl-tabs">
+      <div class="hl-tab active" onclick="switchHlTab('down','kr',this)">🇰🇷 국내</div>
+      <div class="hl-tab"        onclick="switchHlTab('down','gl',this)">🌍 해외</div>
+    </div>
+    <div class="hl-pane active" id="hlDown-kr"></div>
+    <div class="hl-pane"        id="hlDown-gl"></div>
+  </div>
+
+  <!-- 제외 종목 TOP -->
+  <div class="hl-card">
+    <div class="hl-title"><span class="hl-icon">🚪</span>제외 종목 TOP</div>
+    <div class="hl-tabs">
+      <div class="hl-tab active" onclick="switchHlTab('gone','kr',this)">🇰🇷 국내</div>
+      <div class="hl-tab"        onclick="switchHlTab('gone','gl',this)">🌍 해외</div>
+    </div>
+    <div class="hl-pane active" id="hlGone-kr"></div>
+    <div class="hl-pane"        id="hlGone-gl"></div>
+  </div>
+
+</div>
 
   <!-- 모드 전환 ⑤ -->
   <div class="mode-tabs">
@@ -778,7 +845,16 @@
     }).join("");
     document.getElementById("tableArea").innerHTML = `<table><thead><tr>${ths}</tr></thead><tbody>${trs.join("")}</tbody></table>`;
   }
-
+  
+  /* ===== 탭 전환 함수 추가 (loadHighlights 위에 추가) ===== */
+  function switchHlTab(card, region, el) {
+    const cardEl = el.closest('.hl-card');
+    cardEl.querySelectorAll('.hl-tab').forEach(t => t.classList.remove('active'));
+    cardEl.querySelectorAll('.hl-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    const cap = card.charAt(0).toUpperCase() + card.slice(1);
+    document.getElementById(`hl${cap}-${region}`)?.classList.add('active');
+  }
   // =========================================================
   // ① 오늘의 변화 하이라이트 (18개 ETF 전체 합산, 종목 중복 제거)
   // =========================================================
