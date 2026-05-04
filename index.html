@@ -848,12 +848,12 @@
         return all;
       };
 
+      // 18개 ETF 전체를 종목 기준으로 합산
       const aggregate = (rows) => {
         const map = {};
         for (const r of rows) {
-          // trim() 처리: DB에 공백이 포함된 코드가 저장된 경우 대응
           const code = (r.code || "").trim();
-          const key = code || r.name; // 코드 없으면 이름으로 키
+          const key = code || r.name;
           if (!map[key]) map[key] = { code, name: r.name, weight: 0, value: 0, etfCount: 0 };
           map[key].weight   += (r.weight || 0);
           map[key].value    += (r.value  || 0);
@@ -870,29 +870,15 @@
         return (v / 10_000).toFixed(0) + "만원";
       };
 
-      // 국내/해외 분리: aggregate 결과에서 code(trim 후) 기준으로 판별
-      const split = (items) => ({
-        kr: items.filter(x => isKorean(x.code)),
-        gl: items.filter(x => !isKorean(x.code)),
-      });
-
       const curAll = await fetchAll(latest);
       const curMap = aggregate(curAll);
 
-      // 현재 보유 TOP (평가금액 합산 기준)
-      const holdAll   = Object.values(curMap).sort((a, b) => b.value - a.value);
-      const holdSplit = split(holdAll);
+      // ===== 변화 계산 =====
+      let newItems = [], upItems = [], downItems = [], goneItems = [];
 
-      if (!prev) {
-        ["New","Up","Down","Gone"].forEach(id => {
-          document.getElementById(`hl${id}-kr`).innerHTML = '<div class="hl-empty">이전 데이터 없음</div>';
-          document.getElementById(`hl${id}-gl`).innerHTML = '<div class="hl-empty">이전 데이터 없음</div>';
-        });
-      } else {
+      if (prev) {
         const prevAll = await fetchAll(prev);
         const prevMap = aggregate(prevAll);
-
-        const newItems = [], upItems = [], downItems = [], goneItems = [];
 
         for (const key of Object.keys(curMap)) {
           const cur = curMap[key];
@@ -913,55 +899,46 @@
         upItems.sort((a, b)   => b.change - a.change);
         downItems.sort((a, b) => a.change - b.change);
         goneItems.sort((a, b) => a.change - b.change);
-
-        const renderSplit = (baseId, items, fmtChange) => {
-          const kr = items.filter(x => isKorean(x.code));
-          const gl = items.filter(x => !isKorean(x.code));
-          ["kr","gl"].forEach(region => {
-            const el = document.getElementById(`hl${baseId}-${region}`);
-            if (!el) return;
-            const list = region === "kr" ? kr : gl;
-            if (!list.length) { el.innerHTML = '<div class="hl-empty">변화 없음</div>'; return; }
-            el.innerHTML = list.slice(0, 5).map(x => {
-              const safeName = x.name.replace(/'/g, "\\'");
-              const safeCode = x.code.replace(/'/g, "\\'");
-              const etfBadge = x.etfCount > 1
-                ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-                : "";
-              return `<div class="hl-row">
-                <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-                <span class="hl-val">${fmtChange(x.change)}</span>
-              </div>`;
-            }).join("");
-          });
-        };
-
-        renderSplit("New",  newItems,  v => `<span class="pos">${v.toFixed(1)}%</span>`);
-        renderSplit("Up",   upItems,   v => `<span class="pos">+${v.toFixed(2)}%</span>`);
-        renderSplit("Down", downItems, v => `<span class="neg">${v.toFixed(2)}%</span>`);
-        renderSplit("Gone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
       }
 
-      // 현재 보유 TOP 렌더링
-      const holdKr = holdAll.filter(x => isKorean(x.code));
-      const holdGl = holdAll.filter(x => !isKorean(x.code));
-      ["kr","gl"].forEach(region => {
-        const el = document.getElementById(`hlHold-${region}`);
-        if (!el) return;
-        const list = region === "kr" ? holdKr : holdGl;
-        if (!list.length) { el.innerHTML = '<div class="hl-empty">데이터 없음</div>'; return; }
-        el.innerHTML = list.slice(0, 5).map(x => {
-          const safeName = x.name.replace(/'/g, "\\'");
-          const safeCode = x.code.replace(/'/g, "\\'");
-          const etfBadge = x.etfCount > 1
-            ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-            : "";
-          return `<div class="hl-row">
-            <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-            <span class="hl-val" style="color:#00D4AA;font-family:monospace">${fmtValue(x.value)}</span>
-          </div>`;
-        }).join("");
-      });
+      // ===== 종목 코드 기준으로 국내/해외 분리 후 렌더링 =====
+      const renderCard = (baseId, items, fmtChange, emptyMsg) => {
+        const krList = items.filter(x => isKorean(x.code)).slice(0, 5);
+        const glList = items.filter(x => !isKorean(x.code)).slice(0, 5);
+
+        [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
+          const el = document.getElementById(`hl${baseId}-${region}`);
+          if (!el) return;
+          if (!list.length) {
+            el.innerHTML = `<div class="hl-empty">${emptyMsg}</div>`;
+            return;
+          }
+          el.innerHTML = list.map(x => {
+            const safeName = x.name.replace(/'/g, "\\'");
+            const safeCode = (x.code || "").replace(/'/g, "\\'");
+            const etfBadge = x.etfCount > 1
+              ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+              : "";
+            return `<div class="hl-row">
+              <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
+              <span class="hl-val">${fmtChange(x)}</span>
+            </div>`;
+          }).join("");
+        });
+      };
+
+      // 현재 보유 TOP — 평가금액 합산 기준
+      const holdAll = Object.values(curMap).sort((a, b) => b.value - a.value);
+      renderCard("Hold", holdAll,
+        x => `<span style="color:#00D4AA;font-family:monospace">${fmtValue(x.value)}</span>`,
+        "데이터 없음");
+
+      // 변화 카드 4종
+      const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
+      renderCard("New",  newItems,  x => `<span class="pos">${x.change.toFixed(1)}%</span>`,  emptyMsg);
+      renderCard("Up",   upItems,   x => `<span class="pos">+${x.change.toFixed(2)}%</span>`, emptyMsg);
+      renderCard("Down", downItems, x => `<span class="neg">${x.change.toFixed(2)}%</span>`,  emptyMsg);
+      renderCard("Gone", goneItems, x => `<span class="neg">${x.change.toFixed(1)}%</span>`,  emptyMsg);
 
     } catch (e) {
       console.error("Highlights 로딩 실패:", e);
