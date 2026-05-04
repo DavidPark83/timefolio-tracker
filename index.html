@@ -37,7 +37,7 @@
 
     /* ===== 오늘의 변화 하이라이트 ===== */
     .highlights {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;
     }
     .hl-card {
       background: #0d1526; border: 1px solid #1e2d4a; border-radius: 12px; padding: 14px 16px;
@@ -82,7 +82,7 @@
     .quick-btn.active { background: rgba(0,212,170,0.1); border-color: #00D4AA; color: #00D4AA; }
 
     /* ===== 통계 ===== */
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1e2d4a; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+    .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: #1e2d4a; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
     .stat { background: #0d1526; padding: 16px 20px; }
     .stat-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
     .stat-value { font-size: 20px; font-weight: 700; font-family: monospace; color: #f8fafc; }
@@ -215,6 +215,7 @@
 
   <!-- ① 오늘의 변화 하이라이트 -->
   <div class="highlights" id="highlights">
+    <div class="hl-card"><div class="hl-title"><span class="hl-icon">🏆</span>현재 보유 TOP</div><div class="hl-list" id="hlHold"><div class="hl-empty">로딩 중...</div></div></div>
     <div class="hl-card"><div class="hl-title"><span class="hl-icon">✨</span>신규 편입 TOP</div><div class="hl-list" id="hlNew"><div class="hl-empty">로딩 중...</div></div></div>
     <div class="hl-card"><div class="hl-title"><span class="hl-icon">📈</span>비중 증가 TOP</div><div class="hl-list" id="hlUp"><div class="hl-empty">로딩 중...</div></div></div>
     <div class="hl-card"><div class="hl-title"><span class="hl-icon">📉</span>비중 감소 TOP</div><div class="hl-list" id="hlDown"><div class="hl-empty">로딩 중...</div></div></div>
@@ -784,22 +785,13 @@
 async function loadHighlights() {
   if (!db) return;
   try {
-    // 1) 전체 최신 날짜
     const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
     if (!latestRows?.length) return;
     const latest = latestRows[0].date;
- 
-    // 2) 직전 영업일
+
     const { data: prevRows } = await db.from("holdings").select("date").lt("date", latest).order("date", { ascending: false }).limit(1);
     const prev = prevRows?.[0]?.date;
-    if (!prev) {
-      ["hlNew","hlUp","hlDown","hlGone"].forEach(id =>
-        document.getElementById(id).innerHTML = '<div class="hl-empty">비교할 이전 데이터가 없습니다</div>'
-      );
-      return;
-    }
- 
-    // 3) 두 날짜 전체 데이터 (페이지네이션)
+
     const fetchAll = async (date) => {
       const all = [];
       let from = 0;
@@ -815,86 +807,92 @@ async function loadHighlights() {
       }
       return all;
     };
-    const [curAll, prevAll] = await Promise.all([fetchAll(latest), fetchAll(prev)]);
- 
-    // 4) 종목 코드 기준으로 합산
-    //    같은 종목이 여러 ETF에 있으면 weight 합산, etfCount로 몇 개 ETF에 있는지 기록
+
     const aggregate = (rows) => {
       const map = {};
       for (const r of rows) {
-        if (!map[r.code]) {
-          map[r.code] = { code: r.code, name: r.name, weight: 0, etfCount: 0 };
-        }
+        if (!map[r.code]) map[r.code] = { code: r.code, name: r.name, weight: 0, etfCount: 0 };
         map[r.code].weight += (r.weight || 0);
         map[r.code].etfCount += 1;
       }
-      return map; // { code -> { code, name, weight, etfCount } }
+      return map;
     };
- 
-    const curMap  = aggregate(curAll);
-    const prevMap = aggregate(prevAll);
- 
-    const newItems  = [];
-    const upItems   = [];
-    const downItems = [];
-    const goneItems = [];
- 
-    // 현재 기준 순회
-    for (const code of Object.keys(curMap)) {
-      const cur  = curMap[code];
-      const prv  = prevMap[code];
- 
-      if (!prv) {
-        // 신규 편입 (이전에 없던 종목)
-        newItems.push({ ...cur, change: cur.weight });
-      } else {
-        const diff = cur.weight - prv.weight;
-        if (diff > 0.3) {
-          upItems.push({ ...cur, change: diff });
-        } else if (diff < -0.3) {
-          downItems.push({ ...cur, change: diff });
+
+    const curAll = await fetchAll(latest);
+    const curMap = aggregate(curAll);
+
+    // ── 현재 보유 TOP: 최신일 기준 비중 합산 상위
+    const holdItems = Object.values(curMap).sort((a, b) => b.weight - a.weight);
+
+    if (!prev) {
+      ["hlNew","hlUp","hlDown","hlGone"].forEach(id =>
+        document.getElementById(id).innerHTML = '<div class="hl-empty">비교할 이전 데이터가 없습니다</div>'
+      );
+    } else {
+      const prevAll = await fetchAll(prev);
+      const prevMap = aggregate(prevAll);
+
+      const newItems = [], upItems = [], downItems = [], goneItems = [];
+
+      for (const code of Object.keys(curMap)) {
+        const cur = curMap[code];
+        const prv = prevMap[code];
+        if (!prv) {
+          newItems.push({ ...cur, change: cur.weight });
+        } else {
+          const diff = cur.weight - prv.weight;
+          if (diff > 0.3)       upItems.push({ ...cur, change: diff });
+          else if (diff < -0.3) downItems.push({ ...cur, change: diff });
         }
       }
-    }
- 
-    // 제외 종목 (현재에 없는데 이전에 있던 것)
-    for (const code of Object.keys(prevMap)) {
-      if (!curMap[code]) {
-        const prv = prevMap[code];
-        goneItems.push({ ...prv, change: -prv.weight });
+      for (const code of Object.keys(prevMap)) {
+        if (!curMap[code]) {
+          const prv = prevMap[code];
+          goneItems.push({ ...prv, change: -prv.weight });
+        }
       }
+
+      newItems.sort((a, b)  => b.change - a.change);
+      upItems.sort((a, b)   => b.change - a.change);
+      downItems.sort((a, b) => a.change - b.change);
+      goneItems.sort((a, b) => a.change - b.change);
+
+      const renderList = (id, items, fmtChange) => {
+        const el = document.getElementById(id);
+        if (!items.length) { el.innerHTML = '<div class="hl-empty">변화 없음</div>'; return; }
+        el.innerHTML = items.slice(0, 5).map(x => {
+          const safeName = x.name.replace(/'/g, "\\'");
+          const safeCode = (x.code || "").replace(/'/g, "\\'");
+          const etfBadge = x.etfCount > 1
+            ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+            : "";
+          return `<div class="hl-row">
+            <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
+            <span class="hl-val">${fmtChange(x.change)}</span>
+          </div>`;
+        }).join("");
+      };
+
+      renderList("hlNew",  newItems,  v => `<span class="pos">${v.toFixed(1)}%</span>`);
+      renderList("hlUp",   upItems,   v => `<span class="pos">+${v.toFixed(2)}%</span>`);
+      renderList("hlDown", downItems, v => `<span class="neg">${v.toFixed(2)}%</span>`);
+      renderList("hlGone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
     }
- 
-    newItems.sort((a, b)  => b.change - a.change);
-    upItems.sort((a, b)   => b.change - a.change);
-    downItems.sort((a, b) => a.change - b.change);
-    goneItems.sort((a, b) => a.change - b.change);
- 
-    const renderList = (id, items, fmtChange) => {
-      const el = document.getElementById(id);
-      if (!items.length) {
-        el.innerHTML = '<div class="hl-empty">변화 없음</div>';
-        return;
-      }
-      el.innerHTML = items.slice(0, 5).map(x => {
-        const safeName = x.name.replace(/'/g, "\\'");
-        const safeCode = (x.code || "").replace(/'/g, "\\'");
-        // etfCount > 1 이면 "(n개 ETF)" 표시
-        const etfBadge = x.etfCount > 1
-          ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-          : "";
-        return `<div class="hl-row">
-          <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-          <span class="hl-val">${fmtChange(x.change)}</span>
-        </div>`;
-      }).join("");
-    };
- 
-    renderList("hlNew",  newItems,  v => `<span class="pos">${v.toFixed(1)}%</span>`);
-    renderList("hlUp",   upItems,   v => `<span class="pos">+${v.toFixed(2)}%</span>`);
-    renderList("hlDown", downItems, v => `<span class="neg">${v.toFixed(2)}%</span>`);
-    renderList("hlGone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
- 
+
+    // ── 현재 보유 TOP 렌더링 (비교 여부와 무관하게 항상 표시)
+    const elHold = document.getElementById("hlHold");
+    elHold.innerHTML = holdItems.slice(0, 5).map(x => {
+      const safeName = x.name.replace(/'/g, "\\'");
+      const safeCode = (x.code || "").replace(/'/g, "\\'");
+      const etfBadge = x.etfCount > 1
+        ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+        : "";
+      return `<div class="hl-row">
+        <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
+        <span class="hl-val" style="color:#00D4AA;font-family:monospace">${x.weight.toFixed(1)}%</span>
+      </div>`;
+    }).join("");
+
   } catch (e) {
     console.error("Highlights 로딩 실패:", e);
   }
