@@ -915,11 +915,12 @@
         goneItems.sort((a, b) => a.change - b.change);
 
         const renderSplit = (baseId, items, fmtChange) => {
-          const s = split(items);
+          const kr = items.filter(x => isKorean(x.code));
+          const gl = items.filter(x => !isKorean(x.code));
           ["kr","gl"].forEach(region => {
             const el = document.getElementById(`hl${baseId}-${region}`);
             if (!el) return;
-            const list = s[region];
+            const list = region === "kr" ? kr : gl;
             if (!list.length) { el.innerHTML = '<div class="hl-empty">변화 없음</div>'; return; }
             el.innerHTML = list.slice(0, 5).map(x => {
               const safeName = x.name.replace(/'/g, "\\'");
@@ -942,10 +943,12 @@
       }
 
       // 현재 보유 TOP 렌더링
+      const holdKr = holdAll.filter(x => isKorean(x.code));
+      const holdGl = holdAll.filter(x => !isKorean(x.code));
       ["kr","gl"].forEach(region => {
         const el = document.getElementById(`hlHold-${region}`);
         if (!el) return;
-        const list = holdSplit[region];
+        const list = region === "kr" ? holdKr : holdGl;
         if (!list.length) { el.innerHTML = '<div class="hl-empty">데이터 없음</div>'; return; }
         el.innerHTML = list.slice(0, 5).map(x => {
           const safeName = x.name.replace(/'/g, "\\'");
