@@ -858,6 +858,11 @@
   // =========================================================
   // ① 오늘의 변화 하이라이트 (18개 ETF 전체 합산, 종목 중복 제거)
   // =========================================================
+// 종목 코드로 국내/해외 판별 (6자리 숫자 → 국내)
+function isKorean(code) {
+  return /^\d{6}$/.test(code || "");
+}
+
 async function loadHighlights() {
   if (!db) return;
   try {
@@ -884,7 +889,6 @@ async function loadHighlights() {
       return all;
     };
 
-    // weight 합산 (변화 감지용) + value 합산 (보유 TOP용) 동시 처리
     const aggregate = (rows) => {
       const map = {};
       for (const r of rows) {
@@ -896,26 +900,32 @@ async function loadHighlights() {
       return map;
     };
 
-    const curAll = await fetchAll(latest);
-    const curMap = aggregate(curAll);
-
-    // ── 현재 보유 TOP: 평가금액 합산 기준 정렬
-    const holdItems = Object.values(curMap).sort((a, b) => b.value - a.value);
-
-    // ── 평가금액 포맷: 억원 단위
     const fmtValue = (v) => {
       if (!v) return "—";
       const eok = v / 100_000_000;
       if (eok >= 1000) return (eok / 1000).toFixed(1) + "조원";
       if (eok >= 1)    return eok.toFixed(0) + "억원";
-      const man = v / 10_000;
-      return man.toFixed(0) + "만원";
+      return (v / 10_000).toFixed(0) + "만원";
     };
 
+    // 국내/해외 분리 헬퍼
+    const split = (items) => ({
+      kr: items.filter(x => isKorean(x.code)),
+      gl: items.filter(x => !isKorean(x.code)),
+    });
+
+    const curAll = await fetchAll(latest);
+    const curMap = aggregate(curAll);
+
+    // ── 현재 보유 TOP (평가금액 합산 기준)
+    const holdAll  = Object.values(curMap).sort((a, b) => b.value - a.value);
+    const holdSplit = split(holdAll);
+
     if (!prev) {
-      ["hlNew","hlUp","hlDown","hlGone"].forEach(id =>
-        document.getElementById(id).innerHTML = '<div class="hl-empty">비교할 이전 데이터가 없습니다</div>'
-      );
+      ["hlNew","hlUp","hlDown","hlGone"].forEach(id => {
+        document.getElementById(id+"-kr").innerHTML = '<div class="hl-empty">이전 데이터 없음</div>';
+        document.getElementById(id+"-gl").innerHTML = '<div class="hl-empty">이전 데이터 없음</div>';
+      });
     } else {
       const prevAll = await fetchAll(prev);
       const prevMap = aggregate(prevAll);
@@ -934,10 +944,7 @@ async function loadHighlights() {
         }
       }
       for (const code of Object.keys(prevMap)) {
-        if (!curMap[code]) {
-          const prv = prevMap[code];
-          goneItems.push({ ...prv, change: -prv.weight });
-        }
+        if (!curMap[code]) goneItems.push({ ...prevMap[code], change: -prevMap[code].weight });
       }
 
       newItems.sort((a, b)  => b.change - a.change);
@@ -945,41 +952,51 @@ async function loadHighlights() {
       downItems.sort((a, b) => a.change - b.change);
       goneItems.sort((a, b) => a.change - b.change);
 
-      const renderList = (id, items, fmtChange) => {
-        const el = document.getElementById(id);
-        if (!items.length) { el.innerHTML = '<div class="hl-empty">변화 없음</div>'; return; }
-        el.innerHTML = items.slice(0, 5).map(x => {
-          const safeName = x.name.replace(/'/g, "\\'");
-          const safeCode = (x.code || "").replace(/'/g, "\\'");
-          const etfBadge = x.etfCount > 1
-            ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-            : "";
-          return `<div class="hl-row">
-            <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-            <span class="hl-val">${fmtChange(x.change)}</span>
-          </div>`;
-        }).join("");
+      const renderSplit = (baseId, items, fmtChange) => {
+        const s = split(items);
+        ["kr","gl"].forEach(region => {
+          const el = document.getElementById(`${baseId}-${region}`);
+          if (!el) return;
+          const list = s[region];
+          if (!list.length) { el.innerHTML = '<div class="hl-empty">변화 없음</div>'; return; }
+          el.innerHTML = list.slice(0, 5).map(x => {
+            const safeName = x.name.replace(/'/g, "\\'");
+            const safeCode = (x.code || "").replace(/'/g, "\\'");
+            const etfBadge = x.etfCount > 1
+              ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+              : "";
+            return `<div class="hl-row">
+              <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
+              <span class="hl-val">${fmtChange(x.change)}</span>
+            </div>`;
+          }).join("");
+        });
       };
 
-      renderList("hlNew",  newItems,  v => `<span class="pos">${v.toFixed(1)}%</span>`);
-      renderList("hlUp",   upItems,   v => `<span class="pos">+${v.toFixed(2)}%</span>`);
-      renderList("hlDown", downItems, v => `<span class="neg">${v.toFixed(2)}%</span>`);
-      renderList("hlGone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
+      renderSplit("hlNew",  newItems,  v => `<span class="pos">${v.toFixed(1)}%</span>`);
+      renderSplit("hlUp",   upItems,   v => `<span class="pos">+${v.toFixed(2)}%</span>`);
+      renderSplit("hlDown", downItems, v => `<span class="neg">${v.toFixed(2)}%</span>`);
+      renderSplit("hlGone", goneItems, v => `<span class="neg">${v.toFixed(1)}%</span>`);
     }
 
     // ── 현재 보유 TOP 렌더링
-    const elHold = document.getElementById("hlHold");
-    elHold.innerHTML = holdItems.slice(0, 5).map(x => {
-      const safeName = x.name.replace(/'/g, "\\'");
-      const safeCode = (x.code || "").replace(/'/g, "\\'");
-      const etfBadge = x.etfCount > 1
-        ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-        : "";
-      return `<div class="hl-row">
-        <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-        <span class="hl-val" style="color:#00D4AA;font-family:monospace">${fmtValue(x.value)}</span>
-      </div>`;
-    }).join("");
+    ["kr","gl"].forEach(region => {
+      const el = document.getElementById(`hlHold-${region}`);
+      if (!el) return;
+      const list = holdSplit[region];
+      if (!list.length) { el.innerHTML = '<div class="hl-empty">데이터 없음</div>'; return; }
+      el.innerHTML = list.slice(0, 5).map(x => {
+        const safeName = x.name.replace(/'/g, "\\'");
+        const safeCode = (x.code || "").replace(/'/g, "\\'");
+        const etfBadge = x.etfCount > 1
+          ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+          : "";
+        return `<div class="hl-row">
+          <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
+          <span class="hl-val" style="color:#00D4AA;font-family:monospace">${fmtValue(x.value)}</span>
+        </div>`;
+      }).join("");
+    });
 
   } catch (e) {
     console.error("Highlights 로딩 실패:", e);
