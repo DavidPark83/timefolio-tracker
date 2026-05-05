@@ -988,6 +988,8 @@
         "데이터 없음");
 
       // 변화 카드 4종
+      const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";   // ★ 이 한 줄 추가!
+
       // 부호가 들어간 억원 포맷터 (변화량 표시용)
       const fmtEokSigned = (v) => {
         if (v == null) return "—";
