@@ -640,14 +640,27 @@
       return;
     }
     if (!db) return;
-    const { data, error } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(5000);
-    if (error) {
-      showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
-      return;
+
+    // ★ 페이지네이션으로 모든 date를 가져옴 (Supabase 1000행 제한 우회)
+    const allRows = [];
+    let from = 0;
+    while (true) {
+      const { data, error } = await db.from("holdings")
+        .select("date")
+        .order("date", { ascending: false })
+        .range(from, from + 999);
+      if (error) {
+        showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
+        return;
+      }
+      if (!data?.length) break;
+      allRows.push(...data);
+      if (data.length < 1000) break;
+      from += 1000;
     }
-    if (!data?.length) return;
+    if (!allRows.length) return;
     hideError();
-    globalAllDates = [...new Set(data.map(d => d.date))];
+    globalAllDates = [...new Set(allRows.map(d => d.date))];
 
     const s1 = document.getElementById("globalDateSelect");
     const s2 = document.getElementById("globalCompareSelect");
