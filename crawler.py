@@ -103,7 +103,44 @@ def to_float(s) -> float:
         return 0.0
 
 
+def normalize_stock_code(raw) -> str:
+    """
+    종목코드를 항상 6자리 zero-padded 문자열로 정규화.
+    
+    한국 거래소 종목코드는 정확히 6자리 문자열이어야 한다 (예: 005930, 000660).
+    pandas가 실수로 numeric 추론을 했거나, 이미 망가진 값("660.0")이 들어와도 복구한다.
+    
+    예시:
+        "000660"  → "000660"
+        "660.0"   → "000660"  (망가진 값 복구)
+        660       → "000660"
+        660.0     → "000660"
+        "CASH"    → "CASH"    (비숫자는 그대로)
+        None/""   → ""
+    """
+    if raw is None:
+        return ""
+    s = str(raw).strip()
+    if not s or s.lower() in ("nan", "none"):
+        return ""
+    
+    # "660.0" → "660" (소수점 제거)
+    if "." in s:
+        try:
+            s = str(int(float(s)))
+        except (ValueError, TypeError):
+            pass
+    
+    # 숫자로만 이루어진 한국 종목코드라면 6자리 zero-pad
+    if s.isdigit() and len(s) <= 6:
+        s = s.zfill(6)
+    
+    return s
+
+
 def fetch_with_retry(url: str, max_retry: int = MAX_RETRY) -> Optional[requests.Response]:
+
+   
     """재시도 로직 포함 HTTP GET"""
     for attempt in range(1, max_retry + 1):
         try:
@@ -133,19 +170,17 @@ def crawl_holdings(idx: int, etf_name: str, target_date: str) -> List[Dict]:
 
     # 엑셀 파일은 .xls (HTML 형식) 또는 .xlsx 가능
     # pandas가 자동 판별
+    # ⚠️ dtype=str 필수: 종목코드 leading zero 보존 ("000660" → 660.0 방지)
     try:
         # 1차: pandas로 직접 시도
-        df = pd.read_html(io.BytesIO(res.content))[0]
+        df = pd.read_html(io.BytesIO(res.content), dtype=str)[0]
     except Exception:
         try:
             # 2차: 엑셀 형식 시도
-            df = pd.read_excel(io.BytesIO(res.content))
+            df = pd.read_excel(io.BytesIO(res.content), dtype=str)
         except Exception as e:
             print(f"    ❌ 엑셀 파싱 실패: {e}")
             return []
-
-    if df.empty:
-        return []
 
     # 컬럼명 표준화 (사이트가 한글 헤더 사용)
     df.columns = [str(c).strip() for c in df.columns]
@@ -169,8 +204,9 @@ def crawl_holdings(idx: int, etf_name: str, target_date: str) -> List[Dict]:
         if not name or name.lower() in ("nan", "none", ""):
             continue
 
-        code = str(row.get("code", "")).strip()
-        if not code or code.lower() == "nan":
+        # ⚠️ normalize_stock_code: leading zero 복구 + 망가진 값 방어
+        code = normalize_stock_code(row.get("code"))
+        if not code:
             code = "CASH" if "현금" in name else f"UNKNOWN_{name[:10]}"
 
         holdings.append({
