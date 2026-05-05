@@ -487,6 +487,32 @@
   let trendChartInstance = null;
 
   // =========================================================
+  // ★ 종목코드 정규화 (leading zero 복구)
+  // =========================================================
+  // KRX 종목코드는 6자리 숫자 문자열이 표준.
+  // DB에 "000660"으로 저장되어 있어도 일부 경로에서 number(660)나
+  // float(660.0)으로 변환되어 들어올 수 있음 → 6자리로 zero-pad 복원.
+  // 알파벳 티커(NVDA, AAPL 등)는 손대지 않음.
+  function normalizeCode(raw) {
+    if (raw === null || raw === undefined) return "";
+    let s = String(raw).trim();
+    if (!s) return "";
+    // "660", "660.0", 660 → 모두 "000660"으로 복구
+    // 1) 부동소수 형태(660.0)면 정수부만 취함
+    if (/^\d+\.\d+$/.test(s)) s = s.split(".")[0];
+    // 2) 순수 숫자(1~6자리)이면 6자리로 좌측 0 패딩
+    if (/^\d{1,6}$/.test(s)) return s.padStart(6, "0");
+    // 3) 그 외(NVDA, BABA 등)는 그대로
+    return s;
+  }
+
+  // 행 배열을 받아 code 필드를 일괄 정규화
+  function normalizeRows(rows) {
+    if (!Array.isArray(rows)) return rows;
+    return rows.map(r => ({ ...r, code: normalizeCode(r.code) }));
+  }
+
+  // =========================================================
   // 유틸
   // =========================================================
   function fmt(n) { if (n == null) return "—"; return Number(n).toLocaleString("ko-KR"); }
@@ -517,25 +543,21 @@
     return allDates[allDates.length - 1] || "";
   }
 
-// =========================================================
-// 국내/해외 판별
-// 국내 = (종목코드가 숫자로만 구성) OR (종목명이 한글로만 구성)
-// 해외 = 그 외 전부
-// ※ DB에서 leading zero가 날아간 경우(000660 → 660)도 대응
-// =========================================================
-function isKorean(code, name) {
-  const c = String(code ?? "").trim();
-  const n = String(name ?? "").trim();
-
-  // 조건 A: 종목코드가 숫자로만 구성 (자릿수 무관)
-  //   "005930", "660", "5930" 모두 국내로 인식
-  if (c && /^\d+$/.test(c)) return true;
-
-  // 조건 B: 종목명이 한글(공백 허용)로만 구성
-  if (n && /^[가-힣\s]+$/.test(n)) return true;
-
-  return false;
-}
+  // =========================================================
+  // 국내/해외 판별
+  // 국내 = (종목코드가 숫자로만 구성) OR (종목명이 한글로만 구성)
+  // 해외 = 그 외 전부
+  // ※ 코드는 normalizeCode를 거친 값이 들어옴 → 항상 안전한 string
+  // =========================================================
+  function isKorean(code, name) {
+    const c = String(code ?? "").trim();
+    const n = String(name ?? "").trim();
+    // 조건 A: 종목코드가 숫자로만 구성 (자릿수 무관)
+    if (c && /^\d+$/.test(c)) return true;
+    // 조건 B: 종목명이 한글(공백 허용)로만 구성
+    if (n && /^[가-힣\s]+$/.test(n)) return true;
+    return false;
+  }
 
   // =========================================================
   // 하이라이트 탭 전환
@@ -692,8 +714,9 @@ function isKorean(code, name) {
       db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", currentDate).maybeSingle(),
       compareDate ? db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", compareDate).maybeSingle() : Promise.resolve({ data: null }),
     ]);
-    const cur = r1.data || [];
-    const cmp = r2.data || [];
+    // ★ DB에서 받은 직후 code 정규화
+    const cur = normalizeRows(r1.data || []);
+    const cmp = normalizeRows(r2.data || []);
     document.getElementById("cardTitle").textContent = `TIME ${getEtfName(currentIdx)} 구성종목`;
     document.getElementById("cardDate").textContent = currentDate + (compareDate ? ` (비교: ${compareDate})` : "");
     renderStats(cur, cmp, n1.data, n2.data);
@@ -851,13 +874,15 @@ function isKorean(code, name) {
           if (data.length < 1000) break;
           from += 1000;
         }
-        return all;
+        // ★ DB에서 받은 직후 code 정규화 (leading zero 복구)
+        return normalizeRows(all);
       };
 
       // 18개 ETF 전체를 종목 기준으로 합산
       const aggregate = (rows) => {
         const map = {};
         for (const r of rows) {
+          // r.code는 이미 normalizeRows를 거친 정규화된 값
           const code = (r.code || "").trim();
           const key = code || r.name;
           if (!map[key]) map[key] = { code, name: r.name, weight: 0, value: 0, etfCount: 0 };
@@ -909,8 +934,8 @@ function isKorean(code, name) {
 
       // ===== 종목 코드 기준으로 국내/해외 분리 후 렌더링 =====
       const renderCard = (baseId, items, fmtChange, emptyMsg) => {
-      const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 5);
-      const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 5);
+        const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 5);
+        const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 5);
 
         [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
           const el = document.getElementById(`hl${baseId}-${region}`);
@@ -955,14 +980,25 @@ function isKorean(code, name) {
   // ② 종목 모달 + ④ 추이 차트
   // =========================================================
   async function openSecurityModal(code, name) {
-    document.getElementById("modalTitle").textContent = name + (code ? `  (${code})` : "");
+    // ★ 표시 직전에도 다시 정규화 (이중 안전망)
+    const normCode = normalizeCode(code);
+    document.getElementById("modalTitle").textContent = name + (normCode ? `  (${normCode})` : "");
     document.getElementById("modalOverlay").classList.add("show");
     document.getElementById("holdingList").innerHTML = '<div class="hl-empty">로딩 중...</div>';
-    if (!db || !code) return;
+    if (!db || !normCode) return;
     const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
     const latest = latestRows?.[0]?.date;
     if (latest) {
-      const { data: holdings } = await db.from("holdings").select("etf_idx, etf_name, weight, qty, value").eq("date", latest).eq("code", code).order("weight", { ascending: false });
+      // DB는 6자리 텍스트로 저장돼 있을 가능성이 가장 높지만,
+      // 혹시 저장 형식이 섞여 있을 수 있어 두 가지 모두 시도
+      const candidates = [normCode];
+      const stripped = normCode.replace(/^0+/, "");
+      if (stripped && stripped !== normCode) candidates.push(stripped);
+      const { data: holdings } = await db.from("holdings")
+        .select("etf_idx, etf_name, weight, qty, value, code")
+        .eq("date", latest)
+        .in("code", candidates)
+        .order("weight", { ascending: false });
       if (holdings?.length) {
         document.getElementById("holdingList").innerHTML = holdings.map(h => `
           <div class="holding-row">
@@ -974,7 +1010,15 @@ function isKorean(code, name) {
         document.getElementById("holdingList").innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
       }
     }
-    const { data: trend } = await db.from("holdings").select("date, etf_idx, etf_name, weight").eq("code", code).order("date", { ascending: true }).limit(2000);
+    // 추이 차트도 동일한 후보 코드들로 조회
+    const candidates = [normCode];
+    const stripped = normCode.replace(/^0+/, "");
+    if (stripped && stripped !== normCode) candidates.push(stripped);
+    const { data: trend } = await db.from("holdings")
+      .select("date, etf_idx, etf_name, weight")
+      .in("code", candidates)
+      .order("date", { ascending: true })
+      .limit(2000);
     drawTrendChart(trend || [], name);
   }
 
@@ -1049,8 +1093,9 @@ function isKorean(code, name) {
       db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfA).eq("date", date),
       db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfB).eq("date", date),
     ]);
-    const a = rA.data || [];
-    const b = rB.data || [];
+    // ★ 정규화
+    const a = normalizeRows(rA.data || []);
+    const b = normalizeRows(rB.data || []);
     const aMap = Object.fromEntries(a.map(x => [x.code, x]));
     const bMap = Object.fromEntries(b.map(x => [x.code, x]));
     const both  = a.filter(x => bMap[x.code]).map(x => ({ ...x, weightB: bMap[x.code].weight }));
@@ -1103,8 +1148,10 @@ function isKorean(code, name) {
         resBox.classList.add("show");
         return;
       }
+      // ★ 정규화
+      const normalized = normalizeRows(data);
       const grouped = {};
-      data.forEach(r => {
+      normalized.forEach(r => {
         if (!grouped[r.code]) grouped[r.code] = { code: r.code, name: r.name, etfs: [] };
         grouped[r.code].etfs.push({ idx: r.etf_idx, name: r.etf_name, weight: r.weight });
       });
