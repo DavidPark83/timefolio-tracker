@@ -1,0 +1,59 @@
+name: Fill creation_unit (one-time)
+
+# 수동 실행 전용 (스케줄 없음)
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "DRY-RUN 모드 (DB 변경 없이 추출만 확인)"
+        required: true
+        type: boolean
+        default: true
+      only_null:
+        description: "creation_unit이 NULL인 행만 UPDATE (false면 모든 행 덮어쓰기)"
+        required: true
+        type: boolean
+        default: false
+      target_date:
+        description: "fetch 기준 날짜 (YYYY-MM-DD, 비우면 어제)"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run fill_creation_unit.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "${{ inputs.only_null }}" = "true" ]; then
+            ARGS="$ARGS --only-null"
+          fi
+          if [ -n "${{ inputs.target_date }}" ]; then
+            ARGS="$ARGS --date ${{ inputs.target_date }}"
+          fi
+          echo "▶ python fill_creation_unit.py $ARGS"
+          python fill_creation_unit.py $ARGS
