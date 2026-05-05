@@ -866,7 +866,7 @@
         let from = 0;
         while (true) {
           const { data } = await db.from("holdings")
-            .select("etf_idx, code, name, weight, value, holding_accounts")  // ★ holding_accounts 추가
+            .select("etf_idx, code, name, weight, value, holding_amount")  // ★ holding_amount 추가
             .eq("date", date)
             .range(from, from + 999);
           if (!data?.length) break;
@@ -892,7 +892,7 @@
           };
           map[key].weight += (r.weight || 0);
           map[key].value += (r.value || 0);
-          map[key].holdingAccounts += (r.holding_accounts || 0);  // ★ 추가
+          map[key].holdingAccounts += (r.holding_amount || 0);  // ★ 추가
           map[key].etfCount += 1;
         }
         return map;
