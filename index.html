@@ -866,7 +866,7 @@
         let from = 0;
         while (true) {
           const { data } = await db.from("holdings")
-            .select("etf_idx, code, name, weight, value")
+            .select("etf_idx, code, name, weight, value, holding_accounts")  // ★ holding_accounts 추가
             .eq("date", date)
             .range(from, from + 999);
           if (!data?.length) break;
@@ -874,8 +874,6 @@
           if (data.length < 1000) break;
           from += 1000;
         }
-        // ★ DB에서 받은 직후 code 정규화 (leading zero 복구)
-        return normalizeRows(all);
       };
 
       // 18개 ETF 전체를 종목 기준으로 합산
@@ -885,9 +883,15 @@
           // r.code는 이미 normalizeRows를 거친 정규화된 값
           const code = (r.code || "").trim();
           const key = code || r.name;
-          if (!map[key]) map[key] = { code, name: r.name, weight: 0, value: 0, etfCount: 0 };
-          map[key].weight   += (r.weight || 0);
-          map[key].value    += (r.value  || 0);
+          if (!map[key]) map[key] = {
+            code, name: r.name,
+            weight: 0, value: 0,
+            holdingAccounts: 0,   // ★ 추가
+            etfCount: 0
+          };
+          map[key].weight += (r.weight || 0);
+          map[key].value += (r.value || 0);
+          map[key].holdingAccounts += (r.holding_accounts || 0);  // ★ 추가
           map[key].etfCount += 1;
         }
         return map;
@@ -958,10 +962,13 @@
         });
       };
 
-      // 현재 보유 TOP — 평가금액 합산 기준
-      const holdAll = Object.values(curMap).sort((a, b) => b.value - a.value);
+      // 현재 보유 TOP — holding_accounts 합산 기준 (18개 ETF 전체)
+      const holdAll = Object.values(curMap)
+        .filter(x => x.holdingAccounts > 0)
+        .sort((a, b) => b.holdingAccounts - a.holdingAccounts);
+      
       renderCard("Hold", holdAll,
-        x => `<span style="color:#00D4AA;font-family:monospace">${fmtValue(x.value)}</span>`,
+        x => `<span style="color:#00D4AA;font-family:monospace">${x.holdingAccounts.toLocaleString("ko-KR")}주</span>`,
         "데이터 없음");
 
       // 변화 카드 4종
