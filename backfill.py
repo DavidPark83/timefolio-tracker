@@ -27,6 +27,7 @@ from supabase import create_client
 from crawler import (
     ETF_LIST,
     process_one,
+    recalc_holding_amounts,
     SUPABASE_URL,
     SUPABASE_KEY,
 )
@@ -116,6 +117,7 @@ def main():
     total_skipped = 0
     total_saved_holdings = 0
     total_failed = 0
+    processed_dates = set()  # 보유금액 재계산 대상 날짜
 
     for d_idx, d in enumerate(biz_days, 1):
         target_date = d.strftime("%Y-%m-%d")
@@ -131,10 +133,12 @@ def main():
                 n, _ = process_one(etf["idx"], etf["etf_name"], target_date)
                 total_calls += 1
                 total_saved_holdings += n
+                if n > 0:
+                    processed_dates.add(target_date)
                 if n == 0:
                     total_failed += 1
             except Exception as e:
-                print(f"    ❌ [{etf['etf_name']}] 예외: {e}")
+                print(f"  ❌ [{etf['etf_name']}] 예외: {e}")
                 total_failed += 1
 
         # 진행률 보고 (매일 끝마다)
@@ -146,6 +150,12 @@ def main():
             print(f"   ⏱  경과 {elapsed/60:.1f}분 / 남은 호출 {remaining}개 / ETA {eta_sec/60:.1f}분")
 
     print("\n" + "=" * 60)
+    # 신규 데이터가 들어간 날짜에 대해 보유금액 일괄 산출
+    if processed_dates:
+        print(f"💰 보유금액 산출: {len(processed_dates)}개 날짜")
+        for d in sorted(processed_dates):
+            recalc_holding_amounts(d)
+        print("=" * 60)
     print(f"✅ Backfill 완료")
     print(f"   처리한 영업일: {len(biz_days)}일")
     print(f"   API 호출: {total_calls}회")
