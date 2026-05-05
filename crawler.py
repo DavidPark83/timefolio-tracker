@@ -339,6 +339,34 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
 
     return len(holdings), nav_saved
 
+# ============================================================
+# 보유금액(holding_amount) 자동 산출
+# ============================================================
+
+def recalc_holding_amounts(target_date: str) -> int:
+    """
+    해당 날짜의 holdings.holding_amount를 일괄 재계산.
+
+    공식: holding_amount = etf_daily.nav_total × (holdings.value / Σ value)
+
+    crawler 메인 루프가 끝난 시점에 호출되어,
+    그 날짜의 모든 ETF 보유종목에 대해 보유금액(원)을 산출한다.
+    DB측 RPC(recalc_holdings_for_date)에 위임 → 네트워크 왕복 1회.
+
+    반환: 업데이트된 row 수 (실패 시 -1)
+    """
+    try:
+        res = supabase.rpc(
+            "recalc_holdings_for_date",
+            {"target_date": target_date}
+        ).execute()
+        affected = res.data if isinstance(res.data, int) else 0
+        print(f"💰 보유금액 산출 완료: {affected}개 row 업데이트")
+        return affected
+    except Exception as e:
+        print(f"❌ 보유금액 산출 실패: {e}")
+        return -1
+
 
 # ============================================================
 # 메인
@@ -428,6 +456,13 @@ def main():
 
     print("=" * 60)
     print(f"✅ 완료: {success_etfs}/{len(target_etfs)} ETF, 총 {total_holdings}개 종목")
+
+    # 모든 ETF의 holdings/nav 적재가 끝난 후 보유금액 일괄 산출
+    # (etf_daily의 nav_total과 holdings의 value가 모두 갖춰진 시점)
+    if total_holdings > 0 or success_etfs > 0:
+        recalc_holding_amounts(target_date)
+    else:
+        print("⏭️  신규 데이터 없음 → 보유금액 산출 스킵")
 
 
 if __name__ == "__main__":
