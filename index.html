@@ -968,8 +968,17 @@
         .filter(x => x.holdingAccounts > 0)
         .sort((a, b) => b.holdingAccounts - a.holdingAccounts);
       
+      // 억 단위 포맷터
+      const fmtEok = (v) => {
+        if (!v) return "—";
+        const eok = v / 100_000_000;
+        if (eok >= 10000) return (eok / 10000).toFixed(1) + "조원";
+        if (eok >= 1)     return Math.round(eok).toLocaleString("ko-KR") + "억원";
+        return (v / 10_000).toFixed(0) + "만원";
+      };
+
       renderCard("Hold", holdAll,
-        x => `<span style="color:#00D4AA;font-family:monospace">${x.holdingAccounts.toLocaleString("ko-KR")}주</span>`,
+        x => `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
         "데이터 없음");
 
       // 변화 카드 4종
