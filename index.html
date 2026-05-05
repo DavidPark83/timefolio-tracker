@@ -874,6 +874,7 @@
           if (data.length < 1000) break;
           from += 1000;
         }
+        return normalizeRows(all);   // ★ 이 한 줄이 누락됨!
       };
 
       // 18개 ETF 전체를 종목 기준으로 합산
