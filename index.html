@@ -227,6 +227,36 @@
 
   <div id="errorBox" style="display:none;padding:14px 18px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:10px;margin-bottom:16px;font-size:13px;color:#fca5a5;line-height:1.6"></div>
 
+  <!-- ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통) -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+      <span>📅 기준 기간 (전체 적용)</span>
+      <span style="font-size:11px;color:#475569" id="globalDateInfo">—</span>
+    </div>
+    <div style="padding: 16px 20px;">
+      <div class="controls" style="margin-bottom: 12px;">
+        <div class="ctrl-group">
+          <label>기준일</label>
+          <select id="globalDateSelect" onchange="onGlobalDateChange()"><option>로딩 중...</option></select>
+        </div>
+        <div style="padding-bottom:8px;color:#475569;font-size:18px">↔</div>
+        <div class="ctrl-group">
+          <label>비교일</label>
+          <select id="globalCompareSelect" onchange="onGlobalDateChange()"><option value="">비교 안함</option></select>
+        </div>
+      </div>
+      <div class="quick-buttons" style="margin-bottom: 0;">
+        <span style="font-size:11px;color:#64748b;padding:6px 4px;letter-spacing:1px;text-transform:uppercase">빠른 비교</span>
+        <button class="quick-btn active" onclick="setGlobalQuickCompare(1, this)">1일 전</button>
+        <button class="quick-btn" onclick="setGlobalQuickCompare(7, this)">1주 전</button>
+        <button class="quick-btn" onclick="setGlobalQuickCompare(30, this)">1개월 전</button>
+        <button class="quick-btn" onclick="setGlobalQuickCompare(90, this)">3개월 전</button>
+        <button class="quick-btn" onclick="setGlobalQuickCompareYTD(this)">연초</button>
+        <button class="quick-btn" onclick="setGlobalNoCompare(this)">비교 안함</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ① 오늘의 변화 하이라이트 -->
   <div class="highlights" id="highlights">
 
@@ -327,27 +357,6 @@
         <div class="info-item"><span class="il">비교지수</span><span class="iv" id="infoBench">—</span></div>
       </div>
       <div style="margin-top:8px;font-size:12px;color:#94a3b8" id="infoDesc">—</div>
-    </div>
-
-    <div class="controls">
-      <div class="ctrl-group">
-        <label>기준일</label>
-        <select id="dateSelect" onchange="loadData()"><option>로딩 중...</option></select>
-      </div>
-      <div style="padding-bottom:8px;color:#475569;font-size:18px">↔</div>
-      <div class="ctrl-group">
-        <label>비교일</label>
-        <select id="compareSelect" onchange="loadData()"><option value="">비교 안함</option></select>
-      </div>
-    </div>
-    <div class="quick-buttons">
-      <span style="font-size:11px;color:#64748b;padding:6px 4px;letter-spacing:1px;text-transform:uppercase">빠른 비교</span>
-      <button class="quick-btn" onclick="setQuickCompare(1)">1일 전</button>
-      <button class="quick-btn active" onclick="setQuickCompare(7)">1주 전</button>
-      <button class="quick-btn" onclick="setQuickCompare(30)">1개월 전</button>
-      <button class="quick-btn" onclick="setQuickCompare(90)">3개월 전</button>
-      <button class="quick-btn" onclick="setQuickCompareYTD()">연초</button>
-      <button class="quick-btn" onclick="setQuickNoCompare()">비교 안함</button>
     </div>
 
     <div class="stats">
@@ -481,7 +490,7 @@
   let compareDate = "";
   let sortKey = null;
   let sortDir = "desc";
-  let allDates = [];
+  let globalAllDates = [];   // ★ 글로벌 날짜 리스트
   let cmpEtfA = null;
   let cmpEtfB = null;
   let trendChartInstance = null;
@@ -489,24 +498,15 @@
   // =========================================================
   // ★ 종목코드 정규화 (leading zero 복구)
   // =========================================================
-  // KRX 종목코드는 6자리 숫자 문자열이 표준.
-  // DB에 "000660"으로 저장되어 있어도 일부 경로에서 number(660)나
-  // float(660.0)으로 변환되어 들어올 수 있음 → 6자리로 zero-pad 복원.
-  // 알파벳 티커(NVDA, AAPL 등)는 손대지 않음.
   function normalizeCode(raw) {
     if (raw === null || raw === undefined) return "";
     let s = String(raw).trim();
     if (!s) return "";
-    // "660", "660.0", 660 → 모두 "000660"으로 복구
-    // 1) 부동소수 형태(660.0)면 정수부만 취함
     if (/^\d+\.\d+$/.test(s)) s = s.split(".")[0];
-    // 2) 순수 숫자(1~6자리)이면 6자리로 좌측 0 패딩
     if (/^\d{1,6}$/.test(s)) return s.padStart(6, "0");
-    // 3) 그 외(NVDA, BABA 등)는 그대로
     return s;
   }
 
-  // 행 배열을 받아 code 필드를 일괄 정규화
   function normalizeRows(rows) {
     if (!Array.isArray(rows)) return rows;
     return rows.map(r => ({ ...r, code: normalizeCode(r.code) }));
@@ -532,29 +532,14 @@
     const tab = document.querySelector(`.etf-tab[data-idx="${idx}"]`);
     return tab ? tab.textContent.trim() : `ETF ${idx}`;
   }
-  function findDateNDaysAgo(refDate, days) {
-    if (!allDates.length) return "";
-    const target = new Date(refDate);
-    target.setDate(target.getDate() - days);
-    const targetStr = target.toISOString().slice(0, 10);
-    for (const d of allDates) {
-      if (d < refDate && d <= targetStr) return d;
-    }
-    return allDates[allDates.length - 1] || "";
-  }
 
   // =========================================================
   // 국내/해외 판별
-  // 국내 = (종목코드가 숫자로만 구성) OR (종목명이 한글로만 구성)
-  // 해외 = 그 외 전부
-  // ※ 코드는 normalizeCode를 거친 값이 들어옴 → 항상 안전한 string
   // =========================================================
   function isKorean(code, name) {
     const c = String(code ?? "").trim();
     const n = String(name ?? "").trim();
-    // 조건 A: 종목코드가 숫자로만 구성 (자릿수 무관)
     if (c && /^\d+$/.test(c)) return true;
-    // 조건 B: 종목명이 한글(공백 허용)로만 구성
     if (n && /^[가-힣\s]+$/.test(n)) return true;
     return false;
   }
@@ -606,8 +591,11 @@
     el.classList.add('active');
     currentIdx = idx;
     sortKey = null;
-    loadDates();
     renderInfo();
+    // 글로벌 날짜로 단일 ETF 데이터 로드
+    const base = document.getElementById("globalDateSelect")?.value;
+    const cmp  = document.getElementById("globalCompareSelect")?.value;
+    if (base) loadDataWithDates(base, cmp);
   }
 
   function updateCompareTabsHighlight() {
@@ -644,79 +632,136 @@
   }
 
   // =========================================================
-  // 단일 모드: 날짜 목록 로딩
+  // ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통)
   // =========================================================
-  async function loadDates() {
-    document.getElementById("tableArea").innerHTML = '<div class="loading">불러오는 중...</div>';
+  async function initGlobalDates() {
     if (initError) {
       showError("Supabase 연결 설정 오류", initError);
-      document.getElementById("tableArea").innerHTML = '<div class="loading">설정을 확인해 주세요</div>';
       return;
     }
-    const { data, error } = await db.from("holdings").select("date").eq("etf_idx", currentIdx).order("date", { ascending: false }).limit(2000);
-    if (error) { showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요."); return; }
-    if (!data || data.length === 0) { document.getElementById("tableArea").innerHTML = '<div class="loading">이 ETF의 데이터가 없습니다</div>'; return; }
+    if (!db) return;
+    const { data, error } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(5000);
+    if (error) {
+      showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
+      return;
+    }
+    if (!data?.length) return;
     hideError();
-    allDates = [...new Set(data.map(d => d.date))];
-    const s1 = document.getElementById("dateSelect");
-    const s2 = document.getElementById("compareSelect");
-    s1.innerHTML = allDates.map(d => `<option value="${d}">${d}</option>`).join("");
-    s2.innerHTML = '<option value="">비교 안함</option>' + allDates.map(d => `<option value="${d}">${d}</option>`).join("");
-    const compDate = findDateNDaysAgo(allDates[0], 7);
-    if (compDate) s2.value = compDate;
-    document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".quick-btn")[1]?.classList.add("active");
-    loadData();
+    globalAllDates = [...new Set(data.map(d => d.date))];
+
+    const s1 = document.getElementById("globalDateSelect");
+    const s2 = document.getElementById("globalCompareSelect");
+    if (!s1 || !s2) return;
+
+    s1.innerHTML = globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
+    s2.innerHTML = '<option value="">비교 안함</option>' + globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
+
+    // 기본값: 기준일=최신, 비교일=1일 전(직전 영업일)
+    s1.value = globalAllDates[0];
+    if (globalAllDates[1]) s2.value = globalAllDates[1];
+
+    // 양쪽 모두 로드
+    refreshAll();
   }
 
-  // =========================================================
-  // 빠른 비교 버튼
-  // =========================================================
-  function setQuickCompare(days) {
-    const ref = document.getElementById("dateSelect").value;
-    const target = findDateNDaysAgo(ref, days);
-    document.getElementById("compareSelect").value = target;
-    document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
-    event.target.classList.add("active");
-    loadData();
+  function findGlobalDateNDaysAgo(refDate, days) {
+    if (!globalAllDates.length) return "";
+    const target = new Date(refDate);
+    target.setDate(target.getDate() - days);
+    const targetStr = target.toISOString().slice(0, 10);
+    for (const d of globalAllDates) {
+      if (d < refDate && d <= targetStr) return d;
+    }
+    return globalAllDates[globalAllDates.length - 1] || "";
   }
-  function setQuickCompareYTD() {
-    const ref = document.getElementById("dateSelect").value;
+
+  function onGlobalDateChange() {
+    // 셀렉트 직접 변경시 빠른비교 active 해제
+    document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
+    refreshAll();
+  }
+
+  function setGlobalQuickCompare(days, btn) {
+    const ref = document.getElementById("globalDateSelect").value;
+    if (!ref) return;
+    const target = findGlobalDateNDaysAgo(ref, days);
+    document.getElementById("globalCompareSelect").value = target;
+    document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    refreshAll();
+  }
+
+  function setGlobalQuickCompareYTD(btn) {
+    const ref = document.getElementById("globalDateSelect").value;
     if (!ref) return;
     const year = ref.slice(0, 4);
     const ytdStart = `${year}-01-01`;
     let target = "";
-    for (let i = allDates.length - 1; i >= 0; i--) {
-      if (allDates[i] >= ytdStart) { target = allDates[i]; break; }
+    for (let i = globalAllDates.length - 1; i >= 0; i--) {
+      if (globalAllDates[i] >= ytdStart) { target = globalAllDates[i]; break; }
     }
-    document.getElementById("compareSelect").value = target;
+    document.getElementById("globalCompareSelect").value = target;
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
-    event.target.classList.add("active");
-    loadData();
+    btn.classList.add("active");
+    refreshAll();
   }
-  function setQuickNoCompare() {
-    document.getElementById("compareSelect").value = "";
+
+  function setGlobalNoCompare(btn) {
+    document.getElementById("globalCompareSelect").value = "";
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
-    event.target.classList.add("active");
-    loadData();
+    btn.classList.add("active");
+    refreshAll();
+  }
+
+  // 글로벌 날짜 변경 시 하이라이트 + 단일 ETF 모드 모두 갱신
+  function refreshAll() {
+    const base = document.getElementById("globalDateSelect")?.value;
+    const cmp  = document.getElementById("globalCompareSelect")?.value;
+    if (!base) return;
+
+    // 정보 표시
+    const infoEl = document.getElementById("globalDateInfo");
+    if (infoEl) infoEl.textContent = cmp ? `${cmp} → ${base}` : `${base} (비교 없음)`;
+
+    // 하이라이트 갱신
+    loadHighlights(base, cmp);
+
+    // 단일 ETF 모드 갱신 (현재 선택된 ETF 기준)
+    if (currentIdx) {
+      loadDataWithDates(base, cmp);
+    }
   }
 
   // =========================================================
-  // 단일 모드: 데이터 로딩
+  // 단일 ETF 모드: 데이터 로딩
   // =========================================================
-  async function loadData() {
-    currentDate = document.getElementById("dateSelect").value;
-    compareDate = document.getElementById("compareSelect").value;
+  async function loadDataWithDates(baseDate, cmpDate) {
+    currentDate = baseDate;
+    compareDate = cmpDate || "";
     if (!currentDate) return;
+
+    document.getElementById("tableArea").innerHTML = '<div class="loading">불러오는 중...</div>';
+
     const [r1, r2, n1, n2] = await Promise.all([
       db.from("holdings").select("*").eq("etf_idx", currentIdx).eq("date", currentDate).order("weight", { ascending: false }),
       compareDate ? db.from("holdings").select("*").eq("etf_idx", currentIdx).eq("date", compareDate) : Promise.resolve({ data: [] }),
       db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", currentDate).maybeSingle(),
       compareDate ? db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", compareDate).maybeSingle() : Promise.resolve({ data: null }),
     ]);
-    // ★ DB에서 받은 직후 code 정규화
+
     const cur = normalizeRows(r1.data || []);
     const cmp = normalizeRows(r2.data || []);
+
+    if (!cur.length) {
+      document.getElementById("tableArea").innerHTML = '<div class="loading">이 ETF의 해당 일자 데이터가 없습니다</div>';
+      document.getElementById("statCount").textContent = "—";
+      document.getElementById("statTop").textContent = "—";
+      document.getElementById("statNav").textContent = "—";
+      document.getElementById("statNavDiff").textContent = "—";
+      document.getElementById("statChanged").textContent = "—";
+      return;
+    }
+
     document.getElementById("cardTitle").textContent = `TIME ${getEtfName(currentIdx)} 구성종목`;
     document.getElementById("cardDate").textContent = currentDate + (compareDate ? ` (비교: ${compareDate})` : "");
     renderStats(cur, cmp, n1.data, n2.data);
@@ -851,22 +896,30 @@
   // =========================================================
   // ① 오늘의 변화 하이라이트
   // =========================================================
-  async function loadHighlights() {
+  async function loadHighlights(baseDate, compareDate) {
     if (!db) return;
     try {
-      const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-      if (!latestRows?.length) return;
-      const latest = latestRows[0].date;
+      if (!baseDate) {
+        const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
+        if (!latestRows?.length) return;
+        baseDate = latestRows[0].date;
+      }
 
-      const { data: prevRows } = await db.from("holdings").select("date").lt("date", latest).order("date", { ascending: false }).limit(1);
-      const prev = prevRows?.[0]?.date;
+      // compareDate가 빈 문자열이면 비교 없음(prev = null), 명시 안 됐으면 직전 영업일 자동
+      let prev = null;
+      if (compareDate === undefined) {
+        const { data: prevRows } = await db.from("holdings").select("date").lt("date", baseDate).order("date", { ascending: false }).limit(1);
+        prev = prevRows?.[0]?.date || null;
+      } else {
+        prev = compareDate || null;
+      }
 
       const fetchAll = async (date) => {
         const all = [];
         let from = 0;
         while (true) {
           const { data } = await db.from("holdings")
-            .select("etf_idx, code, name, weight, value, holding_amount")  // ★ holding_amount 추가
+            .select("etf_idx, code, name, weight, value, holding_amount")
             .eq("date", date)
             .range(from, from + 999);
           if (!data?.length) break;
@@ -874,76 +927,60 @@
           if (data.length < 1000) break;
           from += 1000;
         }
-        return normalizeRows(all);   // ★ 이 한 줄이 누락됨!
+        return normalizeRows(all);
       };
 
-      // 18개 ETF 전체를 종목 기준으로 합산
       const aggregate = (rows) => {
         const map = {};
         for (const r of rows) {
-          // r.code는 이미 normalizeRows를 거친 정규화된 값
           const code = (r.code || "").trim();
           const key = code || r.name;
           if (!map[key]) map[key] = {
             code, name: r.name,
             weight: 0, value: 0,
-            holdingAccounts: 0,   // ★ 추가
+            holdingAccounts: 0,
             etfCount: 0
           };
           map[key].weight += (r.weight || 0);
           map[key].value += (r.value || 0);
-          map[key].holdingAccounts += (r.holding_amount || 0);  // ★ 추가
+          map[key].holdingAccounts += (r.holding_amount || 0);
           map[key].etfCount += 1;
         }
         return map;
       };
 
-      const fmtValue = (v) => {
-        if (!v) return "—";
-        const eok = v / 100_000_000;
-        if (eok >= 1000) return (eok / 1000).toFixed(1) + "조원";
-        if (eok >= 1)    return eok.toFixed(0) + "억원";
-        return (v / 10_000).toFixed(0) + "만원";
-      };
-
-      const curAll = await fetchAll(latest);
+      const curAll = await fetchAll(baseDate);
       const curMap = aggregate(curAll);
 
-      // ===== 변화 계산 =====
       let newItems = [], upItems = [], downItems = [], goneItems = [];
 
       if (prev) {
         const prevAll = await fetchAll(prev);
         const prevMap = aggregate(prevAll);
-      
-        // 임계값: 1억원 이상 변화만 의미있는 변화로 간주 (노이즈 필터링)
+
         const THRESHOLD = 100_000_000;  // 1억원
-      
+
         for (const key of Object.keys(curMap)) {
           const cur = curMap[key];
           const prv = prevMap[key];
           if (!prv) {
-            // 신규 편입 — 현재 보유금액
             newItems.push({ ...cur, change: cur.holdingAccounts });
           } else {
-            // 보유금액 변화량
             const diff = cur.holdingAccounts - prv.holdingAccounts;
             if (diff > THRESHOLD)       upItems.push({ ...cur, change: diff });
             else if (diff < -THRESHOLD) downItems.push({ ...cur, change: diff });
           }
         }
         for (const key of Object.keys(prevMap)) {
-          // 제외 — 이전 보유금액의 음수
           if (!curMap[key]) goneItems.push({ ...prevMap[key], change: -prevMap[key].holdingAccounts });
         }
-      
+
         newItems.sort((a, b)  => b.change - a.change);
         upItems.sort((a, b)   => b.change - a.change);
         downItems.sort((a, b) => a.change - b.change);
         goneItems.sort((a, b) => a.change - b.change);
       }
 
-      // ===== 종목 코드 기준으로 국내/해외 분리 후 렌더링 =====
       const renderCard = (baseId, items, fmtChange, emptyMsg) => {
         const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 5);
         const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 5);
@@ -969,11 +1006,11 @@
         });
       };
 
-      // 현재 보유 TOP — holding_accounts 합산 기준 (18개 ETF 전체)
+      // 현재 보유 TOP — holding_amount 합산 기준 (18개 ETF 전체)
       const holdAll = Object.values(curMap)
         .filter(x => x.holdingAccounts > 0)
         .sort((a, b) => b.holdingAccounts - a.holdingAccounts);
-      
+
       // 억 단위 포맷터
       const fmtEok = (v) => {
         if (!v) return "—";
@@ -988,7 +1025,7 @@
         "데이터 없음");
 
       // 변화 카드 4종
-      const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";   // ★ 이 한 줄 추가!
+      const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
 
       // 부호가 들어간 억원 포맷터 (변화량 표시용)
       const fmtEokSigned = (v) => {
@@ -1000,7 +1037,7 @@
         if (eok >= 1)     return `${sign}${Math.round(eok).toLocaleString("ko-KR")}억원`;
         return `${sign}${(abs / 10_000).toFixed(0)}만원`;
       };
-      
+
       renderCard("New",  newItems,  x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
       renderCard("Up",   upItems,   x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
       renderCard("Down", downItems, x => `<span class="neg">${fmtEokSigned(x.change)}</span>`, emptyMsg);
@@ -1015,7 +1052,6 @@
   // ② 종목 모달 + ④ 추이 차트
   // =========================================================
   async function openSecurityModal(code, name) {
-    // ★ 표시 직전에도 다시 정규화 (이중 안전망)
     const normCode = normalizeCode(code);
     document.getElementById("modalTitle").textContent = name + (normCode ? `  (${normCode})` : "");
     document.getElementById("modalOverlay").classList.add("show");
@@ -1024,8 +1060,6 @@
     const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
     const latest = latestRows?.[0]?.date;
     if (latest) {
-      // DB는 6자리 텍스트로 저장돼 있을 가능성이 가장 높지만,
-      // 혹시 저장 형식이 섞여 있을 수 있어 두 가지 모두 시도
       const candidates = [normCode];
       const stripped = normCode.replace(/^0+/, "");
       if (stripped && stripped !== normCode) candidates.push(stripped);
@@ -1045,7 +1079,6 @@
         document.getElementById("holdingList").innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
       }
     }
-    // 추이 차트도 동일한 후보 코드들로 조회
     const candidates = [normCode];
     const stripped = normCode.replace(/^0+/, "");
     if (stripped && stripped !== normCode) candidates.push(stripped);
@@ -1128,7 +1161,6 @@
       db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfA).eq("date", date),
       db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfB).eq("date", date),
     ]);
-    // ★ 정규화
     const a = normalizeRows(rA.data || []);
     const b = normalizeRows(rB.data || []);
     const aMap = Object.fromEntries(a.map(x => [x.code, x]));
@@ -1183,7 +1215,6 @@
         resBox.classList.add("show");
         return;
       }
-      // ★ 정규화
       const normalized = normalizeRows(data);
       const grouped = {};
       normalized.forEach(r => {
@@ -1205,9 +1236,8 @@
   // =========================================================
   // 시작
   // =========================================================
-  loadDates();
   renderInfo();
-  loadHighlights();
+  initGlobalDates();   // ★ 글로벌 날짜 초기화 → refreshAll() 호출 → 모든 데이터 로드
 </script>
 </body>
 </html>
