@@ -915,22 +915,28 @@
       if (prev) {
         const prevAll = await fetchAll(prev);
         const prevMap = aggregate(prevAll);
-
+      
+        // 임계값: 1억원 이상 변화만 의미있는 변화로 간주 (노이즈 필터링)
+        const THRESHOLD = 100_000_000;  // 1억원
+      
         for (const key of Object.keys(curMap)) {
           const cur = curMap[key];
           const prv = prevMap[key];
           if (!prv) {
-            newItems.push({ ...cur, change: cur.weight });
+            // 신규 편입 — 현재 보유금액
+            newItems.push({ ...cur, change: cur.holdingAccounts });
           } else {
-            const diff = cur.weight - prv.weight;
-            if (diff > 0.3)       upItems.push({ ...cur, change: diff });
-            else if (diff < -0.3) downItems.push({ ...cur, change: diff });
+            // 보유금액 변화량
+            const diff = cur.holdingAccounts - prv.holdingAccounts;
+            if (diff > THRESHOLD)       upItems.push({ ...cur, change: diff });
+            else if (diff < -THRESHOLD) downItems.push({ ...cur, change: diff });
           }
         }
         for (const key of Object.keys(prevMap)) {
-          if (!curMap[key]) goneItems.push({ ...prevMap[key], change: -prevMap[key].weight });
+          // 제외 — 이전 보유금액의 음수
+          if (!curMap[key]) goneItems.push({ ...prevMap[key], change: -prevMap[key].holdingAccounts });
         }
-
+      
         newItems.sort((a, b)  => b.change - a.change);
         upItems.sort((a, b)   => b.change - a.change);
         downItems.sort((a, b) => a.change - b.change);
@@ -982,11 +988,21 @@
         "데이터 없음");
 
       // 변화 카드 4종
-      const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
-      renderCard("New",  newItems,  x => `<span class="pos">${x.change.toFixed(1)}%</span>`,  emptyMsg);
-      renderCard("Up",   upItems,   x => `<span class="pos">+${x.change.toFixed(2)}%</span>`, emptyMsg);
-      renderCard("Down", downItems, x => `<span class="neg">${x.change.toFixed(2)}%</span>`,  emptyMsg);
-      renderCard("Gone", goneItems, x => `<span class="neg">${x.change.toFixed(1)}%</span>`,  emptyMsg);
+      // 부호가 들어간 억원 포맷터 (변화량 표시용)
+      const fmtEokSigned = (v) => {
+        if (v == null) return "—";
+        const sign = v > 0 ? "+" : v < 0 ? "-" : "";
+        const abs = Math.abs(v);
+        const eok = abs / 100_000_000;
+        if (eok >= 10000) return `${sign}${(eok / 10000).toFixed(1)}조원`;
+        if (eok >= 1)     return `${sign}${Math.round(eok).toLocaleString("ko-KR")}억원`;
+        return `${sign}${(abs / 10_000).toFixed(0)}만원`;
+      };
+      
+      renderCard("New",  newItems,  x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Up",   upItems,   x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Down", downItems, x => `<span class="neg">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Gone", goneItems, x => `<span class="neg">${fmtEokSigned(x.change)}</span>`, emptyMsg);
 
     } catch (e) {
       console.error("Highlights 로딩 실패:", e);
