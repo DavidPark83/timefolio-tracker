@@ -228,7 +228,7 @@ def crawl_holdings(idx: int, etf_name: str, target_date: str) -> List[Dict]:
 # ============================================================
 def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
     """
-    상세 페이지에서 순자산총액과 기준가를 추출.
+    상세 페이지에서 순자산총액, 기준가, 설정단위(좌)를 추출.
     """
     url = f"https://timeetf.co.kr/m11_view.php?idx={idx}&pdfDate={target_date}"
     res = fetch_with_retry(url)
@@ -237,6 +237,12 @@ def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
 
     soup = BeautifulSoup(res.text, "html.parser")
     text = soup.get_text(separator="\n")
+
+    nav_total = None
+    nav_price = None
+    creation_unit = None  # ← 추가
+
+    import re
 
     # 순자산총액: "순자산총액 : 980 억원" 같은 패턴
     nav_total = None
@@ -253,15 +259,24 @@ def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
     if m:
         nav_price = to_float(m.group(1))
 
-    if nav_total is None and nav_price is None:
+    # ─── 설정단위(좌) 추출 (신규) ───────────────────────────
+    # 페이지 형태: "설정단위(좌)" 라벨 다음에 "100,000" 형태로 등장
+    # "(좌)"의 괄호가 전각/반각 모두 가능하므로 [\(\（][좌][\)\）] 로 처리
+    m = re.search(r"설정단위\s*[\(（]\s*좌\s*[\)）][^0-9]*([0-9,]+)", text)
+    if m:
+        creation_unit = to_int(m.group(1))
+    # ────────────────────────────────────────────────────────
+
+    if nav_total is None and nav_price is None and creation_unit is None:
         return None
 
     return {
-        "date":      target_date,
-        "etf_idx":   idx,
-        "etf_name":  etf_name,
+        "date": target_date,
+        "etf_idx": idx,
+        "etf_name": etf_name,
         "nav_total": nav_total,
         "nav_price": nav_price,
+        "creation_unit": creation_unit,  # ← 추가 (process_one에서 꺼내 씀)
     }
 
 
@@ -272,18 +287,30 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
     """반환: (저장된 종목 수, NAV 저장 여부)"""
     print(f"  📊 [{etf_name}] {target_date}")
 
-    # 1) 구성종목
-    holdings = crawl_holdings(idx, etf_name, target_date)
+    # ─── 순서 변경: NAV 먼저 호출하여 creation_unit 확보 ───
+    # 1) NAV + 설정단위
+    nav = crawl_nav(idx, etf_name, target_date)
     time.sleep(DELAY_BETWEEN_REQUESTS)
 
-    # 2) NAV
-    nav = crawl_nav(idx, etf_name, target_date)
+    # 2) 구성종목
+    holdings = crawl_holdings(idx, etf_name, target_date)
     time.sleep(DELAY_BETWEEN_REQUESTS)
 
     # 데이터 없는 날(주말/공휴일) 스킵
     if not holdings and not nav:
-        print(f"    ⏭️  데이터 없음 (주말/공휴일 추정)")
+        print(f"     ⏭️  데이터 없음 (주말/공휴일 추정)")
         return 0, False
+
+    # ─── 신규: holdings 각 row에 creation_unit 주입 ───
+    creation_unit = nav.get("creation_unit") if nav else None
+    if holdings and creation_unit is not None:
+        for h in holdings:
+            h["creation_unit"] = creation_unit
+    elif holdings:
+        # 설정단위를 못 가져왔으면 None으로 명시 (스키마 일관성)
+        for h in holdings:
+            h["creation_unit"] = None
+    # ──────────────────────────────────────────────────
 
     # Supabase 저장
     if holdings:
@@ -291,21 +318,24 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             supabase.table("holdings").upsert(
                 holdings, on_conflict="date,etf_idx,code"
             ).execute()
-            print(f"    ✅ holdings: {len(holdings)}개 저장")
+            cu_str = f", 설정단위: {creation_unit:,}" if creation_unit else ""
+            print(f"     ✅ holdings: {len(holdings)}개 저장{cu_str}")
         except Exception as e:
-            print(f"    ❌ holdings 저장 실패: {e}")
+            print(f"     ❌ holdings 저장 실패: {e}")
             holdings = []
 
     nav_saved = False
     if nav:
+        # etf_daily에는 creation_unit을 저장하지 않으므로 페이로드에서 제거
+        nav_payload = {k: v for k, v in nav.items() if k != "creation_unit"}
         try:
             supabase.table("etf_daily").upsert(
-                [nav], on_conflict="date,etf_idx"
+                [nav_payload], on_conflict="date,etf_idx"
             ).execute()
-            print(f"    ✅ NAV 저장 (총액: {nav.get('nav_total')}, 기준가: {nav.get('nav_price')})")
+            print(f"     ✅ NAV 저장 (총액: {nav.get('nav_total')}, 기준가: {nav.get('nav_price')})")
             nav_saved = True
         except Exception as e:
-            print(f"    ❌ NAV 저장 실패: {e}")
+            print(f"     ❌ NAV 저장 실패: {e}")
 
     return len(holdings), nav_saved
 
