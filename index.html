@@ -1164,6 +1164,20 @@ const aggregate = (rows) => {
         return (v / 10_000).toFixed(0) + "만원";
       };
 
+      // ★ 18개 ETF 순자산총액 합 → 카드 제목에 (#,##조원)으로 표시
+      try {
+        const { data: navAll } = await db.from("etf_daily")
+          .select("nav_total").eq("date", baseDate);
+        const totalNav = (navAll || []).reduce((s, r) => s + (r.nav_total || 0), 0);
+        const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
+        if (holdTitleEl && totalNav > 0) {
+          const jo = totalNav / 1_000_000_000_000;  // 1조 = 10^12
+          const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          holdTitleEl.innerHTML =
+            `<span class="hl-icon">🏆</span>현재 보유 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${joStr}조원)</span>`;
+        }
+      } catch (e) { console.error("총 순자산 표시 실패:", e); }
+
       renderCard("Hold", holdAll,
         x => `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
         "데이터 없음");
