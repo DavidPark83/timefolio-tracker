@@ -602,16 +602,10 @@
   // =========================================================
   // ETF 탭 클릭
   // =========================================================
-  function selectEtf(el) {
+function selectEtf(el) {
     const idx = parseInt(el.dataset.idx);
     if (currentMode === "compare") {
-      if (!cmpEtfA) cmpEtfA = idx;
-      else if (idx === cmpEtfA) { cmpEtfA = null; cmpEtfB = null; }
-      else if (!cmpEtfB) cmpEtfB = idx;
-      else if (idx === cmpEtfB) cmpEtfB = null;
-      else { cmpEtfA = idx; cmpEtfB = null; }
-      updateCompareTabsHighlight();
-      loadCompareMode();
+      // ...
       return;
     }
     document.querySelectorAll('.etf-tab').forEach(t => t.classList.remove('active'));
@@ -619,12 +613,17 @@
     currentIdx = idx;
     sortKey = null;
     renderInfo();
-    // 글로벌 날짜로 단일 ETF 데이터 로드
     const base = document.getElementById("globalDateSelect")?.value;
     const cmp  = document.getElementById("globalCompareSelect")?.value;
     if (base) loadDataWithDates(base, cmp);
-  }
 
+    // ★ 이벤트 추적
+    trackEvent('etf_tab_click', {
+      etf_idx: idx,
+      etf_name: getEtfName(idx)
+    });
+  }
+  
   function updateCompareTabsHighlight() {
     document.querySelectorAll(".etf-tab").forEach(t => {
       const idx = parseInt(t.dataset.idx);
@@ -1095,11 +1094,18 @@ const aggregate = (rows) => {
   // =========================================================
   // ② 종목 모달 + ④ 추이 차트
   // =========================================================
-  async function openSecurityModal(code, name) {
+    async function openSecurityModal(code, name) {
     const normCode = normalizeCode(code);
     document.getElementById("modalTitle").textContent = name + (normCode ? `  (${normCode})` : "");
     document.getElementById("modalOverlay").classList.add("show");
     document.getElementById("holdingList").innerHTML = '<div class="hl-empty">로딩 중...</div>';
+
+    // ★ 이벤트 추적
+    trackEvent('security_modal_open', {
+      security_code: normCode || '',
+      security_name: name || ''
+    });
+
     if (!db || !normCode) return;
     const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
     const latest = latestRows?.[0]?.date;
