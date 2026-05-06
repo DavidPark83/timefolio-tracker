@@ -196,115 +196,6 @@
     .footer { margin-top: 16px; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid #1e2433; font-size: 11px; color: #475569; line-height: 1.6; }
     .hidden { display: none !important; }
 
-    /* ===== 날짜 캘린더 위젯 ===== */
-    .date-picker-wrap { position: relative; display: inline-block; }
-    .date-picker-btn {
-      background: #131929; border: 1px solid #2d3748; color: #e2e8f0;
-      padding: 8px 14px; border-radius: 8px; font-size: 13px;
-      cursor: pointer; font-family: inherit;
-      display: inline-flex; align-items: center; gap: 8px;
-      min-width: 150px; justify-content: space-between;
-    }
-    .date-picker-btn:hover { border-color: #00D4AA; color: #00D4AA; }
-    .date-picker-btn .dp-icon { font-size: 14px; opacity: 0.7; }
-    .date-picker-btn .dp-caret { font-size: 9px; color: #64748b; }
-    .date-picker-btn.empty .dp-text { color: #64748b; }
-
-    .date-picker-popup {
-      position: absolute; top: calc(100% + 6px); left: 0; z-index: 150;
-      background: #0d1526; border: 1px solid #2d3748; border-radius: 12px;
-      padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      min-width: 280px; display: none;
-    }
-    .date-picker-popup.show { display: block; }
-    .dp-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .dp-nav-btn {
-      background: transparent; border: 1px solid #2d3748; color: #94a3b8;
-      width: 28px; height: 28px; border-radius: 6px;
-      cursor: pointer; font-size: 14px; padding: 0;
-      display: inline-flex; align-items: center; justify-content: center;
-    }
-    .dp-nav-btn:hover { border-color: #00D4AA; color: #00D4AA; }
-    .dp-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .dp-nav-btn:disabled:hover { border-color: #2d3748; color: #94a3b8; }
-    .dp-title {
-      font-size: 13px; font-weight: 700; color: #f1f5f9;
-      cursor: pointer; padding: 4px 10px; border-radius: 6px;
-    }
-    .dp-title:hover { background: rgba(0,212,170,0.08); color: #00D4AA; }
-
-    .dp-weekdays {
-      display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
-      margin-bottom: 6px;
-    }
-    .dp-weekday {
-      text-align: center; font-size: 10px; color: #64748b;
-      padding: 4px 0; letter-spacing: 0.5px; font-weight: 600;
-    }
-    .dp-weekday.sun { color: #f87171; }
-    .dp-weekday.sat { color: #60a5fa; }
-
-    .dp-days {
-      display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
-    }
-    .dp-day {
-      text-align: center; padding: 7px 0; font-size: 12px;
-      border-radius: 6px; cursor: pointer; color: #e2e8f0;
-      font-family: monospace; user-select: none;
-      transition: background 0.12s;
-    }
-    .dp-day:hover { background: rgba(0,212,170,0.12); color: #00D4AA; }
-    .dp-day.other-month { color: #334155; cursor: default; }
-    .dp-day.other-month:hover { background: transparent; color: #334155; }
-    .dp-day.disabled { color: #334155; cursor: not-allowed; opacity: 0.4; }
-    .dp-day.disabled:hover { background: transparent; color: #334155; }
-    .dp-day.selected {
-      background: #00D4AA; color: #0a0e1a; font-weight: 700;
-    }
-    .dp-day.selected:hover { background: #00D4AA; color: #0a0e1a; }
-    .dp-day.today {
-      border: 1px solid #00D4AA;
-    }
-
-    /* 연/월 그리드 (헤더 클릭 시) */
-    .dp-yearmonth-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
-    }
-    .dp-ym-item {
-      text-align: center; padding: 10px 0; font-size: 12px;
-      border-radius: 6px; cursor: pointer; color: #e2e8f0;
-      border: 1px solid #2d3748; background: #131929;
-    }
-    .dp-ym-item:hover { border-color: #00D4AA; color: #00D4AA; }
-    .dp-ym-item.selected { background: rgba(0,212,170,0.15); border-color: #00D4AA; color: #00D4AA; font-weight: 700; }
-    .dp-ym-item.disabled { opacity: 0.3; cursor: not-allowed; }
-    .dp-ym-item.disabled:hover { border-color: #2d3748; color: #e2e8f0; }
-
-    .dp-footer {
-      margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e2d4a;
-      display: flex; gap: 6px; flex-wrap: wrap;
-    }
-    .dp-quick {
-      flex: 1; min-width: 0; padding: 5px 8px; font-size: 11px;
-      background: transparent; border: 1px solid #2d3748; color: #94a3b8;
-      border-radius: 6px; cursor: pointer;
-    }
-    .dp-quick:hover { border-color: #00D4AA; color: #00D4AA; }
-    .dp-clear {
-      background: transparent; border: 1px solid #2d3748; color: #f87171;
-      padding: 5px 12px; font-size: 11px; border-radius: 6px; cursor: pointer;
-    }
-    .dp-clear:hover { border-color: #f87171; }
-
-    /* 기존 globalDateSelect는 시각적으로 숨김 (값 컨테이너 역할만) */
-    #globalDateSelect, #globalCompareSelect {
-      position: absolute; left: -9999px; width: 1px; height: 1px;
-      opacity: 0; pointer-events: none;
-    }
-
     @media (max-width: 900px) {
       .highlights { grid-template-columns: repeat(2, 1fr); }
       .compare-grid { grid-template-columns: 1fr; }
@@ -357,28 +248,12 @@
       <div class="controls" style="margin-bottom: 12px;">
         <div class="ctrl-group">
           <label>기준일</label>
-          <div class="date-picker-wrap">
-            <button type="button" class="date-picker-btn" id="globalDateBtn" onclick="toggleDatePicker('base')">
-              <span class="dp-icon">📅</span>
-              <span class="dp-text" id="globalDateBtnText">로딩 중...</span>
-              <span class="dp-caret">▼</span>
-            </button>
-            <div class="date-picker-popup" id="globalDatePopup"></div>
-          </div>
-          <select id="globalDateSelect" onchange="onGlobalDateChange()" aria-hidden="true" tabindex="-1"><option>로딩 중...</option></select>
+          <select id="globalDateSelect" onchange="onGlobalDateChange()"><option>로딩 중...</option></select>
         </div>
         <div style="padding-bottom:8px;color:#475569;font-size:18px">↔</div>
         <div class="ctrl-group">
           <label>비교일</label>
-          <div class="date-picker-wrap">
-            <button type="button" class="date-picker-btn empty" id="globalCompareBtn" onclick="toggleDatePicker('compare')">
-              <span class="dp-icon">📅</span>
-              <span class="dp-text" id="globalCompareBtnText">비교 안함</span>
-              <span class="dp-caret">▼</span>
-            </button>
-            <div class="date-picker-popup" id="globalComparePopup"></div>
-          </div>
-          <select id="globalCompareSelect" onchange="onGlobalDateChange()" aria-hidden="true" tabindex="-1"><option value="">비교 안함</option></select>
+          <select id="globalCompareSelect" onchange="onGlobalDateChange()"><option value="">비교 안함</option></select>
         </div>
       </div>
       <div class="quick-buttons" style="margin-bottom: 0;">
@@ -459,7 +334,7 @@
     <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div>
   </div>
 
-  <!-- ETF 탭 (페이지 로드 시 sortEtfTabsByNav()가 순자산총액 내림차순으로 재배치) -->
+  <!-- ETF 탭 -->
   <div class="etf-tabs" id="etfTabs">
     <div class="tab-section-label">해외투자</div>
     <div class="etf-tab active" data-idx="22" onclick="selectEtf(this)">글로벌탑픽액티브</div>
@@ -648,291 +523,6 @@
   let trendChartInstance = null;
 
   // =========================================================
-  // ★★★ 날짜 캘린더 위젯 (자체 구현)
-  //   - 기존 <select id="globalDateSelect"> / <select id="globalCompareSelect">는
-  //     숨긴 상태로 값 컨테이너 역할만 수행 → 기존 onchange 로직 그대로 동작
-  //   - 데이터가 있는 날짜(globalAllDates)만 클릭 가능, 그 외는 disabled
-  // =========================================================
-  const dpState = {
-    base:    { viewYear: null, viewMonth: null, mode: "days" }, // mode: 'days' | 'months' | 'years'
-    compare: { viewYear: null, viewMonth: null, mode: "days" },
-  };
-
-  function dpAvailableSet() {
-    return new Set(globalAllDates); // 'YYYY-MM-DD' 문자열
-  }
-
-  function dpFormatDisplay(dateStr) {
-    if (!dateStr) return "비교 안함";
-    // 'YYYY-MM-DD' → 'YYYY.MM.DD'
-    return dateStr.replace(/-/g, ".");
-  }
-
-  function toggleDatePicker(which) {
-    const popupId = which === "base" ? "globalDatePopup" : "globalComparePopup";
-    const popup = document.getElementById(popupId);
-    const isShown = popup.classList.contains("show");
-    // 다른 캘린더 닫기
-    document.querySelectorAll(".date-picker-popup").forEach(p => p.classList.remove("show"));
-    if (!isShown) {
-      // 현재 선택된 날짜를 기준으로 viewYear/viewMonth 설정
-      const selected = which === "base"
-        ? document.getElementById("globalDateSelect").value
-        : document.getElementById("globalCompareSelect").value;
-      const ref = selected || globalAllDates[0] || new Date().toISOString().slice(0, 10);
-      const [y, m] = ref.split("-").map(Number);
-      dpState[which].viewYear = y;
-      dpState[which].viewMonth = m - 1; // 0-indexed
-      dpState[which].mode = "days";
-      renderDatePicker(which);
-      popup.classList.add("show");
-    }
-  }
-
-  function renderDatePicker(which) {
-    const popup = document.getElementById(which === "base" ? "globalDatePopup" : "globalComparePopup");
-    const st = dpState[which];
-    if (st.mode === "days")        popup.innerHTML = renderDaysView(which);
-    else if (st.mode === "months") popup.innerHTML = renderMonthsView(which);
-    else if (st.mode === "years")  popup.innerHTML = renderYearsView(which);
-  }
-
-  function renderDaysView(which) {
-    const st = dpState[which];
-    const { viewYear: y, viewMonth: m } = st;
-    const available = dpAvailableSet();
-    const selected = which === "base"
-      ? document.getElementById("globalDateSelect").value
-      : document.getElementById("globalCompareSelect").value;
-    const todayStr = new Date().toISOString().slice(0, 10);
-
-    // 데이터가 있는 가장 빠른/늦은 날짜 (네비게이션 enable/disable 판단용)
-    const minDate = globalAllDates.length ? globalAllDates[globalAllDates.length - 1] : null;
-    const maxDate = globalAllDates.length ? globalAllDates[0] : null;
-    const viewStart = `${y}-${String(m + 1).padStart(2, "0")}-01`;
-    const lastDay = new Date(y, m + 1, 0).getDate();
-    const viewEnd = `${y}-${String(m + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
-
-    // 이전 달에 데이터가 하나라도 있는지
-    const hasPrev = minDate && minDate < viewStart;
-    const hasNext = maxDate && maxDate > viewEnd;
-
-    // 첫째 날의 요일 (0=일)
-    const firstDow = new Date(y, m, 1).getDay();
-    // 빈칸 + 일자
-    const cells = [];
-    for (let i = 0; i < firstDow; i++) cells.push(null);
-    for (let d = 1; d <= lastDay; d++) cells.push(d);
-    // 6주(42칸) 채우기 위한 뒷쪽 빈칸
-    while (cells.length < 42) cells.push(null);
-
-    const monthLabel = `${y}년 ${m + 1}월`;
-    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-
-    const daysHtml = cells.map((d, i) => {
-      if (d === null) return `<div class="dp-day other-month"></div>`;
-      const ds = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      const isAvail = available.has(ds);
-      const isSelected = ds === selected;
-      const isToday = ds === todayStr;
-      const cls = [
-        "dp-day",
-        !isAvail ? "disabled" : "",
-        isSelected ? "selected" : "",
-        isToday ? "today" : "",
-      ].filter(Boolean).join(" ");
-      const onclick = isAvail ? `onclick="dpPickDate('${which}','${ds}')"` : "";
-      return `<div class="${cls}" ${onclick}>${d}</div>`;
-    }).join("");
-
-    const compareClearBtn = which === "compare"
-      ? `<button class="dp-clear" onclick="dpClearCompare()">비교 안함</button>`
-      : "";
-    const latestBtn = which === "base"
-      ? `<button class="dp-quick" onclick="dpPickLatest('base')">최신</button>`
-      : `<button class="dp-quick" onclick="dpPickLatest('compare')">최신</button>`;
-
-    return `
-      <div class="dp-header">
-        <button class="dp-nav-btn" ${hasPrev ? "" : "disabled"} onclick="dpNavMonth('${which}',-1)">‹</button>
-        <div class="dp-title" onclick="dpSwitchMode('${which}','months')">${monthLabel}</div>
-        <button class="dp-nav-btn" ${hasNext ? "" : "disabled"} onclick="dpNavMonth('${which}',1)">›</button>
-      </div>
-      <div class="dp-weekdays">
-        ${weekdays.map((w, i) => `<div class="dp-weekday ${i===0?'sun':i===6?'sat':''}">${w}</div>`).join("")}
-      </div>
-      <div class="dp-days">${daysHtml}</div>
-      <div class="dp-footer">
-        ${latestBtn}
-        ${compareClearBtn}
-      </div>
-    `;
-  }
-
-  function renderMonthsView(which) {
-    const st = dpState[which];
-    const y = st.viewYear;
-    const available = dpAvailableSet();
-    const selected = which === "base"
-      ? document.getElementById("globalDateSelect").value
-      : document.getElementById("globalCompareSelect").value;
-    const selYear = selected ? parseInt(selected.slice(0, 4)) : null;
-    const selMonth = selected ? parseInt(selected.slice(5, 7)) - 1 : null;
-
-    // 해당 연도에 데이터가 있는 월 집합
-    const monthsWithData = new Set();
-    for (const d of globalAllDates) {
-      if (d.startsWith(`${y}-`)) monthsWithData.add(parseInt(d.slice(5, 7)) - 1);
-    }
-
-    const months = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
-    const monthsHtml = months.map((mLabel, mi) => {
-      const isAvail = monthsWithData.has(mi);
-      const isSelected = (selYear === y && selMonth === mi);
-      const cls = ["dp-ym-item", !isAvail ? "disabled" : "", isSelected ? "selected" : ""].filter(Boolean).join(" ");
-      const onclick = isAvail ? `onclick="dpPickMonth('${which}',${y},${mi})"` : "";
-      return `<div class="${cls}" ${onclick}>${mLabel}</div>`;
-    }).join("");
-
-    const minYear = globalAllDates.length ? parseInt(globalAllDates[globalAllDates.length - 1].slice(0, 4)) : y;
-    const maxYear = globalAllDates.length ? parseInt(globalAllDates[0].slice(0, 4)) : y;
-
-    return `
-      <div class="dp-header">
-        <button class="dp-nav-btn" ${y > minYear ? "" : "disabled"} onclick="dpNavYear('${which}',-1)">‹</button>
-        <div class="dp-title" onclick="dpSwitchMode('${which}','years')">${y}년</div>
-        <button class="dp-nav-btn" ${y < maxYear ? "" : "disabled"} onclick="dpNavYear('${which}',1)">›</button>
-      </div>
-      <div class="dp-yearmonth-grid">${monthsHtml}</div>
-    `;
-  }
-
-  function renderYearsView(which) {
-    const st = dpState[which];
-    const baseY = st.viewYear;
-    const blockStart = Math.floor(baseY / 12) * 12;
-    const blockEnd = blockStart + 11;
-    const yearsWithData = new Set(globalAllDates.map(d => parseInt(d.slice(0, 4))));
-    const selected = which === "base"
-      ? document.getElementById("globalDateSelect").value
-      : document.getElementById("globalCompareSelect").value;
-    const selYear = selected ? parseInt(selected.slice(0, 4)) : null;
-
-    let years = [];
-    for (let y = blockStart; y <= blockEnd; y++) years.push(y);
-    const yearsHtml = years.map(y => {
-      const isAvail = yearsWithData.has(y);
-      const isSelected = (selYear === y);
-      const cls = ["dp-ym-item", !isAvail ? "disabled" : "", isSelected ? "selected" : ""].filter(Boolean).join(" ");
-      const onclick = isAvail ? `onclick="dpPickYear('${which}',${y})"` : "";
-      return `<div class="${cls}" ${onclick}>${y}</div>`;
-    }).join("");
-
-    const minYear = globalAllDates.length ? parseInt(globalAllDates[globalAllDates.length - 1].slice(0, 4)) : baseY;
-    const maxYear = globalAllDates.length ? parseInt(globalAllDates[0].slice(0, 4)) : baseY;
-
-    return `
-      <div class="dp-header">
-        <button class="dp-nav-btn" ${blockStart > minYear ? "" : "disabled"} onclick="dpNavYearBlock('${which}',-12)">‹</button>
-        <div class="dp-title">${blockStart} - ${blockEnd}</div>
-        <button class="dp-nav-btn" ${blockEnd < maxYear ? "" : "disabled"} onclick="dpNavYearBlock('${which}',12)">›</button>
-      </div>
-      <div class="dp-yearmonth-grid">${yearsHtml}</div>
-    `;
-  }
-
-  function dpNavMonth(which, delta) {
-    const st = dpState[which];
-    let y = st.viewYear;
-    let m = st.viewMonth + delta;
-    if (m < 0)  { m = 11; y--; }
-    if (m > 11) { m = 0;  y++; }
-    st.viewYear = y; st.viewMonth = m;
-    renderDatePicker(which);
-  }
-
-  function dpNavYear(which, delta) {
-    dpState[which].viewYear += delta;
-    renderDatePicker(which);
-  }
-
-  function dpNavYearBlock(which, delta) {
-    dpState[which].viewYear += delta;
-    renderDatePicker(which);
-  }
-
-  function dpSwitchMode(which, mode) {
-    dpState[which].mode = mode;
-    renderDatePicker(which);
-  }
-
-  function dpPickYear(which, y) {
-    dpState[which].viewYear = y;
-    dpState[which].mode = "months";
-    renderDatePicker(which);
-  }
-
-  function dpPickMonth(which, y, m) {
-    dpState[which].viewYear = y;
-    dpState[which].viewMonth = m;
-    dpState[which].mode = "days";
-    renderDatePicker(which);
-  }
-
-  function dpPickDate(which, dateStr) {
-    const sel = which === "base"
-      ? document.getElementById("globalDateSelect")
-      : document.getElementById("globalCompareSelect");
-    sel.value = dateStr;
-    dpUpdateButtonText();
-    // 빠른비교 active 해제
-    document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
-    // 팝업 닫기
-    document.querySelectorAll(".date-picker-popup").forEach(p => p.classList.remove("show"));
-    // 기존 onchange 발화
-    sel.dispatchEvent(new Event("change"));
-  }
-
-  function dpPickLatest(which) {
-    if (!globalAllDates.length) return;
-    dpPickDate(which, globalAllDates[0]);
-  }
-
-  function dpClearCompare() {
-    const sel = document.getElementById("globalCompareSelect");
-    sel.value = "";
-    dpUpdateButtonText();
-    document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".date-picker-popup").forEach(p => p.classList.remove("show"));
-    sel.dispatchEvent(new Event("change"));
-  }
-
-  function dpUpdateButtonText() {
-    const baseVal = document.getElementById("globalDateSelect").value;
-    const cmpVal  = document.getElementById("globalCompareSelect").value;
-    const baseBtn = document.getElementById("globalDateBtnText");
-    const cmpBtn  = document.getElementById("globalCompareBtnText");
-    const baseBtnEl = document.getElementById("globalDateBtn");
-    const cmpBtnEl  = document.getElementById("globalCompareBtn");
-    if (baseBtn)   baseBtn.textContent = baseVal ? dpFormatDisplay(baseVal) : "선택";
-    if (baseBtnEl) baseBtnEl.classList.toggle("empty", !baseVal);
-    if (cmpBtn)    cmpBtn.textContent = cmpVal ? dpFormatDisplay(cmpVal) : "비교 안함";
-    if (cmpBtnEl)  cmpBtnEl.classList.toggle("empty", !cmpVal);
-  }
-
-  // 외부 클릭 시 팝업 닫기
-  document.addEventListener("click", (e) => {
-    if (e.target.closest(".date-picker-wrap")) return;
-    document.querySelectorAll(".date-picker-popup").forEach(p => p.classList.remove("show"));
-  });
-
-  // 빠른 비교 버튼/연초/비교안함 클릭 후에도 버튼 텍스트 동기화 필요
-  // → 빠른비교 함수들이 select.value를 직접 set하므로 onchange가 안 발화됨.
-  //   기존 함수에 손대지 않고, MutationObserver 대신 onchange 핸들러를 살짝 보강.
-  // =========================================================
-
-
-  // =========================================================
   // ★ 종목코드 정규화 (leading zero 복구)
   // =========================================================
   function normalizeCode(raw) {
@@ -953,28 +543,12 @@
   // 유틸
   // =========================================================
   function fmt(n) { if (n == null) return "—"; return Number(n).toLocaleString("ko-KR"); }
-
-  // ★ 순자산총액/금액 포맷터 — 모두 "억원"으로 통일
-  //   • 1억원 이상   → 정수 + 천 단위 쉼표  (예: 2,415억원)
-  //   • 1억원 미만   → 소수점 1자리         (예: 0.5억원)
-  //   • 음수 처리   → 부호 자동 부착        (예: -4억원)
-  //   • 1조원 이상  → "조원" 표기 (대형 ETF 가독성 보강)
   function fmtNav(v) {
     if (v == null) return "—";
-    const sign = v < 0 ? "-" : "";
-    const abs = Math.abs(v);
-    const eok = abs / 100_000_000;
-    if (eok >= 10000) {
-      return sign + (eok / 10000).toFixed(2) + "조원";
-    }
-    // 1억원 이상: 정수 반올림 + 천 단위 쉼표 (예: 2,415억원)
-    if (eok >= 1) {
-      return sign + Math.round(eok).toLocaleString("ko-KR") + "억원";
-    }
-    // 1억원 미만: 소수점 1자리 (예: 0.5억원, 0.1억원)
-    return sign + eok.toFixed(1) + "억원";
+    const eok = v / 100_000_000;
+    if (eok >= 1) return eok.toFixed(0) + " 억원";
+    return fmt(v) + " 원";
   }
-
   function showError(title, hint) {
     const box = document.getElementById("errorBox");
     box.innerHTML = `<div style="font-weight:700;margin-bottom:6px">⚠️ ${title}</div><div style="color:#fcd5d5">${hint}</div>`;
@@ -995,76 +569,6 @@
     if (c && /^\d+$/.test(c)) return true;
     if (n && /^[가-힣\s]+$/.test(n)) return true;
     return false;
-  }
-
-  // =========================================================
-  // ★★★ ETF 탭을 순자산총액 내림차순으로 정렬
-  //   - 해외/국내 섹션 구분은 유지
-  //   - 각 섹션 내에서만 nav_total 큰 순서로 재배치
-  //   - 정렬 후 첫 번째 탭을 active 상태로 동기화
-  // =========================================================
-  async function sortEtfTabsByNav() {
-    if (!db) return;
-    try {
-      // 1) etf_daily의 가장 최신 날짜 찾기
-      const { data: latestRows, error: e1 } = await db.from("etf_daily")
-        .select("date").order("date", { ascending: false }).limit(1);
-      if (e1) { console.error("sortEtfTabsByNav latest date 조회 실패:", e1); return; }
-      if (!latestRows?.length) return;
-      const latest = latestRows[0].date;
-
-      // 2) 해당 날짜의 모든 ETF nav_total 조회
-      const { data: navRows, error: e2 } = await db.from("etf_daily")
-        .select("etf_idx, nav_total").eq("date", latest);
-      if (e2) { console.error("sortEtfTabsByNav nav 조회 실패:", e2); return; }
-      if (!navRows?.length) return;
-
-      const navMap = {};
-      navRows.forEach(r => { navMap[r.etf_idx] = r.nav_total || 0; });
-
-      // 3) 탭 컨테이너에서 섹션별로 그룹 분리
-      const container = document.getElementById("etfTabs");
-      if (!container) return;
-      const children = Array.from(container.children);
-
-      const groups = []; // [{label: <div.section-label>, tabs: [<div.etf-tab>, ...]}]
-      let cur = null;
-      children.forEach(el => {
-        if (el.classList.contains("tab-section-label")) {
-          cur = { label: el, tabs: [] };
-          groups.push(cur);
-        } else if (el.classList.contains("etf-tab") && cur) {
-          cur.tabs.push(el);
-        }
-      });
-
-      // 4) 각 그룹 내에서 nav_total 내림차순 정렬
-      groups.forEach(g => {
-        g.tabs.sort((a, b) => {
-          const na = navMap[parseInt(a.dataset.idx)] || 0;
-          const nb = navMap[parseInt(b.dataset.idx)] || 0;
-          return nb - na;
-        });
-      });
-
-      // 5) DOM 재배치
-      container.innerHTML = "";
-      groups.forEach(g => {
-        container.appendChild(g.label);
-        g.tabs.forEach(t => container.appendChild(t));
-      });
-
-      // 6) 정렬 후 첫 ETF 탭을 active 로 동기화
-      //    (HTML에 하드코딩된 active가 더 이상 첫 번째가 아닐 수 있음)
-      const firstTab = container.querySelector(".etf-tab");
-      if (firstTab) {
-        container.querySelectorAll(".etf-tab").forEach(t => t.classList.remove("active"));
-        firstTab.classList.add("active");
-        currentIdx = parseInt(firstTab.dataset.idx);
-      }
-    } catch (e) {
-      console.error("ETF 탭 정렬 실패:", e);
-    }
   }
 
   // =========================================================
@@ -1104,13 +608,7 @@
 function selectEtf(el) {
     const idx = parseInt(el.dataset.idx);
     if (currentMode === "compare") {
-      if (!cmpEtfA) cmpEtfA = idx;
-      else if (idx === cmpEtfA) { cmpEtfA = null; cmpEtfB = null; }
-      else if (!cmpEtfB) cmpEtfB = idx;
-      else if (idx === cmpEtfB) cmpEtfB = null;
-      else { cmpEtfA = idx; cmpEtfB = null; }
-      updateCompareTabsHighlight();
-      loadCompareMode();
+      // ...
       return;
     }
     document.querySelectorAll('.etf-tab').forEach(t => t.classList.remove('active'));
@@ -1204,9 +702,6 @@ function selectEtf(el) {
     s1.value = globalAllDates[0];
     if (globalAllDates[1]) s2.value = globalAllDates[1];
 
-    // ★ 캘린더 버튼 텍스트 동기화
-    dpUpdateButtonText();
-
     // 양쪽 모두 로드
     refreshAll();
   }
@@ -1225,7 +720,6 @@ function selectEtf(el) {
   function onGlobalDateChange() {
     // 셀렉트 직접 변경시 빠른비교 active 해제
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
-    dpUpdateButtonText();   // ★ 캘린더 버튼 텍스트 동기화
     refreshAll();
   }
 
@@ -1236,7 +730,6 @@ function selectEtf(el) {
     document.getElementById("globalCompareSelect").value = target;
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    dpUpdateButtonText();   // ★ 캘린더 버튼 텍스트 동기화
     refreshAll();
 
         // ★ 이벤트 추적
@@ -1255,7 +748,6 @@ function selectEtf(el) {
     document.getElementById("globalCompareSelect").value = target;
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    dpUpdateButtonText();   // ★ 캘린더 버튼 텍스트 동기화
     refreshAll();
   }
 
@@ -1263,7 +755,6 @@ function selectEtf(el) {
     document.getElementById("globalCompareSelect").value = "";
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    dpUpdateButtonText();   // ★ 캘린더 버튼 텍스트 동기화
     refreshAll();
   }
 
@@ -1331,11 +822,8 @@ function selectEtf(el) {
       const diff = navCur.nav_total - navCmp.nav_total;
       const pct = (diff / navCmp.nav_total) * 100;
       const cls = diff > 0 ? "pos" : diff < 0 ? "neg" : "neu";
-      // ★ 양수일 때만 "+" 부호 추가 (음수는 fmtNav가 자동으로 "-" 부호 부착)
-      const navSign = diff > 0 ? "+" : "";
-      const pctSign = diff > 0 ? "+" : "";
-      document.getElementById("statNavDiff").innerHTML =
-        `<span class="${cls}">${navSign}${fmtNav(diff)} (${pctSign}${pct.toFixed(2)}%)</span>`;
+      const sign = diff > 0 ? "+" : "";
+      document.getElementById("statNavDiff").innerHTML = `<span class="${cls}">${sign}${fmtNav(diff)} (${sign}${pct.toFixed(2)}%)</span>`;
     } else {
       document.getElementById("statNavDiff").textContent = compareDate ? "비교 데이터 없음" : "—";
     }
@@ -1572,7 +1060,7 @@ const aggregate = (rows) => {
         .filter(x => x.holdingAccounts > 0)
         .sort((a, b) => b.holdingAccounts - a.holdingAccounts);
 
-      // 억 단위 포맷터 (천 단위 쉼표 적용)
+      // 억 단위 포맷터
       const fmtEok = (v) => {
         if (!v) return "—";
         const eok = v / 100_000_000;
@@ -1588,7 +1076,7 @@ const aggregate = (rows) => {
       // 변화 카드 4종
       const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
 
-      // 부호가 들어간 억원 포맷터 (변화량 표시용, 천 단위 쉼표 포함)
+      // 부호가 들어간 억원 포맷터 (변화량 표시용)
       const fmtEokSigned = (v) => {
         if (v == null) return "—";
         const sign = v > 0 ? "+" : v < 0 ? "-" : "";
@@ -1810,15 +1298,9 @@ const aggregate = (rows) => {
 
   // =========================================================
   // 시작
-  //   ① ETF 탭을 순자산총액 내림차순으로 정렬 (해외/국내 섹션 내)
-  //   ② 정보 박스 갱신 (정렬 후 새로 active된 ETF 기준)
-  //   ③ 글로벌 날짜 초기화 → refreshAll() → 모든 데이터 로드
   // =========================================================
-  (async () => {
-    await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
-    renderInfo();
-    initGlobalDates();
-  })();
+  renderInfo();
+  initGlobalDates();   // ★ 글로벌 날짜 초기화 → refreshAll() 호출 → 모든 데이터 로드
   
 </script>
 
