@@ -206,6 +206,17 @@
       .search-wrap { max-width: 100%; }
     }
   </style>
+  
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2JVGVXMPSB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2JVGVXMPSB');
+</script>
+  
 </head>
 <body>
 
@@ -439,6 +450,22 @@
 </div>
 
 <script>
+  // =========================================================
+  // 📊 분석 이벤트 추적 (Vercel Analytics + GA4 통합)
+  // =========================================================
+  function trackEvent(eventName, params = {}) {
+    // GA4
+    if (typeof gtag === 'function') {
+      gtag('event', eventName, params);
+    }
+    // Vercel Analytics
+    if (typeof window.va === 'function') {
+      window.va('event', { name: eventName, data: params });
+    }
+    // 개발 환경 디버깅 (필요시 주석 처리)
+    // console.log('[Track]', eventName, params);
+  }
+  
   // =========================================================
   // 설정
   // =========================================================
