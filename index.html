@@ -585,7 +585,7 @@
   // =========================================================
   // 모드 전환
   // =========================================================
-  function switchMode(mode) {
+    function switchMode(mode) {
     currentMode = mode;
     document.querySelectorAll(".mode-tab").forEach(t => t.classList.toggle("active", t.dataset.mode === mode));
     document.getElementById("modeSingle").classList.toggle("hidden", mode !== "single");
@@ -597,6 +597,9 @@
     } else {
       document.querySelectorAll(".etf-tab").forEach(t => t.classList.remove("compare-active"));
     }
+
+    // ★ 이벤트 추적
+    trackEvent('mode_switch', { mode });
   }
 
   // =========================================================
@@ -728,6 +731,9 @@ function selectEtf(el) {
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     refreshAll();
+
+        // ★ 이벤트 추적
+    trackEvent('quick_compare_click', { days });
   }
 
   function setGlobalQuickCompareYTD(btn) {
@@ -1263,9 +1269,16 @@ const aggregate = (rows) => {
       if (!data?.length) {
         resBox.innerHTML = '<div class="search-empty">검색 결과 없음</div>';
         resBox.classList.add("show");
+
+        // ★ 검색 실패 추적
+        trackEvent('search', { query: q.trim(), result_count: 0 });
+        
         return;
       }
-      const normalized = normalizeRows(data);
+       // ★ 검색 성공 추적
+      trackEvent('search', { query: q.trim(), result_count: data.length });
+            
+      const normalized = normalizeRows(data); 
       const grouped = {};
       normalized.forEach(r => {
         if (!grouped[r.code]) grouped[r.code] = { code: r.code, name: r.name, etfs: [] };
