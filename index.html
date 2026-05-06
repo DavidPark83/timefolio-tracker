@@ -943,9 +943,13 @@
         return normalizeRows(all);
       };
 
-      const aggregate = (rows) => {
+const aggregate = (rows) => {
         const map = {};
         for (const r of rows) {
+          // ★ 현금/원화예금 등 비종목 항목 제외
+          const nm = (r.name || "").trim();
+          if (/^(현금|원화예금|예금|기타|미수금|미지급금)/.test(nm)) continue;
+
           const code = (r.code || "").trim();
           const key = code || r.name;
           if (!map[key]) map[key] = {
