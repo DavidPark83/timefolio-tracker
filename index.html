@@ -795,7 +795,22 @@ function selectEtf(el) {
     if (!s1 || !s2) return;
 
     s1.innerHTML = globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
-    s2.innerHTML = '<option value="">비교 안함</option>' + globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
+    // ★ 비교일은 기준일보다 이전 날짜만 표시 (초기엔 최신일 기준)
+    const initialBase = globalAllDates[0];
+    s2.innerHTML = '<option value="">비교 안함</option>' +
+      globalAllDates.filter(d => d < initialBase).map(d => `<option value="${d}">${d}</option>`).join("");
+
+    // 기준일 변경 시 비교일 드롭다운도 동적으로 업데이트
+    s1.addEventListener("change", () => {
+      const base = s1.value;
+      const currentCmp = s2.value;
+      s2.innerHTML = '<option value="">비교 안함</option>' +
+        globalAllDates.filter(d => d < base).map(d => `<option value="${d}">${d}</option>`).join("");
+      // 기존 비교일이 새 목록에 있으면 유지, 없으면 빈 값
+      if (currentCmp && globalAllDates.includes(currentCmp) && currentCmp < base) {
+        s2.value = currentCmp;
+      }
+    });
 
     // 기본값: 기준일=최신, 비교일=1일 전(직전 영업일)
     s1.value = globalAllDates[0];
