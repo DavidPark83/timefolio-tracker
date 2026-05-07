@@ -1,0 +1,40 @@
+name: Backfill Standard Price (1회성)
+
+# ✅ 수동 실행만 가능 (workflow_dispatch)
+# GitHub → Actions 탭 → "Backfill Standard Price" → "Run workflow" 버튼
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: '시작일 (YYYY-MM-DD). 비워두면 전체 히스토리 처리'
+        required: false
+        default: ''
+      etf_idx:
+        description: '특정 ETF만 테스트할 idx (예: 22). 비워두면 전체 18개'
+        required: false
+        default: ''
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30        # 18개 ETF 전체도 넉넉히 처리
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: 백필 실행
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          START_DATE: ${{ github.event.inputs.start_date }}
+          ETF_IDX: ${{ github.event.inputs.etf_idx }}
+        run: python backfill_standard_price.py
