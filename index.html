@@ -42,7 +42,7 @@
     .hl-card {
       background: #0d1526; border: 1px solid #1e2d4a; border-radius: 12px; padding: 14px 16px;
     }
-    .hl-title { font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .hl-title { font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
     .hl-title .hl-icon { font-size: 14px; }
     .hl-list { font-size: 12px; }
     .hl-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; gap: 6px; }
@@ -51,37 +51,19 @@
     .hl-row .hl-val { font-family: monospace; font-size: 11px; flex-shrink: 0; }
     .hl-empty { color: #475569; font-size: 11px; padding: 8px 0; text-align: center; }
 
-    /* ===== 상위 지표 탭 (보유평가금액 / 보유주식수) ===== */
-    .hl-metric-tabs {
-      display: flex; gap: 0; margin-bottom: 6px;
-      background: rgba(0,0,0,0.25); border-radius: 8px; padding: 2px;
-      border: 1px solid #1e2d4a;
+    /* ===== 하이라이트 카드 국내/해외 탭 ===== */
+    .hl-tabs {
+      display: flex; gap: 0; margin-bottom: 10px;
+      background: rgba(255,255,255,0.03); border-radius: 8px; padding: 2px;
     }
-    .hl-metric-tab {
-      flex: 1; padding: 5px 0; text-align: center; font-size: 10px; font-weight: 700;
+    .hl-tab {
+      flex: 1; padding: 4px 0; text-align: center; font-size: 11px; font-weight: 700;
       cursor: pointer; border-radius: 6px; color: #475569; transition: all 0.18s;
-      letter-spacing: 0.2px; white-space: nowrap;
-    }
-    .hl-metric-tab.active {
-      background: rgba(0,212,170,0.15); color: #00D4AA;
-      box-shadow: 0 1px 4px rgba(0,212,170,0.1);
-    }
-
-    /* ===== 하위 지역 탭 (국내 / 해외) ===== */
-    .hl-region-tabs {
-      display: flex; gap: 0; margin-bottom: 8px;
-      background: rgba(255,255,255,0.03); border-radius: 6px; padding: 2px;
-    }
-    .hl-region-tab {
-      flex: 1; padding: 3px 0; text-align: center; font-size: 10px; font-weight: 700;
-      cursor: pointer; border-radius: 4px; color: #475569; transition: all 0.15s;
       letter-spacing: 0.5px;
     }
-    .hl-region-tab.active {
-      background: rgba(255,255,255,0.06); color: #94a3b8;
+    .hl-tab.active {
+      background: rgba(0,212,170,0.12); color: #00D4AA;
     }
-
-    /* pane: metric × region 조합 */
     .hl-pane { display: none; }
     .hl-pane.active { display: block; }
 
@@ -231,6 +213,7 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
+
   gtag('config', 'G-2JVGVXMPSB');
 </script>
   
@@ -255,7 +238,7 @@
 
   <div id="errorBox" style="display:none;padding:14px 18px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:10px;margin-bottom:16px;font-size:13px;color:#fca5a5;line-height:1.6"></div>
 
-  <!-- ⓪ 글로벌 날짜 컨트롤 -->
+  <!-- ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통) -->
   <div class="card" style="margin-bottom: 20px;">
     <div class="card-header">
       <span>📅 기준 기간 (전체 적용)</span>
@@ -281,103 +264,67 @@
         <button class="quick-btn" onclick="setGlobalQuickCompare(90, this)">3개월 전</button>
         <button class="quick-btn" onclick="setGlobalQuickCompareYTD(this)">연초</button>
         <button class="quick-btn" onclick="setGlobalNoCompare(this)">비교 안함</button>
+
       </div>
     </div>
   </div>
 
-  <!-- ① 오늘의 변화 하이라이트
-       pane ID 패턴: hl{CardName}-{metric}-{region}
-       metric: amt(보유평가금액) | shares(보유주식수)
-       region: kr | gl
-  -->
+  <!-- ① 오늘의 변화 하이라이트 -->
   <div class="highlights" id="highlights">
 
     <!-- 현재 보유 TOP -->
-    <div class="hl-card" data-card="Hold">
+    <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">🏆</span>현재 보유 TOP</div>
-      <!-- 상위: 지표 선택 -->
-      <div class="hl-metric-tabs">
-        <div class="hl-metric-tab active" onclick="switchMetricTab(this,'Hold','amt')">💰 보유평가금액</div>
-        <div class="hl-metric-tab"        onclick="switchMetricTab(this,'Hold','shares')">📊 보유주식수</div>
+      <div class="hl-tabs">
+        <div class="hl-tab active" onclick="switchHlTab('Hold','kr',this)">🇰🇷 국내</div>
+        <div class="hl-tab"        onclick="switchHlTab('Hold','gl',this)">🌍 해외</div>
       </div>
-      <!-- 하위: 지역 선택 -->
-      <div class="hl-region-tabs">
-        <div class="hl-region-tab active" onclick="switchRegionTab(this,'Hold')">🇰🇷 국내</div>
-        <div class="hl-region-tab"        onclick="switchRegionTab(this,'Hold')">🌍 해외</div>
-      </div>
-      <!-- 4개 pane: amt-kr / amt-gl / shares-kr / shares-gl -->
-      <div class="hl-pane active" id="hlHold-amt-kr"></div>
-      <div class="hl-pane"        id="hlHold-amt-gl"></div>
-      <div class="hl-pane"        id="hlHold-shares-kr"></div>
-      <div class="hl-pane"        id="hlHold-shares-gl"></div>
+      <div class="hl-pane active" id="hlHold-kr"></div>
+      <div class="hl-pane"        id="hlHold-gl"></div>
     </div>
 
     <!-- 신규 편입 TOP -->
-    <div class="hl-card" data-card="New">
+    <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">✨</span>신규 편입 TOP</div>
-      <div class="hl-metric-tabs">
-        <div class="hl-metric-tab active" onclick="switchMetricTab(this,'New','amt')">💰 보유평가금액</div>
-        <div class="hl-metric-tab"        onclick="switchMetricTab(this,'New','shares')">📊 보유주식수</div>
+      <div class="hl-tabs">
+        <div class="hl-tab active" onclick="switchHlTab('New','kr',this)">🇰🇷 국내</div>
+        <div class="hl-tab"        onclick="switchHlTab('New','gl',this)">🌍 해외</div>
       </div>
-      <div class="hl-region-tabs">
-        <div class="hl-region-tab active" onclick="switchRegionTab(this,'New')">🇰🇷 국내</div>
-        <div class="hl-region-tab"        onclick="switchRegionTab(this,'New')">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlNew-amt-kr"></div>
-      <div class="hl-pane"        id="hlNew-amt-gl"></div>
-      <div class="hl-pane"        id="hlNew-shares-kr"></div>
-      <div class="hl-pane"        id="hlNew-shares-gl"></div>
+      <div class="hl-pane active" id="hlNew-kr"></div>
+      <div class="hl-pane"        id="hlNew-gl"></div>
     </div>
 
     <!-- 비중 증가 TOP -->
-    <div class="hl-card" data-card="Up">
+    <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">📈</span>비중 증가 TOP</div>
-      <div class="hl-metric-tabs">
-        <div class="hl-metric-tab active" onclick="switchMetricTab(this,'Up','amt')">💰 보유평가금액</div>
-        <div class="hl-metric-tab"        onclick="switchMetricTab(this,'Up','shares')">📊 보유주식수</div>
+      <div class="hl-tabs">
+        <div class="hl-tab active" onclick="switchHlTab('Up','kr',this)">🇰🇷 국내</div>
+        <div class="hl-tab"        onclick="switchHlTab('Up','gl',this)">🌍 해외</div>
       </div>
-      <div class="hl-region-tabs">
-        <div class="hl-region-tab active" onclick="switchRegionTab(this,'Up')">🇰🇷 국내</div>
-        <div class="hl-region-tab"        onclick="switchRegionTab(this,'Up')">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlUp-amt-kr"></div>
-      <div class="hl-pane"        id="hlUp-amt-gl"></div>
-      <div class="hl-pane"        id="hlUp-shares-kr"></div>
-      <div class="hl-pane"        id="hlUp-shares-gl"></div>
+      <div class="hl-pane active" id="hlUp-kr"></div>
+      <div class="hl-pane"        id="hlUp-gl"></div>
     </div>
 
     <!-- 비중 감소 TOP -->
-    <div class="hl-card" data-card="Down">
+    <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">📉</span>비중 감소 TOP</div>
-      <div class="hl-metric-tabs">
-        <div class="hl-metric-tab active" onclick="switchMetricTab(this,'Down','amt')">💰 보유평가금액</div>
-        <div class="hl-metric-tab"        onclick="switchMetricTab(this,'Down','shares')">📊 보유주식수</div>
+      <div class="hl-tabs">
+        <div class="hl-tab active" onclick="switchHlTab('Down','kr',this)">🇰🇷 국내</div>
+        <div class="hl-tab"        onclick="switchHlTab('Down','gl',this)">🌍 해외</div>
       </div>
-      <div class="hl-region-tabs">
-        <div class="hl-region-tab active" onclick="switchRegionTab(this,'Down')">🇰🇷 국내</div>
-        <div class="hl-region-tab"        onclick="switchRegionTab(this,'Down')">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlDown-amt-kr"></div>
-      <div class="hl-pane"        id="hlDown-amt-gl"></div>
-      <div class="hl-pane"        id="hlDown-shares-kr"></div>
-      <div class="hl-pane"        id="hlDown-shares-gl"></div>
+      <div class="hl-pane active" id="hlDown-kr"></div>
+      <div class="hl-pane"        id="hlDown-gl"></div>
     </div>
 
     <!-- 제외 종목 TOP -->
-    <div class="hl-card" data-card="Gone">
+    <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">🚪</span>제외 종목 TOP</div>
-      <div class="hl-metric-tabs">
-        <div class="hl-metric-tab active" onclick="switchMetricTab(this,'Gone','amt')">💰 보유평가금액</div>
-        <div class="hl-metric-tab"        onclick="switchMetricTab(this,'Gone','shares')">📊 보유주식수</div>
+      <div class="hl-tabs">
+        <div class="hl-tab active" onclick="switchHlTab('Gone','kr',this)">🇰🇷 국내</div>
+        <div class="hl-tab"        onclick="switchHlTab('Gone','gl',this)">🌍 해외</div>
       </div>
-      <div class="hl-region-tabs">
-        <div class="hl-region-tab active" onclick="switchRegionTab(this,'Gone')">🇰🇷 국내</div>
-        <div class="hl-region-tab"        onclick="switchRegionTab(this,'Gone')">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlGone-amt-kr"></div>
-      <div class="hl-pane"        id="hlGone-amt-gl"></div>
-      <div class="hl-pane"        id="hlGone-shares-kr"></div>
-      <div class="hl-pane"        id="hlGone-shares-gl"></div>
+      <div class="hl-pane active" id="hlGone-kr"></div>
+      <div class="hl-pane"        id="hlGone-gl"></div>
     </div>
 
   </div>
@@ -388,7 +335,7 @@
     <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div>
   </div>
 
-  <!-- ETF 탭 -->
+  <!-- ETF 탭 (페이지 로드 시 sortEtfTabsByNav()가 순자산총액 내림차순으로 재배치) -->
   <div class="etf-tabs" id="etfTabs">
     <div class="tab-section-label">해외투자</div>
     <div class="etf-tab active" data-idx="22" onclick="selectEtf(this)">글로벌탑픽액티브</div>
@@ -505,11 +452,19 @@
 
 <script>
   // =========================================================
-  // 📊 분석 이벤트 추적
+  // 📊 분석 이벤트 추적 (Vercel Analytics + GA4 통합)
   // =========================================================
   function trackEvent(eventName, params = {}) {
-    if (typeof gtag === 'function') gtag('event', eventName, params);
-    if (typeof window.va === 'function') window.va('event', { name: eventName, data: params });
+    // GA4
+    if (typeof gtag === 'function') {
+      gtag('event', eventName, params);
+    }
+    // Vercel Analytics
+    if (typeof window.va === 'function') {
+      window.va('event', { name: eventName, data: params });
+    }
+    // 개발 환경 디버깅 (필요시 주석 처리)
+    // console.log('[Track]', eventName, params);
   }
   
   // =========================================================
@@ -563,22 +518,13 @@
   let compareDate = "";
   let sortKey = null;
   let sortDir = "desc";
-  let globalAllDates = [];
+  let globalAllDates = [];   // ★ 글로벌 날짜 리스트
   let cmpEtfA = null;
   let cmpEtfB = null;
   let trendChartInstance = null;
 
-  // 각 카드별로 현재 선택된 metric(amt|shares)과 region(kr|gl) 상태를 추적
-  const hlCardState = {
-    Hold:  { metric: 'amt', region: 'kr' },
-    New:   { metric: 'amt', region: 'kr' },
-    Up:    { metric: 'amt', region: 'kr' },
-    Down:  { metric: 'amt', region: 'kr' },
-    Gone:  { metric: 'amt', region: 'kr' },
-  };
-
   // =========================================================
-  // ★ 종목코드 정규화
+  // ★ 종목코드 정규화 (leading zero 복구)
   // =========================================================
   function normalizeCode(raw) {
     if (raw === null || raw === undefined) return "";
@@ -588,6 +534,7 @@
     if (/^\d{1,6}$/.test(s)) return s.padStart(6, "0");
     return s;
   }
+
   function normalizeRows(rows) {
     if (!Array.isArray(rows)) return rows;
     return rows.map(r => ({ ...r, code: normalizeCode(r.code) }));
@@ -598,6 +545,7 @@
   // =========================================================
   function fmt(n) { if (n == null) return "—"; return Number(n).toLocaleString("ko-KR"); }
 
+  // ★ Supabase 1000행 제한을 우회하는 페이지네이션 헬퍼
   async function fetchAllPages(buildQuery) {
     const all = [];
     let from = 0;
@@ -612,6 +560,12 @@
     return all;
   }
 
+  
+  // ★ 순자산총액/금액 포맷터 — 모두 "억원"으로 통일
+  //   • 1억원 이상   → 정수 + 천 단위 쉼표  (예: 2,415억원)
+  //   • 1억원 미만   → 소수점 1자리         (예: 0.5억원)
+  //   • 음수 처리   → 부호 자동 부착        (예: -4억원)
+  //   • 1조원 이상  → "조원" 표기 (대형 ETF 가독성 보강)
   function fmtMoney(v, { signed = false } = {}) {
     if (v == null) return "—";
     const sign = v < 0 ? "-" : (signed && v > 0 ? "+" : "");
@@ -621,17 +575,8 @@
     if (eok >= 1)     return sign + Math.round(eok).toLocaleString("ko-KR") + "억원";
     return sign + eok.toFixed(1) + "억원";
   }
+  // 하위 호환용 별칭
   const fmtNav = (v) => fmtMoney(v);
-
-  // ★ 보유주식수 포맷터
-  function fmtShares(v, { signed = false } = {}) {
-    if (v == null || isNaN(v)) return "—";
-    const sign = v < 0 ? "-" : (signed && v > 0 ? "+" : "");
-    const abs = Math.abs(v);
-    if (abs >= 100_000_000) return sign + (abs / 100_000_000).toFixed(2) + "억주";
-    if (abs >= 10_000)      return sign + (abs / 10_000).toFixed(1) + "만주";
-    return sign + Math.round(abs).toLocaleString("ko-KR") + "주";
-  }
 
   function showError(title, hint) {
     const box = document.getElementById("errorBox");
@@ -656,28 +601,36 @@
   }
 
   // =========================================================
-  // ETF 탭을 순자산총액 내림차순으로 정렬
+  // ★★★ ETF 탭을 순자산총액 내림차순으로 정렬
+  //   - 해외/국내 섹션 구분은 유지
+  //   - 각 섹션 내에서만 nav_total 큰 순서로 재배치
+  //   - 정렬 후 첫 번째 탭을 active 상태로 동기화
   // =========================================================
   async function sortEtfTabsByNav() {
     if (!db) return;
     try {
+      // 1) etf_daily의 가장 최신 날짜 찾기
       const { data: latestRows, error: e1 } = await db.from("etf_daily")
         .select("date").order("date", { ascending: false }).limit(1);
-      if (e1) return;
+      if (e1) { console.error("sortEtfTabsByNav latest date 조회 실패:", e1); return; }
       if (!latestRows?.length) return;
       const latest = latestRows[0].date;
 
+      // 2) 해당 날짜의 모든 ETF nav_total 조회
       const { data: navRows, error: e2 } = await db.from("etf_daily")
         .select("etf_idx, nav_total").eq("date", latest);
-      if (e2 || !navRows?.length) return;
+      if (e2) { console.error("sortEtfTabsByNav nav 조회 실패:", e2); return; }
+      if (!navRows?.length) return;
 
       const navMap = {};
       navRows.forEach(r => { navMap[r.etf_idx] = r.nav_total || 0; });
 
+      // 3) 탭 컨테이너에서 섹션별로 그룹 분리
       const container = document.getElementById("etfTabs");
       if (!container) return;
       const children = Array.from(container.children);
-      const groups = [];
+
+      const groups = []; // [{label: <div.section-label>, tabs: [<div.etf-tab>, ...]}]
       let cur = null;
       children.forEach(el => {
         if (el.classList.contains("tab-section-label")) {
@@ -687,14 +640,25 @@
           cur.tabs.push(el);
         }
       });
+
+      // 4) 각 그룹 내에서 nav_total 내림차순 정렬
       groups.forEach(g => {
-        g.tabs.sort((a, b) => (navMap[parseInt(b.dataset.idx)] || 0) - (navMap[parseInt(a.dataset.idx)] || 0));
+        g.tabs.sort((a, b) => {
+          const na = navMap[parseInt(a.dataset.idx)] || 0;
+          const nb = navMap[parseInt(b.dataset.idx)] || 0;
+          return nb - na;
+        });
       });
+
+      // 5) DOM 재배치
       container.innerHTML = "";
       groups.forEach(g => {
         container.appendChild(g.label);
         g.tabs.forEach(t => container.appendChild(t));
       });
+
+      // 6) 정렬 후 첫 ETF 탭을 active 로 동기화
+      //    (HTML에 하드코딩된 active가 더 이상 첫 번째가 아닐 수 있음)
       const firstTab = container.querySelector(".etf-tab");
       if (firstTab) {
         container.querySelectorAll(".etf-tab").forEach(t => t.classList.remove("active"));
@@ -707,54 +671,20 @@
   }
 
   // =========================================================
-  // ★★★ 하이라이트 탭 전환 함수 (2단 구조)
-  //
-  //  switchMetricTab(el, card, metric)
-  //    - 상위 탭: 보유평가금액(amt) / 보유주식수(shares) 전환
-  //    - region은 현재 카드 상태에서 읽어서 올바른 pane 활성화
-  //
-  //  switchRegionTab(el, card)
-  //    - 하위 탭: 국내(kr) / 해외(gl) 전환
-  //    - metric은 현재 카드 상태에서 읽어서 올바른 pane 활성화
-  //
-  //  activatePane(card)
-  //    - 현재 카드 상태(metric + region)에 맞는 pane 하나만 표시
+  // 하이라이트 탭 전환
   // =========================================================
-  function activatePane(card) {
-    const { metric, region } = hlCardState[card];
-    const cardEl = document.querySelector(`.hl-card[data-card="${card}"]`);
-    if (!cardEl) return;
+  function switchHlTab(card, region, el) {
+    const cardEl = el.closest('.hl-card');
+    cardEl.querySelectorAll('.hl-tab').forEach(t => t.classList.remove('active'));
     cardEl.querySelectorAll('.hl-pane').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById(`hl${card}-${metric}-${region}`);
-    if (target) target.classList.add('active');
-  }
-
-  function switchMetricTab(el, card, metric) {
-    hlCardState[card].metric = metric;
-    // 상위 탭 active 갱신
-    const cardEl = el.closest('.hl-card');
-    cardEl.querySelectorAll('.hl-metric-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    // pane 갱신
-    activatePane(card);
-  }
-
-  function switchRegionTab(el, card) {
-    // 클릭된 탭이 몇 번째인지로 region 결정 (0=kr, 1=gl)
-    const cardEl = el.closest('.hl-card');
-    const regionTabs = cardEl.querySelectorAll('.hl-region-tab');
-    regionTabs.forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    const idx = Array.from(regionTabs).indexOf(el);
-    hlCardState[card].region = idx === 0 ? 'kr' : 'gl';
-    // pane 갱신
-    activatePane(card);
+    document.getElementById(`hl${card}-${region}`)?.classList.add('active');
   }
 
   // =========================================================
   // 모드 전환
   // =========================================================
-  function switchMode(mode) {
+    function switchMode(mode) {
     currentMode = mode;
     document.querySelectorAll(".mode-tab").forEach(t => t.classList.toggle("active", t.dataset.mode === mode));
     document.getElementById("modeSingle").classList.toggle("hidden", mode !== "single");
@@ -766,13 +696,15 @@
     } else {
       document.querySelectorAll(".etf-tab").forEach(t => t.classList.remove("compare-active"));
     }
+
+    // ★ 이벤트 추적
     trackEvent('mode_switch', { mode });
   }
 
   // =========================================================
   // ETF 탭 클릭
   // =========================================================
-  function selectEtf(el) {
+function selectEtf(el) {
     const idx = parseInt(el.dataset.idx);
     if (currentMode === "compare") {
       if (!cmpEtfA) cmpEtfA = idx;
@@ -792,7 +724,12 @@
     const base = document.getElementById("globalDateSelect")?.value;
     const cmp  = document.getElementById("globalCompareSelect")?.value;
     if (base) loadDataWithDates(base, cmp);
-    trackEvent('etf_tab_click', { etf_idx: idx, etf_name: getEtfName(idx) });
+
+    // ★ 이벤트 추적
+    trackEvent('etf_tab_click', {
+      etf_idx: idx,
+      etf_name: getEtfName(idx)
+    });
   }
   
   function updateCompareTabsHighlight() {
@@ -829,11 +766,16 @@
   }
 
   // =========================================================
-  // ⓪ 글로벌 날짜 컨트롤
+  // ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통)
   // =========================================================
   async function initGlobalDates() {
-    if (initError) { showError("Supabase 연결 설정 오류", initError); return; }
+    if (initError) {
+      showError("Supabase 연결 설정 오류", initError);
+      return;
+    }
     if (!db) return;
+
+    // ★ 페이지네이션 헬퍼로 모든 date를 가져옴
     let allRows = [];
     try {
       allRows = await fetchAllPages(() =>
@@ -853,20 +795,28 @@
     if (!s1 || !s2) return;
 
     s1.innerHTML = globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
+    // ★ 비교일은 기준일보다 이전 날짜만 표시 (초기엔 최신일 기준)
     const initialBase = globalAllDates[0];
     s2.innerHTML = '<option value="">비교 안함</option>' +
       globalAllDates.filter(d => d < initialBase).map(d => `<option value="${d}">${d}</option>`).join("");
 
+    // 기준일 변경 시 비교일 드롭다운도 동적으로 업데이트
     s1.addEventListener("change", () => {
       const base = s1.value;
       const currentCmp = s2.value;
       s2.innerHTML = '<option value="">비교 안함</option>' +
         globalAllDates.filter(d => d < base).map(d => `<option value="${d}">${d}</option>`).join("");
-      if (currentCmp && globalAllDates.includes(currentCmp) && currentCmp < base) s2.value = currentCmp;
+      // 기존 비교일이 새 목록에 있으면 유지, 없으면 빈 값
+      if (currentCmp && globalAllDates.includes(currentCmp) && currentCmp < base) {
+        s2.value = currentCmp;
+      }
     });
 
+    // 기본값: 기준일=최신, 비교일=1일 전(직전 영업일)
     s1.value = globalAllDates[0];
     if (globalAllDates[1]) s2.value = globalAllDates[1];
+
+    // 양쪽 모두 로드
     refreshAll();
   }
 
@@ -882,6 +832,7 @@
   }
 
   function onGlobalDateChange() {
+    // 셀렉트 직접 변경시 빠른비교 active 해제
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     refreshAll();
   }
@@ -894,6 +845,8 @@
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     refreshAll();
+
+        // ★ 이벤트 추적
     trackEvent('quick_compare_click', { days });
   }
 
@@ -919,14 +872,23 @@
     refreshAll();
   }
 
+  // 글로벌 날짜 변경 시 하이라이트 + 단일 ETF 모드 모두 갱신
   function refreshAll() {
     const base = document.getElementById("globalDateSelect")?.value;
     const cmp  = document.getElementById("globalCompareSelect")?.value;
     if (!base) return;
+
+    // 정보 표시
     const infoEl = document.getElementById("globalDateInfo");
     if (infoEl) infoEl.textContent = cmp ? `${cmp} → ${base}` : `${base} (비교 없음)`;
+
+    // 하이라이트 갱신
     loadHighlights(base, cmp);
-    if (currentIdx) loadDataWithDates(base, cmp);
+
+    // 단일 ETF 모드 갱신 (현재 선택된 ETF 기준)
+    if (currentIdx) {
+      loadDataWithDates(base, cmp);
+    }
   }
 
   // =========================================================
@@ -936,6 +898,7 @@
     currentDate = baseDate;
     compareDate = cmpDate || "";
     if (!currentDate) return;
+
     document.getElementById("tableArea").innerHTML = '<div class="loading">불러오는 중...</div>';
 
     const [r1, r2, n1, n2] = await Promise.all([
@@ -950,9 +913,11 @@
 
     if (!cur.length) {
       document.getElementById("tableArea").innerHTML = '<div class="loading">이 ETF의 해당 일자 데이터가 없습니다</div>';
-      ["statCount","statTop","statNav","statNavDiff","statChanged"].forEach(id => {
-        document.getElementById(id).textContent = "—";
-      });
+      document.getElementById("statCount").textContent = "—";
+      document.getElementById("statTop").textContent = "—";
+      document.getElementById("statNav").textContent = "—";
+      document.getElementById("statNavDiff").textContent = "—";
+      document.getElementById("statChanged").textContent = "—";
       return;
     }
 
@@ -1071,12 +1036,12 @@
       </tr>`;
     });
     const headers = [
-      { key: "rank",       label: "#",        align: "left"  },
-      { key: "name",       label: "종목명",   align: "left"  },
-      { key: "weight",     label: "비중",      align: "left"  },
-      { key: "weightDiff", label: "비중변화", align: "left"  },
-      { key: "status",     label: "상태",      align: "left"  },
-      { key: "qty",        label: "수량",      align: "right" },
+      { key: "rank",       label: "#",      align: "left" },
+      { key: "name",       label: "종목명", align: "left" },
+      { key: "weight",     label: "비중",   align: "left" },
+      { key: "weightDiff", label: "비중변화", align: "left" },
+      { key: "status",     label: "상태",   align: "left" },
+      { key: "qty",        label: "수량",   align: "right" },
       { key: "qtyDiff",    label: "수량변화", align: "right" },
       { key: "value",      label: "평가금액", align: "right" },
     ];
@@ -1100,6 +1065,7 @@
         baseDate = latestRows[0].date;
       }
 
+      // compareDate가 빈 문자열이면 비교 없음(prev = null), 명시 안 됐으면 직전 영업일 자동
       let prev = null;
       if (compareDate === undefined) {
         const { data: prevRows } = await db.from("holdings").select("date").lt("date", baseDate).order("date", { ascending: false }).limit(1);
@@ -1108,35 +1074,19 @@
         prev = compareDate || null;
       }
 
-      // ★ holdings 전체 조회
-      const fetchHoldings = async (date) => {
+      const fetchAll = async (date) => {
         const all = await fetchAllPages(() =>
           db.from("holdings")
-            .select("etf_idx, code, name, weight, qty, value")
+            .select("etf_idx, code, name, weight, value, holding_amount")
             .eq("date", date)
         );
         return normalizeRows(all);
       };
 
-      // ★ etf_daily 조회 (nav_total, standard_price, creation_unit)
-      //    보유주식수 계산에 필요한 ETF 메타 정보
-      const fetchEtfDaily = async (date) => {
-        const { data, error } = await db.from("etf_daily")
-          .select("etf_idx, nav_total, standard_price, creation_unit")
-          .eq("date", date);
-        if (error) { console.error("etf_daily 조회 실패:", error); return {}; }
-        // etf_idx → { nav_total, standard_price, creation_unit } 맵
-        const map = {};
-        (data || []).forEach(r => { map[r.etf_idx] = r; });
-        return map;
-      };
-
-      // ★ 종목별 집계 함수
-      //    - holdingAmt   : 보유평가금액 합산 (nav_total × weight / 100)
-      //    - holdingShares: 보유주식수 합산  (nav_total / (standard_price × creation_unit) × qty)
-      const aggregate = (rows, etfDailyMap) => {
+const aggregate = (rows) => {
         const map = {};
         for (const r of rows) {
+          // ★ 현금/원화예금 등 비종목 항목 제외
           const nm = (r.name || "").trim();
           if (/^(현금|원화예금|예금|기타|미수금|미지급금)/.test(nm)) continue;
 
@@ -1144,168 +1094,111 @@
           const key = code || r.name;
           if (!map[key]) map[key] = {
             code, name: r.name,
-            weight: 0,
-            holdingAmt: 0,    // 보유평가금액 (원)
-            holdingShares: 0, // 보유주식수 (주)
+            weight: 0, value: 0,
+            holdingAccounts: 0,
             etfCount: 0
           };
-
-          const etf = etfDailyMap[r.etf_idx] || {};
-          const navTotal       = etf.nav_total || 0;
-          const standardPrice  = etf.standard_price || 0;
-          const creationUnit   = etf.creation_unit || 1;
-
-          // 보유평가금액 = 순자산총액 × 비중(%) / 100
-          const amt = navTotal * (r.weight || 0) / 100;
-
-          // 보유주식수 = 순자산총액 / (기준가 × 설정단위수) × 보유수량
-          let shares = 0;
-          if (standardPrice > 0 && creationUnit > 0 && navTotal > 0) {
-            shares = (navTotal / (standardPrice * creationUnit)) * (r.qty || 0);
-          }
-
-          map[key].weight        += (r.weight || 0);
-          map[key].holdingAmt    += amt;
-          map[key].holdingShares += shares;
-          map[key].etfCount      += 1;
+          map[key].weight += (r.weight || 0);
+          map[key].value += (r.value || 0);
+          map[key].holdingAccounts += (r.holding_amount || 0);
+          map[key].etfCount += 1;
         }
         return map;
       };
 
-      // 데이터 로드 (기준일 + etf_daily)
-      const [curAll, curEtfDaily] = await Promise.all([
-        fetchHoldings(baseDate),
-        fetchEtfDaily(baseDate),
-      ]);
-      const curMap = aggregate(curAll, curEtfDaily);
+      const curAll = await fetchAll(baseDate);
+      const curMap = aggregate(curAll);
 
       let newItems = [], upItems = [], downItems = [], goneItems = [];
 
       if (prev) {
-        const [prevAll, prevEtfDaily] = await Promise.all([
-          fetchHoldings(prev),
-          fetchEtfDaily(prev),
-        ]);
-        const prevMap = aggregate(prevAll, prevEtfDaily);
+        const prevAll = await fetchAll(prev);
+        const prevMap = aggregate(prevAll);
 
-        const THRESHOLD_AMT    = 100_000_000;  // 1억원
-        const THRESHOLD_SHARES = 1;            // 1주 이상 변화
+        const THRESHOLD = 100_000_000;  // 1억원
 
         for (const key of Object.keys(curMap)) {
           const cur = curMap[key];
           const prv = prevMap[key];
           if (!prv) {
-            // 신규 편입: 두 지표 모두 change 로 표현
-            newItems.push({
-              ...cur,
-              changeAmt:    cur.holdingAmt,
-              changeShares: cur.holdingShares,
-            });
+            newItems.push({ ...cur, change: cur.holdingAccounts });
           } else {
-            const diffAmt    = cur.holdingAmt    - prv.holdingAmt;
-            const diffShares = cur.holdingShares - prv.holdingShares;
-            if (diffAmt > THRESHOLD_AMT) {
-              upItems.push({ ...cur, changeAmt: diffAmt, changeShares: diffShares });
-            } else if (diffAmt < -THRESHOLD_AMT) {
-              downItems.push({ ...cur, changeAmt: diffAmt, changeShares: diffShares });
-            }
+            const diff = cur.holdingAccounts - prv.holdingAccounts;
+            if (diff > THRESHOLD)       upItems.push({ ...cur, change: diff });
+            else if (diff < -THRESHOLD) downItems.push({ ...cur, change: diff });
           }
         }
         for (const key of Object.keys(prevMap)) {
-          if (!curMap[key]) {
-            const prv = prevMap[key];
-            goneItems.push({
-              ...prv,
-              changeAmt:    -prv.holdingAmt,
-              changeShares: -prv.holdingShares,
-            });
-          }
+          if (!curMap[key]) goneItems.push({ ...prevMap[key], change: -prevMap[key].holdingAccounts });
         }
 
-        // 정렬: amt 기준
-        newItems.sort((a, b)  => b.changeAmt    - a.changeAmt);
-        upItems.sort((a, b)   => b.changeAmt    - a.changeAmt);
-        downItems.sort((a, b) => a.changeAmt    - b.changeAmt);
-        goneItems.sort((a, b) => a.changeAmt    - b.changeAmt);
+        newItems.sort((a, b)  => b.change - a.change);
+        upItems.sort((a, b)   => b.change - a.change);
+        downItems.sort((a, b) => a.change - b.change);
+        goneItems.sort((a, b) => a.change - b.change);
       }
 
-      // ★ 공통 렌더 함수 — 카드 하나에 4개 pane(amt-kr, amt-gl, shares-kr, shares-gl)을 모두 채움
-      const renderCard = (baseId, items, emptyMsg) => {
-        const metrics  = ['amt', 'shares'];
-        const regions  = ['kr', 'gl'];
+      const renderCard = (baseId, items, fmtChange, emptyMsg) => {
+        const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 10);
+        const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 10);
 
-        for (const metric of metrics) {
-          for (const region of regions) {
-            const el = document.getElementById(`hl${baseId}-${metric}-${region}`);
-            if (!el) continue;
-
-            const filtered = items.filter(x =>
-              region === 'kr' ? isKorean(x.code, x.name) : !isKorean(x.code, x.name)
-            ).slice(0, 10);
-
-            if (!filtered.length) {
-              el.innerHTML = `<div class="hl-empty">${emptyMsg}</div>`;
-              continue;
-            }
-
-            el.innerHTML = filtered.map(x => {
-              const safeName = x.name.replace(/'/g, "\\'");
-              const safeCode = (x.code || "").replace(/'/g, "\\'");
-              const etfBadge = x.etfCount > 1
-                ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-                : "";
-
-              let valHtml = "";
-              if (metric === 'amt') {
-                // 보유평가금액
-                const isChange  = (x.changeAmt !== undefined);
-                const val       = isChange ? x.changeAmt : x.holdingAmt;
-                const cls       = val >= 0 ? "pos" : "neg";
-                const prefix    = isChange && val > 0 ? "+" : "";
-                valHtml = `<span class="${cls}" style="font-family:monospace">${prefix}${fmtMoney(val)}</span>`;
-              } else {
-                // 보유주식수
-                const isChange  = (x.changeShares !== undefined);
-                const val       = isChange ? x.changeShares : x.holdingShares;
-                const cls       = val >= 0 ? "pos" : "neg";
-                valHtml = `<span class="${cls}" style="font-family:monospace">${fmtShares(val, { signed: isChange })}</span>`;
-              }
-
-              return `<div class="hl-row">
-                <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-                <span class="hl-val">${valHtml}</span>
-              </div>`;
-            }).join("");
+        [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
+          const el = document.getElementById(`hl${baseId}-${region}`);
+          if (!el) return;
+          if (!list.length) {
+            el.innerHTML = `<div class="hl-empty">${emptyMsg}</div>`;
+            return;
           }
-        }
+          el.innerHTML = list.map(x => {
+            const safeName = x.name.replace(/'/g, "\\'");
+            const safeCode = (x.code || "").replace(/'/g, "\\'");
+            const etfBadge = x.etfCount > 1
+              ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+              : "";
+            return `<div class="hl-row">
+              <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
+              <span class="hl-val">${fmtChange(x)}</span>
+            </div>`;
+          }).join("");
+        });
       };
 
-      // 현재 보유 TOP
+      // 현재 보유 TOP — holding_amount 합산 기준 (18개 ETF 전체)
       const holdAll = Object.values(curMap)
-        .filter(x => x.holdingAmt > 0)
-        .map(x => ({ ...x, changeAmt: undefined, changeShares: undefined }))
-        .sort((a, b) => b.holdingAmt - a.holdingAmt);
+        .filter(x => x.holdingAccounts > 0)
+        .sort((a, b) => b.holdingAccounts - a.holdingAccounts);
 
-      // 총 순자산총액 표시
+      // 억 단위 포맷터 (통합된 fmtMoney 사용)
+      const fmtEok = (v) => fmtMoney(v);
+      
+      // ★ 18개 ETF 순자산총액 합 → 카드 제목에 (#,##조원)으로 표시
       try {
-        const { data: navAll } = await db.from("etf_daily").select("nav_total").eq("date", baseDate);
+        const { data: navAll } = await db.from("etf_daily")
+          .select("nav_total").eq("date", baseDate);
         const totalNav = (navAll || []).reduce((s, r) => s + (r.nav_total || 0), 0);
         const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
         if (holdTitleEl && totalNav > 0) {
-          const jo = totalNav / 1_000_000_000_000;
+          const jo = totalNav / 1_000_000_000_000;  // 1조 = 10^12
           const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           holdTitleEl.innerHTML =
             `<span class="hl-icon">🏆</span>현재 보유 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${joStr}조원)</span>`;
         }
       } catch (e) { console.error("총 순자산 표시 실패:", e); }
 
+      renderCard("Hold", holdAll,
+        x => `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
+        "데이터 없음");
+
+      // 변화 카드 4종
       const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
 
-      renderCard("Hold", holdAll,  "데이터 없음");
-      renderCard("New",  newItems, emptyMsg);
-      renderCard("Up",   upItems,  emptyMsg);
-      renderCard("Down", downItems, emptyMsg);
-      renderCard("Gone", goneItems, emptyMsg);
+      // 부호가 들어간 포맷터 (통합된 fmtMoney 사용)
+      const fmtEokSigned = (v) => fmtMoney(v, { signed: true });
+
+      renderCard("New",  newItems,  x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Up",   upItems,   x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Down", downItems, x => `<span class="neg">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Gone", goneItems, x => `<span class="neg">${fmtEokSigned(x.change)}</span>`, emptyMsg);
 
     } catch (e) {
       console.error("Highlights 로딩 실패:", e);
@@ -1315,12 +1208,18 @@
   // =========================================================
   // ② 종목 모달 + ④ 추이 차트
   // =========================================================
-  async function openSecurityModal(code, name) {
+    async function openSecurityModal(code, name) {
     const normCode = normalizeCode(code);
     document.getElementById("modalTitle").textContent = name + (normCode ? `  (${normCode})` : "");
     document.getElementById("modalOverlay").classList.add("show");
     document.getElementById("holdingList").innerHTML = '<div class="hl-empty">로딩 중...</div>';
-    trackEvent('security_modal_open', { security_code: normCode || '', security_name: name || '' });
+
+    // ★ 이벤트 추적
+    trackEvent('security_modal_open', {
+      security_code: normCode || '',
+      security_name: name || ''
+    });
+
     if (!db || !normCode) return;
     const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
     const latest = latestRows?.[0]?.date;
@@ -1410,7 +1309,9 @@
       document.getElementById("cmpBoth").innerHTML = '<div class="hl-empty">위 ETF 탭에서 비교할 두 ETF를 클릭해 주세요</div>';
       document.getElementById("cmpOnlyA").innerHTML = '<div class="hl-empty">—</div>';
       document.getElementById("cmpOnlyB").innerHTML = '<div class="hl-empty">—</div>';
-      ["cmpBothCount","cmpOnlyACount","cmpOnlyBCount"].forEach(id => document.getElementById(id).textContent = "0");
+      document.getElementById("cmpBothCount").textContent = "0";
+      document.getElementById("cmpOnlyACount").textContent = "0";
+      document.getElementById("cmpOnlyBCount").textContent = "0";
       return;
     }
     if (cmpDateSel.options.length <= 1 || cmpDateSel.options[0].textContent === "로딩 중...") {
@@ -1476,10 +1377,15 @@
       if (!data?.length) {
         resBox.innerHTML = '<div class="search-empty">검색 결과 없음</div>';
         resBox.classList.add("show");
+
+        // ★ 검색 실패 추적
         trackEvent('search', { query: q.trim(), result_count: 0 });
+        
         return;
       }
+       // ★ 검색 성공 추적
       trackEvent('search', { query: q.trim(), result_count: data.length });
+            
       const normalized = normalizeRows(data); 
       const grouped = {};
       normalized.forEach(r => {
@@ -1500,9 +1406,12 @@
 
   // =========================================================
   // 시작
+  //   ① ETF 탭을 순자산총액 내림차순으로 정렬 (해외/국내 섹션 내)
+  //   ② 정보 박스 갱신 (정렬 후 새로 active된 ETF 기준)
+  //   ③ 글로벌 날짜 초기화 → refreshAll() → 모든 데이터 로드
   // =========================================================
   (async () => {
-    await sortEtfTabsByNav();
+    await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
     renderInfo();
     initGlobalDates();
   })();
