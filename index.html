@@ -1103,15 +1103,16 @@
       }
 
       // ★ 보유주식수 계산 헬퍼
-      // 수식: (nav_total / standard_price) * creation_unit * qty
+      // 수식: (nav_total / (standard_price * creation_unit)) * qty
       function calcShares(holdRow, etfDailyMap) {
         const daily = etfDailyMap[holdRow.etf_idx];
         if (!daily) return 0;
-        const { nav_total, standard_price } = daily;
-        if (!standard_price || standard_price === 0) return 0;
-        const creation_unit = holdRow.creation_unit || 0;
+        const { nav_total, standard_price, creation_unit: dailyCreationUnit } = daily;
+        // creation_unit: etf_daily 우선, 없으면 holdings fallback
+        const creation_unit = dailyCreationUnit || holdRow.creation_unit || 0;
+        if (!standard_price || standard_price === 0 || !creation_unit) return 0;
         const qty = holdRow.qty || 0;
-        return (nav_total / standard_price) * creation_unit * qty;
+        return (nav_total / (standard_price * creation_unit)) * qty;
       }
 
       // 집계 함수 — amount 모드와 shares 모드 모두 계산
