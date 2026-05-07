@@ -1091,7 +1091,8 @@
           .select("etf_idx, nav_total, standard_price")
           .eq("date", date);
         const map = {};
-        (data || []).forEach(r => { map[r.etf_idx] = r; });
+        // ★ 키를 String으로 통일 (holdings.etf_idx가 string으로 올 수 있음)
+        (data || []).forEach(r => { map[String(r.etf_idx)] = r; });
         return map;
       };
 
@@ -1112,7 +1113,7 @@
       // 수식: (etf_daily.nav_total / (etf_daily.standard_price * holdings.creation_unit)) * holdings.qty
       // 조인: holdRow.etf_idx → etfDailyMap[etf_idx]
       function calcShares(holdRow, etfDailyMap) {
-        const daily = etfDailyMap[holdRow.etf_idx];
+        const daily = etfDailyMap[String(holdRow.etf_idx)];
         if (!daily) return 0;
         const nav_total      = daily.nav_total      || 0;
         const standard_price = daily.standard_price || 0;
@@ -1125,17 +1126,35 @@
       // ★ 콘솔 검증용 — etf_idx=22, date=2026-04-01 기준으로 수식 샘플 출력
       // 브라우저 F12 콘솔에서 확인 후 삭제 가능
       (function debugShares() {
+        console.group("[shares debug] 전체 진단");
+        console.log("etfDailyCur keys (최대5):", Object.keys(etfDailyCur).slice(0, 5));
+        console.log("curRows 총 행수:", curRows.length);
+
         const sampleEtfIdx = 22;
-        const daily = etfDailyCur[sampleEtfIdx];
-        if (!daily) { console.warn("[shares debug] etf_daily 없음 etf_idx=22"); return; }
-        console.group("[shares debug] etf_idx=22 수식 검증");
-        console.log("nav_total:", daily.nav_total, "| standard_price:", daily.standard_price);
-        const sampleRows = curRows.filter(r => r.etf_idx === sampleEtfIdx).slice(0, 8);
-        sampleRows.forEach(r => {
-          const k = daily.standard_price && r.creation_unit
-            ? daily.nav_total / (daily.standard_price * r.creation_unit) : 0;
+        const daily = etfDailyCur[String(sampleEtfIdx)];
+        if (!daily) {
+          console.warn("⚠️ etf_daily 없음 etf_idx=22. 모든 키:", Object.keys(etfDailyCur));
+          console.groupEnd(); return;
+        }
+        console.log("etf_daily[22]:", daily);
+
+        const sampleRows = curRows.filter(r => String(r.etf_idx) === String(sampleEtfIdx));
+        console.log(`etf_idx=22 holdings 행수: ${sampleRows.length}`);
+
+        const nullCuRows = sampleRows.filter(r => !r.creation_unit);
+        console.log(`creation_unit 없는 행: ${nullCuRows.length}건`, nullCuRows.map(r=>r.name));
+
+        sampleRows.slice(0, 8).forEach(r => {
+          const cu = r.creation_unit || 0;
+          const k = daily.standard_price && cu
+            ? daily.nav_total / (daily.standard_price * cu) : 0;
           const shares = Math.round(k * (r.qty || 0));
-          console.log(r.name, "| creation_unit:", r.creation_unit, "| qty:", r.qty, "| → shares:", shares.toLocaleString());
+          console.log(r.name,
+            "| etf_idx type:", typeof r.etf_idx,
+            "| creation_unit:", cu,
+            "| qty:", r.qty,
+            "| k:", k.toFixed(6),
+            "| → shares:", shares.toLocaleString());
         });
         console.groupEnd();
       })();
