@@ -1,27 +1,22 @@
 """
-TIMEFOLIO ETF 기준가격(standard_price) 과거 데이터 일괄 백필
+TIMEFOLIO ETF 기준가격(standard_price) 과거 데이터 백필 v2
 =============================================================
-역할:
-  - timeetf.co.kr/nav_xls.php?idx={idx} 에서 ETF별 전체 기준가격 히스토리를 다운로드
-  - etf_daily 테이블의 standard_price 컬럼을 일자별/펀드별로 upsert
+수정 내용:
+  - nav_xls.php 엑셀에 날짜 파라미터(navStartDate, navEndDate) 추가
+    → 상장일 ~ 오늘 전체 기간을 한 번에 요청
+  - 엑셀 실패 시 HTML 페이지(m11_view.php) 크롤링으로 fallback
+    (연도 단위로 쪼개서 페이지 제한 우회)
 
-사용법 (1회성 실행):
-  # 환경변수 설정 후 실행
+사용법:
   export SUPABASE_URL="https://lqpqummcoujmymydftlg.supabase.co"
   export SUPABASE_KEY="<service_role_key>"
   python backfill_standard_price.py
 
-  # 특정 ETF만 테스트하려면:
+  # 특정 ETF만 테스트
   ETF_IDX=22 python backfill_standard_price.py
 
-  # 시작일 지정 (이 날짜 이후만 처리):
-  START_DATE=2024-01-01 python backfill_standard_price.py
-
-엑셀 파일 구조 (nav_xls.php):
-  일자         | 기준가격(원)  | 등락률(%)  | 종가(원)   | 등락률(%) | 과표기준가(원)
-  2026.05.06   | 11,964.83    | -0.13      | 11,975.00  | -0.42    | 11,426.14
-  2026.05.04   | 11,980.91    | 0.27       | 12,025.00  | 1.35     | 11,442.25
-  ...
+  # 누락된 구간만 재처리
+  START_DATE=2026-04-01 python backfill_standard_price.py
 """
 
 import os
@@ -33,6 +28,7 @@ from datetime import datetime, date
 from typing import Optional
 
 import requests
+from bs4 import BeautifulSoup
 import pandas as pd
 from supabase import create_client
 
@@ -45,8 +41,6 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("❌ 환경변수 SUPABASE_URL / SUPABASE_KEY 미설정")
-    print("   export SUPABASE_URL='https://xxx.supabase.co'")
-    print("   export SUPABASE_KEY='<service_role_key>'")
     sys.exit(1)
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -62,35 +56,34 @@ HEADERS = {
 }
 
 REQUEST_TIMEOUT = 30
-DELAY_BETWEEN_ETF = 2.0      # ETF 간 딜레이 (차단 방지)
-UPSERT_BATCH_SIZE = 100      # Supabase 한 번에 upsert할 행 수
+DELAY_BETWEEN_ETF  = 2.0
+DELAY_BETWEEN_PAGE = 1.0
+UPSERT_BATCH_SIZE  = 100
 
-# 특정 ETF만 처리하려면 환경변수 ETF_IDX 설정 (미설정 시 전체)
-SINGLE_ETF_IDX = os.environ.get("ETF_IDX")
+SINGLE_ETF_IDX = os.environ.get("ETF_IDX", "")
+START_DATE_STR  = os.environ.get("START_DATE", "")
+TODAY = str(date.today())
 
-# 시작일 필터 (이 날짜 이후 데이터만 처리, 미설정 시 전체)
-START_DATE_STR = os.environ.get("START_DATE", "")
-
-# 18개 ETF 목록
+# 18개 ETF (상장일 포함 → 요청 범위 최소화)
 ETF_LIST = [
-    {"idx": 22, "etf_name": "글로벌탑픽액티브"},
-    {"idx": 6,  "etf_name": "글로벌AI인공지능액티브"},
-    {"idx": 20, "etf_name": "글로벌우주테크&방산액티브"},
-    {"idx": 8,  "etf_name": "글로벌소비트렌드액티브"},
-    {"idx": 9,  "etf_name": "글로벌바이오액티브"},
-    {"idx": 2,  "etf_name": "미국나스닥100액티브"},
-    {"idx": 5,  "etf_name": "미국S&P500액티브"},
-    {"idx": 18, "etf_name": "미국배당다우존스액티브"},
-    {"idx": 10, "etf_name": "미국나스닥100채권혼합50액티브"},
-    {"idx": 12, "etf_name": "Korea플러스배당액티브"},
-    {"idx": 15, "etf_name": "코리아밸류업액티브"},
-    {"idx": 11, "etf_name": "코스피액티브"},
-    {"idx": 24, "etf_name": "코스닥액티브"},
-    {"idx": 13, "etf_name": "K바이오액티브"},
-    {"idx": 16, "etf_name": "K신재생에너지액티브"},
-    {"idx": 17, "etf_name": "K이노베이션액티브"},
-    {"idx": 1,  "etf_name": "K컬처액티브"},
-    {"idx": 19, "etf_name": "차이나AI테크액티브"},
+    {"idx": 22, "etf_name": "글로벌탑픽액티브",           "listed": "2025-10-28"},
+    {"idx": 6,  "etf_name": "글로벌AI인공지능액티브",      "listed": "2024-02-20"},
+    {"idx": 20, "etf_name": "글로벌우주테크&방산액티브",    "listed": "2025-04-22"},
+    {"idx": 8,  "etf_name": "글로벌소비트렌드액티브",       "listed": "2024-04-09"},
+    {"idx": 9,  "etf_name": "글로벌바이오액티브",           "listed": "2024-04-09"},
+    {"idx": 2,  "etf_name": "미국나스닥100액티브",          "listed": "2023-06-20"},
+    {"idx": 5,  "etf_name": "미국S&P500액티브",             "listed": "2023-10-17"},
+    {"idx": 18, "etf_name": "미국배당다우존스액티브",       "listed": "2025-01-21"},
+    {"idx": 10, "etf_name": "미국나스닥100채권혼합50액티브","listed": "2024-06-04"},
+    {"idx": 12, "etf_name": "Korea플러스배당액티브",        "listed": "2024-09-10"},
+    {"idx": 15, "etf_name": "코리아밸류업액티브",           "listed": "2024-11-26"},
+    {"idx": 11, "etf_name": "코스피액티브",                 "listed": "2024-06-04"},
+    {"idx": 24, "etf_name": "코스닥액티브",                 "listed": "2026-01-14"},
+    {"idx": 13, "etf_name": "K바이오액티브",                "listed": "2024-06-04"},
+    {"idx": 16, "etf_name": "K신재생에너지액티브",          "listed": "2024-11-26"},
+    {"idx": 17, "etf_name": "K이노베이션액티브",            "listed": "2024-11-26"},
+    {"idx": 1,  "etf_name": "K컬처액티브",                  "listed": "2022-10-25"},
+    {"idx": 19, "etf_name": "차이나AI테크액티브",           "listed": "2025-03-25"},
 ]
 
 # ============================================================
@@ -98,7 +91,6 @@ ETF_LIST = [
 # ============================================================
 
 def to_float(s) -> Optional[float]:
-    """쉼표/공백/% 제거 후 float 변환. 실패 시 None 반환."""
     if s is None:
         return None
     s = str(s).replace(",", "").replace("%", "").replace(" ", "").strip()
@@ -110,188 +102,235 @@ def to_float(s) -> Optional[float]:
         return None
 
 def parse_date_str(s: str) -> Optional[str]:
-    """
-    사이트 날짜 형식 "2026.05.06" → "2026-05-06" (DB 저장 형식)
-    실패 시 None
-    """
+    """'2026.05.06' 또는 '2026-05-06' → 'YYYY-MM-DD'"""
     s = str(s).strip()
-    # "2026.05.06" 형식
-    m = re.match(r"(\d{4})\.(\d{2})\.(\d{2})", s)
-    if m:
-        return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
-    # 이미 "2026-05-06" 형식
-    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", s)
-    if m:
-        return s
+    m = re.match(r"(\d{4})[.\-](\d{2})[.\-](\d{2})", s)
+    return f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None
+
+def fetch_with_retry(url: str, max_retry: int = 3) -> Optional[requests.Response]:
+    for attempt in range(1, max_retry + 1):
+        try:
+            res = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+            if res.status_code == 200:
+                return res
+            print(f"  ⚠️ HTTP {res.status_code} (시도 {attempt}/{max_retry})")
+        except Exception as e:
+            print(f"  ⚠️ 요청 실패: {e} (시도 {attempt}/{max_retry})")
+        if attempt < max_retry:
+            time.sleep(2 * attempt)
     return None
 
 # ============================================================
-# 기준가격 엑셀 다운로드 및 파싱
+# 방법 1: 엑셀 다운로드 (날짜 파라미터 포함)
 # ============================================================
 
-def download_nav_excel(idx: int) -> Optional[pd.DataFrame]:
+def download_via_excel(idx: int, start_date: str, end_date: str) -> Optional[pd.DataFrame]:
     """
-    nav_xls.php에서 전체 기준가격 히스토리를 다운로드하여 DataFrame 반환.
-
-    반환 컬럼: date(str YYYY-MM-DD), standard_price(float)
+    nav_xls.php에 navStartDate/navEndDate 파라미터를 붙여
+    원하는 기간의 기준가격 엑셀을 한 번에 다운로드.
     """
-    url = f"https://timeetf.co.kr/nav_xls.php?idx={idx}&"
-    print(f"  📥 다운로드: {url}")
+    url = (
+        f"https://timeetf.co.kr/nav_xls.php"
+        f"?idx={idx}&navStartDate={start_date}&navEndDate={end_date}"
+    )
+    print(f"  📥 [엑셀] {url}")
 
-    try:
-        res = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
-        res.raise_for_status()
-    except Exception as e:
-        print(f"  ❌ 다운로드 실패: {e}")
+    res = fetch_with_retry(url)
+    if not res or not res.content:
+        print(f"  ❌ 응답 없음")
         return None
 
-    if not res.content:
-        print(f"  ❌ 빈 응답")
-        return None
+    print(f"  📄 크기: {len(res.content):,} bytes")
 
-    content_type = res.headers.get("Content-Type", "")
-    print(f"  📄 Content-Type: {content_type} / 크기: {len(res.content):,} bytes")
-
-    # xlsx 또는 xls(HTML) 형식 모두 시도
     df = None
-
-    # 1차: openpyxl (xlsx)
-    try:
-        df = pd.read_excel(io.BytesIO(res.content), dtype=str, engine="openpyxl")
-        print(f"  ✅ xlsx 파싱 성공: {len(df)}행")
-    except Exception:
-        pass
-
-    # 2차: xlrd (xls)
-    if df is None:
+    for engine in ["openpyxl", "xlrd", "html"]:
         try:
-            df = pd.read_excel(io.BytesIO(res.content), dtype=str, engine="xlrd")
-            print(f"  ✅ xls 파싱 성공: {len(df)}행")
+            if engine == "html":
+                tables = pd.read_html(io.BytesIO(res.content), dtype=str)
+                df = tables[0] if tables else None
+            else:
+                df = pd.read_excel(io.BytesIO(res.content), dtype=str, engine=engine)
+            if df is not None and not df.empty:
+                print(f"  ✅ 파싱 성공 ({engine}): {len(df)}행")
+                break
         except Exception:
-            pass
-
-    # 3차: HTML 테이블 형식 (Content-Type이 html이거나 xls 위장)
-    if df is None:
-        try:
-            tables = pd.read_html(io.BytesIO(res.content), dtype=str)
-            if tables:
-                df = tables[0]
-                print(f"  ✅ HTML 테이블 파싱 성공: {len(df)}행")
-        except Exception as e:
-            print(f"  ❌ 모든 파싱 실패: {e}")
-            return None
+            df = None
 
     if df is None or df.empty:
         return None
 
-    # 컬럼 확인 및 정규화
     df.columns = [str(c).strip() for c in df.columns]
-    print(f"  📋 컬럼: {list(df.columns)}")
-
-    # 날짜 컬럼 찾기 (첫 번째 컬럼이 보통 날짜)
-    date_col = df.columns[0]
-    # 기준가격 컬럼 찾기
-    price_col = None
-    for col in df.columns:
-        if "기준가격" in col or ("기준가" in col and "과표" not in col):
-            price_col = col
-            break
-    # 못 찾으면 두 번째 컬럼으로 가정
-    if price_col is None and len(df.columns) >= 2:
-        price_col = df.columns[1]
-
-    print(f"  🗓️ 날짜컬럼: [{date_col}] / 기준가컬럼: [{price_col}]")
-
-    # 파싱
-    records = []
-    for _, row in df.iterrows():
-        date_str = parse_date_str(str(row[date_col]))
-        if not date_str:
-            continue  # 헤더나 빈 행 스킵
-
-        price = to_float(row[price_col])
-        if price is None or price <= 0:
-            continue
-
-        records.append({
-            "date": date_str,
-            "standard_price": price,
-        })
-
-    if not records:
-        print(f"  ⚠️ 파싱된 레코드 없음")
+    date_col  = df.columns[0]
+    price_col = next(
+        (c for c in df.columns if "기준가격" in c or ("기준가" in c and "과표" not in c)),
+        df.columns[1] if len(df.columns) >= 2 else None
+    )
+    if not price_col:
+        print(f"  ❌ 기준가격 컬럼 못 찾음: {list(df.columns)}")
         return None
 
-    result_df = pd.DataFrame(records)
-    print(f"  📊 파싱 완료: {len(result_df)}개 날짜 ({result_df['date'].min()} ~ {result_df['date'].max()})")
-    return result_df
+    print(f"  📋 날짜=[{date_col}] / 기준가=[{price_col}]")
+
+    records = []
+    for _, row in df.iterrows():
+        d = parse_date_str(str(row[date_col]))
+        p = to_float(row[price_col])
+        if d and p and p > 0:
+            records.append({"date": d, "standard_price": p})
+
+    if not records:
+        print(f"  ⚠️ 파싱 레코드 없음 (날짜 파라미터 미지원 가능성)")
+        return None
+
+    result = pd.DataFrame(records)
+    print(f"  📊 {len(result)}개 ({result['date'].min()} ~ {result['date'].max()})")
+    return result
+
+# ============================================================
+# 방법 2: HTML 페이지 크롤링 (Fallback)
+# ============================================================
+
+def _parse_price_table(soup: BeautifulSoup) -> list:
+    """기준가격 테이블에서 (date, standard_price) 레코드 추출."""
+    records = []
+    date_pattern = re.compile(r"^\d{4}\.\d{2}\.\d{2}$")
+
+    for table in soup.find_all("table"):
+        for row in table.find_all("tr"):
+            cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
+            if len(cells) < 2 or not date_pattern.match(cells[0]):
+                continue
+            d = parse_date_str(cells[0])
+            p = to_float(cells[1])
+            if d and p and p > 0:
+                records.append({"date": d, "standard_price": p})
+    return records
+
+def crawl_html_chunk(idx: int, start_date: str, end_date: str) -> list:
+    """m11_view.php에 날짜 파라미터를 넣어 해당 기간 테이블 크롤링."""
+    url = (
+        f"https://timeetf.co.kr/m11_view.php"
+        f"?idx={idx}&cate=&navStartDate={start_date}&navEndDate={end_date}#standardPrice"
+    )
+    print(f"  🌐 [HTML] {start_date} ~ {end_date}")
+    res = fetch_with_retry(url)
+    if not res:
+        return []
+    soup = BeautifulSoup(res.text, "html.parser")
+    return _parse_price_table(soup)
+
+def crawl_html_by_year(idx: int, fetch_start: str, fetch_end: str) -> Optional[pd.DataFrame]:
+    """
+    연도 단위로 쪼개서 HTML 크롤링 → 합치기.
+    (한 페이지에 표시 개수 제한이 있을 수 있으므로 연도별 분할)
+    """
+    start = datetime.strptime(fetch_start, "%Y-%m-%d").date()
+    end   = datetime.strptime(fetch_end,   "%Y-%m-%d").date()
+
+    all_records = []
+    current_year = start.year
+
+    while True:
+        chunk_start = date(current_year, 1, 1) if current_year > start.year else start
+        chunk_end   = date(current_year, 12, 31)
+
+        if chunk_start > end:
+            break
+        if chunk_end > end:
+            chunk_end = end
+
+        records = crawl_html_chunk(idx, str(chunk_start), str(chunk_end))
+        if records:
+            all_records.extend(records)
+            print(f"  → {len(records)}개 수집 ({chunk_start} ~ {chunk_end})")
+        else:
+            print(f"  → 데이터 없음 ({chunk_start} ~ {chunk_end})")
+
+        if chunk_end >= end:
+            break
+        current_year += 1
+        time.sleep(DELAY_BETWEEN_PAGE)
+
+    if not all_records:
+        return None
+
+    df = (pd.DataFrame(all_records)
+          .drop_duplicates("date")
+          .sort_values("date")
+          .reset_index(drop=True))
+    print(f"  📊 HTML 총 {len(df)}개 ({df['date'].min()} ~ {df['date'].max()})")
+    return df
 
 # ============================================================
 # Supabase upsert
 # ============================================================
 
-def upsert_standard_prices(idx: int, etf_name: str, df: pd.DataFrame, start_date: Optional[str] = None) -> int:
-    """
-    etf_daily 테이블에 standard_price를 upsert.
-    - on_conflict: date, etf_idx
-    - standard_price 컬럼만 업데이트 (기존 다른 컬럼 유지)
-
-    반환: upsert된 행 수
-    """
-    # 날짜 필터
-    if start_date:
-        original_len = len(df)
-        df = df[df["date"] >= start_date].copy()
-        print(f"  📅 날짜 필터 적용: {start_date} 이후 → {len(df)}/{original_len}개")
+def upsert_standard_prices(idx: int, etf_name: str, df: pd.DataFrame,
+                            start_date_filter: Optional[str] = None) -> int:
+    if start_date_filter:
+        before = len(df)
+        df = df[df["date"] >= start_date_filter].copy()
+        print(f"  📅 날짜 필터 {start_date_filter} 이후: {len(df)}/{before}개")
 
     if df.empty:
-        print(f"  ⚠️ 필터 후 데이터 없음")
+        print(f"  ⚠️ 저장할 데이터 없음")
         return 0
 
-    # upsert 데이터 구성
-    rows = []
-    for _, row in df.iterrows():
-        rows.append({
-            "date": row["date"],
-            "etf_idx": idx,
-            "etf_name": etf_name,
-            "standard_price": row["standard_price"],
-        })
+    rows = [
+        {"date": row["date"], "etf_idx": idx, "etf_name": etf_name,
+         "standard_price": row["standard_price"]}
+        for _, row in df.iterrows()
+    ]
 
-    total_upserted = 0
-
-    # 배치 처리
+    total = 0
     for i in range(0, len(rows), UPSERT_BATCH_SIZE):
         batch = rows[i:i + UPSERT_BATCH_SIZE]
         try:
             supabase.table("etf_daily").upsert(
-                batch,
-                on_conflict="date,etf_idx"
+                batch, on_conflict="date,etf_idx"
             ).execute()
-            total_upserted += len(batch)
-            print(f"  💾 upsert {i+1}~{i+len(batch)}/{len(rows)}행 완료")
+            total += len(batch)
+            print(f"  💾 upsert {i+1}~{i+len(batch)}/{len(rows)}행")
         except Exception as e:
-            print(f"  ❌ upsert 실패 (배치 {i}~{i+len(batch)}): {e}")
+            print(f"  ❌ upsert 실패 (배치 {i}): {e}")
 
-    return total_upserted
+    return total
 
 # ============================================================
 # ETF 1개 처리
 # ============================================================
 
-def process_etf(idx: int, etf_name: str, start_date: Optional[str] = None) -> int:
-    """반환: 저장된 행 수"""
-    print(f"\n{'='*55}")
-    print(f"📈 [{idx}] {etf_name}")
-    print(f"{'='*55}")
+def process_etf(etf: dict, start_date_filter: Optional[str] = None) -> int:
+    idx      = etf["idx"]
+    name     = etf["etf_name"]
+    listed   = etf["listed"]
 
-    df = download_nav_excel(idx)
-    if df is None:
-        print(f"  ❌ 데이터 없음, 스킵")
+    # 요청 시작일: START_DATE 필터가 상장일보다 늦으면 필터 날짜 사용
+    fetch_start = listed
+    if start_date_filter and start_date_filter > listed:
+        fetch_start = start_date_filter
+
+    print(f"\n{'='*58}")
+    print(f"📈 [{idx}] {name}  (상장: {listed})")
+    print(f"   요청 범위: {fetch_start} ~ {TODAY}")
+    print(f"{'='*58}")
+
+    df = None
+
+    # ── 방법 1: 날짜 파라미터 포함 엑셀 ──────────────────────
+    df = download_via_excel(idx, fetch_start, TODAY)
+
+    # ── 방법 2: HTML 크롤링 fallback ─────────────────────────
+    if df is None or df.empty:
+        print(f"  🔄 엑셀 실패 → HTML 크롤링 fallback")
+        df = crawl_html_by_year(idx, fetch_start, TODAY)
+
+    if df is None or df.empty:
+        print(f"  ❌ 수집 실패, 스킵")
         return 0
 
-    count = upsert_standard_prices(idx, etf_name, df, start_date)
-    print(f"  ✅ 총 {count}개 행 저장 완료")
+    count = upsert_standard_prices(idx, name, df, start_date_filter)
+    print(f"  ✅ 총 {count}개 저장 완료")
     return count
 
 # ============================================================
@@ -300,63 +339,61 @@ def process_etf(idx: int, etf_name: str, start_date: Optional[str] = None) -> in
 
 def main():
     print("=" * 60)
-    print("🗃️  TIMEFOLIO ETF 기준가격 과거 데이터 백필")
+    print("🗃️  TIMEFOLIO ETF 기준가격 백필 v2")
+    print(f"   실행일: {TODAY}")
     print("=" * 60)
 
-    # 필터 설정
-    start_date = START_DATE_STR if START_DATE_STR else None
-    if start_date:
+    start_filter = START_DATE_STR or None
+    if start_filter:
         try:
-            datetime.strptime(start_date, "%Y-%m-%d")
-            print(f"📅 시작일 필터: {start_date} 이후만 처리")
+            datetime.strptime(start_filter, "%Y-%m-%d")
+            print(f"📅 START_DATE 필터: {start_filter} 이후만 처리")
         except ValueError:
-            print(f"❌ START_DATE 형식 오류: {start_date} (YYYY-MM-DD 형식으로 입력)")
+            print(f"❌ START_DATE 형식 오류: '{start_filter}'  (YYYY-MM-DD)")
             sys.exit(1)
     else:
-        print("📅 시작일 필터: 없음 (전체 히스토리 처리)")
+        print("📅 START_DATE 필터: 없음 (상장일부터 전체 처리)")
 
-    # 대상 ETF 결정
     if SINGLE_ETF_IDX:
         target_etfs = [e for e in ETF_LIST if str(e["idx"]) == str(SINGLE_ETF_IDX)]
         if not target_etfs:
-            print(f"❌ ETF_IDX={SINGLE_ETF_IDX} 에 해당하는 ETF 없음")
+            print(f"❌ ETF_IDX={SINGLE_ETF_IDX} 없음")
             sys.exit(1)
-        print(f"🎯 단일 ETF 모드: [{target_etfs[0]['etf_name']}]")
+        print(f"🎯 단일 ETF: [{target_etfs[0]['etf_name']}]")
     else:
         target_etfs = ETF_LIST
-        print(f"🎯 전체 ETF 모드: {len(target_etfs)}개")
+        print(f"🎯 전체 {len(target_etfs)}개 ETF")
 
     print("=" * 60)
 
     total_rows = 0
-    success_count = 0
-    failed = []
+    success    = 0
+    failed     = []
 
     for i, etf in enumerate(target_etfs, 1):
         print(f"\n[{i}/{len(target_etfs)}]")
         try:
-            n = process_etf(etf["idx"], etf["etf_name"], start_date)
+            n = process_etf(etf, start_filter)
             total_rows += n
             if n > 0:
-                success_count += 1
+                success += 1
             else:
                 failed.append(etf["etf_name"])
         except Exception as e:
-            print(f"  ❌ 예외 발생: {e}")
+            print(f"  ❌ 예외: {e}")
+            import traceback; traceback.print_exc()
             failed.append(etf["etf_name"])
 
-        # ETF 간 딜레이 (마지막 ETF 제외)
         if i < len(target_etfs):
             print(f"  ⏳ {DELAY_BETWEEN_ETF}초 대기...")
             time.sleep(DELAY_BETWEEN_ETF)
 
-    # 결과 요약
     print(f"\n{'='*60}")
     print(f"🎉 백필 완료!")
-    print(f"   성공: {success_count}/{len(target_etfs)} ETF")
+    print(f"   성공: {success}/{len(target_etfs)} ETF")
     print(f"   총 저장: {total_rows:,}개 행")
     if failed:
-        print(f"   실패: {', '.join(failed)}")
+        print(f"   실패/스킵: {', '.join(failed)}")
     print(f"{'='*60}")
 
 if __name__ == "__main__":
