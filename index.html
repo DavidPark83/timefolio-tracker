@@ -1068,7 +1068,14 @@
         prev = compareDate || null;
       }
 
-      // holdings 조회 — creation_unit 포함
+      // ─────────────────────────────────────────────────────
+      // 데이터 조회
+      //   holdings  : etf_idx, code, name, weight, value,
+      //               holding_amount, qty, creation_unit  ← creation_unit은 여기
+      //   etf_daily : etf_idx, nav_total, standard_price   ← nav/price는 여기
+      //   조인 키   : date + etf_idx
+      // ─────────────────────────────────────────────────────
+
       const fetchHoldings = async (date) => {
         const all = await fetchAllPages(() =>
           db.from("holdings")
@@ -1078,12 +1085,11 @@
         return normalizeRows(all);
       };
 
-      // etf_daily 조회 — nav_total, standard_price 포함
+      // etf_daily → etf_idx 키 맵  { [etf_idx]: { nav_total, standard_price } }
       const fetchEtfDaily = async (date) => {
         const { data } = await db.from("etf_daily")
           .select("etf_idx, nav_total, standard_price")
           .eq("date", date);
-        // etf_idx → { nav_total, standard_price } 맵
         const map = {};
         (data || []).forEach(r => { map[r.etf_idx] = r; });
         return map;
@@ -1102,18 +1108,37 @@
         ]);
       }
 
-      // ★ 보유주식수 계산 헬퍼
-      // 수식: (nav_total / (standard_price * creation_unit)) * qty
+      // ★ 보유주식수 계산
+      // 수식: (etf_daily.nav_total / (etf_daily.standard_price * holdings.creation_unit)) * holdings.qty
+      // 조인: holdRow.etf_idx → etfDailyMap[etf_idx]
       function calcShares(holdRow, etfDailyMap) {
         const daily = etfDailyMap[holdRow.etf_idx];
         if (!daily) return 0;
-        const { nav_total, standard_price, creation_unit: dailyCreationUnit } = daily;
-        // creation_unit: etf_daily 우선, 없으면 holdings fallback
-        const creation_unit = dailyCreationUnit || holdRow.creation_unit || 0;
-        if (!standard_price || standard_price === 0 || !creation_unit) return 0;
-        const qty = holdRow.qty || 0;
+        const nav_total      = daily.nav_total      || 0;
+        const standard_price = daily.standard_price || 0;
+        const creation_unit  = holdRow.creation_unit || 0;  // ← holdings 테이블에서
+        const qty            = holdRow.qty           || 0;
+        if (standard_price === 0 || creation_unit === 0) return 0;
         return (nav_total / (standard_price * creation_unit)) * qty;
       }
+
+      // ★ 콘솔 검증용 — etf_idx=22, date=2026-04-01 기준으로 수식 샘플 출력
+      // 브라우저 F12 콘솔에서 확인 후 삭제 가능
+      (function debugShares() {
+        const sampleEtfIdx = 22;
+        const daily = etfDailyCur[sampleEtfIdx];
+        if (!daily) { console.warn("[shares debug] etf_daily 없음 etf_idx=22"); return; }
+        console.group("[shares debug] etf_idx=22 수식 검증");
+        console.log("nav_total:", daily.nav_total, "| standard_price:", daily.standard_price);
+        const sampleRows = curRows.filter(r => r.etf_idx === sampleEtfIdx).slice(0, 8);
+        sampleRows.forEach(r => {
+          const k = daily.standard_price && r.creation_unit
+            ? daily.nav_total / (daily.standard_price * r.creation_unit) : 0;
+          const shares = Math.round(k * (r.qty || 0));
+          console.log(r.name, "| creation_unit:", r.creation_unit, "| qty:", r.qty, "| → shares:", shares.toLocaleString());
+        });
+        console.groupEnd();
+      })();
 
       // 집계 함수 — amount 모드와 shares 모드 모두 계산
       const aggregate = (rows, etfDailyMap) => {
