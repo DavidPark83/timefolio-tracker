@@ -545,26 +545,38 @@
   // =========================================================
   function fmt(n) { if (n == null) return "—"; return Number(n).toLocaleString("ko-KR"); }
 
+  // ★ Supabase 1000행 제한을 우회하는 페이지네이션 헬퍼
+  async function fetchAllPages(buildQuery) {
+    const all = [];
+    let from = 0;
+    while (true) {
+      const { data, error } = await buildQuery().range(from, from + 999);
+      if (error) throw error;
+      if (!data?.length) break;
+      all.push(...data);
+      if (data.length < 1000) break;
+      from += 1000;
+    }
+    return all;
+  }
+
+  
   // ★ 순자산총액/금액 포맷터 — 모두 "억원"으로 통일
   //   • 1억원 이상   → 정수 + 천 단위 쉼표  (예: 2,415억원)
   //   • 1억원 미만   → 소수점 1자리         (예: 0.5억원)
   //   • 음수 처리   → 부호 자동 부착        (예: -4억원)
   //   • 1조원 이상  → "조원" 표기 (대형 ETF 가독성 보강)
-  function fmtNav(v) {
+  function fmtMoney(v, { signed = false } = {}) {
     if (v == null) return "—";
-    const sign = v < 0 ? "-" : "";
+    const sign = v < 0 ? "-" : (signed && v > 0 ? "+" : "");
     const abs = Math.abs(v);
     const eok = abs / 100_000_000;
-    if (eok >= 10000) {
-      return sign + (eok / 10000).toFixed(2) + "조원";
-    }
-    // 1억원 이상: 정수 반올림 + 천 단위 쉼표 (예: 2,415억원)
-    if (eok >= 1) {
-      return sign + Math.round(eok).toLocaleString("ko-KR") + "억원";
-    }
-    // 1억원 미만: 소수점 1자리 (예: 0.5억원, 0.1억원)
+    if (eok >= 10000) return sign + (eok / 10000).toFixed(2) + "조원";
+    if (eok >= 1)     return sign + Math.round(eok).toLocaleString("ko-KR") + "억원";
     return sign + eok.toFixed(1) + "억원";
   }
+  // 하위 호환용 별칭
+  const fmtNav = (v) => fmtMoney(v);
 
   function showError(title, hint) {
     const box = document.getElementById("errorBox");
@@ -763,24 +775,18 @@ function selectEtf(el) {
     }
     if (!db) return;
 
-    // ★ 페이지네이션으로 모든 date를 가져옴 (Supabase 1000행 제한 우회)
-    const allRows = [];
-    let from = 0;
-    while (true) {
-      const { data, error } = await db.from("holdings")
-        .select("date")
-        .order("date", { ascending: false })
-        .range(from, from + 999);
-      if (error) {
-        showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
-        return;
-      }
-      if (!data?.length) break;
-      allRows.push(...data);
-      if (data.length < 1000) break;
-      from += 1000;
+    // ★ 페이지네이션 헬퍼로 모든 date를 가져옴
+    let allRows = [];
+    try {
+      allRows = await fetchAllPages(() =>
+        db.from("holdings").select("date").order("date", { ascending: false })
+      );
+    } catch (error) {
+      showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
+      return;
     }
     if (!allRows.length) return;
+    
     hideError();
     globalAllDates = [...new Set(allRows.map(d => d.date))];
 
@@ -789,7 +795,22 @@ function selectEtf(el) {
     if (!s1 || !s2) return;
 
     s1.innerHTML = globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
-    s2.innerHTML = '<option value="">비교 안함</option>' + globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
+    // ★ 비교일은 기준일보다 이전 날짜만 표시 (초기엔 최신일 기준)
+    const initialBase = globalAllDates[0];
+    s2.innerHTML = '<option value="">비교 안함</option>' +
+      globalAllDates.filter(d => d < initialBase).map(d => `<option value="${d}">${d}</option>`).join("");
+
+    // 기준일 변경 시 비교일 드롭다운도 동적으로 업데이트
+    s1.addEventListener("change", () => {
+      const base = s1.value;
+      const currentCmp = s2.value;
+      s2.innerHTML = '<option value="">비교 안함</option>' +
+        globalAllDates.filter(d => d < base).map(d => `<option value="${d}">${d}</option>`).join("");
+      // 기존 비교일이 새 목록에 있으면 유지, 없으면 빈 값
+      if (currentCmp && globalAllDates.includes(currentCmp) && currentCmp < base) {
+        s2.value = currentCmp;
+      }
+    });
 
     // 기본값: 기준일=최신, 비교일=1일 전(직전 영업일)
     s1.value = globalAllDates[0];
@@ -915,11 +936,9 @@ function selectEtf(el) {
       const diff = navCur.nav_total - navCmp.nav_total;
       const pct = (diff / navCmp.nav_total) * 100;
       const cls = diff > 0 ? "pos" : diff < 0 ? "neg" : "neu";
-      // ★ 양수일 때만 "+" 부호 추가 (음수는 fmtNav가 자동으로 "-" 부호 부착)
-      const navSign = diff > 0 ? "+" : "";
       const pctSign = diff > 0 ? "+" : "";
       document.getElementById("statNavDiff").innerHTML =
-        `<span class="${cls}">${navSign}${fmtNav(diff)} (${pctSign}${pct.toFixed(2)}%)</span>`;
+        `<span class="${cls}">${fmtMoney(diff, { signed: true })} (${pctSign}${pct.toFixed(2)}%)</span>`;    
     } else {
       document.getElementById("statNavDiff").textContent = compareDate ? "비교 데이터 없음" : "—";
     }
@@ -1055,20 +1074,43 @@ function selectEtf(el) {
         prev = compareDate || null;
       }
 
-      const fetchAll = async (date) => {
-        const all = [];
-        let from = 0;
-        while (true) {
-          const { data } = await db.from("holdings")
-            .select("etf_idx, code, name, weight, value, holding_amount")
+const fetchAll = async (date) => {
+        // holdings + etf_daily 병렬 조회
+        const [holdingsAll, dailyResp] = await Promise.all([
+          fetchAllPages(() =>
+            db.from("holdings")
+              .select("etf_idx, code, name, weight, value, holding_amount")
+              .eq("date", date)
+          ),
+          db.from("etf_daily")
+            .select("etf_idx, nav_total, nav_price, standard_price")
             .eq("date", date)
-            .range(from, from + 999);
-          if (!data?.length) break;
-          all.push(...data);
-          if (data.length < 1000) break;
-          from += 1000;
-        }
-        return normalizeRows(all);
+        ]);
+
+        const normalized = normalizeRows(holdingsAll);
+
+        // ★ standard_price NULL 체크 폴백: standard_price 우선, NULL/0이면 nav_price 사용
+        const dailyMap = {};
+        (dailyResp.data || []).forEach(d => {
+          const sp = d.standard_price;
+          const effectivePrice = (sp != null && sp > 0) ? sp : (d.nav_price || 0);
+          dailyMap[d.etf_idx] = {
+            nav_total: d.nav_total || 0,
+            effective_price: effectivePrice
+          };
+        });
+
+        // ★ holding_amount가 NULL/0이면 weight × nav_total / 100 으로 폴백 계산
+        return normalized.map(h => {
+          let amt = h.holding_amount;
+          if (!amt || amt <= 0) {
+            const daily = dailyMap[h.etf_idx];
+            if (daily && daily.nav_total && h.weight) {
+              amt = (h.weight / 100) * daily.nav_total;
+            }
+          }
+          return { ...h, _amount: amt || 0 };
+        });
       };
 
 const aggregate = (rows) => {
@@ -1088,7 +1130,7 @@ const aggregate = (rows) => {
           };
           map[key].weight += (r.weight || 0);
           map[key].value += (r.value || 0);
-          map[key].holdingAccounts += (r.holding_amount || 0);
+          map[key].holdingAccounts += (r._amount || 0);   // ★ holding_amount → _amount (폴백 적용된 값)
           map[key].etfCount += 1;
         }
         return map;
@@ -1156,15 +1198,9 @@ const aggregate = (rows) => {
         .filter(x => x.holdingAccounts > 0)
         .sort((a, b) => b.holdingAccounts - a.holdingAccounts);
 
-      // 억 단위 포맷터 (천 단위 쉼표 적용)
-      const fmtEok = (v) => {
-        if (!v) return "—";
-        const eok = v / 100_000_000;
-        if (eok >= 10000) return (eok / 10000).toFixed(1) + "조원";
-        if (eok >= 1)     return Math.round(eok).toLocaleString("ko-KR") + "억원";
-        return (v / 10_000).toFixed(0) + "만원";
-      };
-
+      // 억 단위 포맷터 (통합된 fmtMoney 사용)
+      const fmtEok = (v) => fmtMoney(v);
+      
       // ★ 18개 ETF 순자산총액 합 → 카드 제목에 (#,##조원)으로 표시
       try {
         const { data: navAll } = await db.from("etf_daily")
@@ -1186,16 +1222,8 @@ const aggregate = (rows) => {
       // 변화 카드 4종
       const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
 
-      // 부호가 들어간 억원 포맷터 (변화량 표시용, 천 단위 쉼표 포함)
-      const fmtEokSigned = (v) => {
-        if (v == null) return "—";
-        const sign = v > 0 ? "+" : v < 0 ? "-" : "";
-        const abs = Math.abs(v);
-        const eok = abs / 100_000_000;
-        if (eok >= 10000) return `${sign}${(eok / 10000).toFixed(1)}조원`;
-        if (eok >= 1)     return `${sign}${Math.round(eok).toLocaleString("ko-KR")}억원`;
-        return `${sign}${(abs / 10_000).toFixed(0)}만원`;
-      };
+      // 부호가 들어간 포맷터 (통합된 fmtMoney 사용)
+      const fmtEokSigned = (v) => fmtMoney(v, { signed: true });
 
       renderCard("New",  newItems,  x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
       renderCard("Up",   upItems,   x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
