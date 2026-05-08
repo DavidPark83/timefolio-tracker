@@ -1037,94 +1037,120 @@ function selectEtf(el) {
   // =========================================================
   // ① 오늘의 변화 하이라이트
   // =========================================================
-  async function loadHighlights(baseDate, compareDate) {
-    if (!db) return;
-    try {
-      if (!baseDate) {
-        const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-        if (!latestRows?.length) return;
-        baseDate = latestRows[0].date;
-      }
+async function loadHighlights(baseDate, compareDate) {
+  if (!db) return;
+  try {
+    if (!baseDate) {
+      const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
+      if (!latestRows?.length) return;
+      baseDate = latestRows[0].date;
+    }
 
-      // compareDate가 빈 문자열이면 비교 없음(prev = null), 명시 안 됐으면 직전 영업일 자동
-      let prev = null;
-      if (compareDate === undefined) {
-        const { data: prevRows } = await db.from("holdings").select("date").lt("date", baseDate).order("date", { ascending: false }).limit(1);
-        prev = prevRows?.[0]?.date || null;
-      } else {
-        prev = compareDate || null;
-      }
+    let prev = null;
+    if (compareDate === undefined) {
+      const { data: prevRows } = await db.from("holdings").select("date").lt("date", baseDate).order("date", { ascending: false }).limit(1);
+      prev = prevRows?.[0]?.date || null;
+    } else {
+      prev = compareDate || null;
+    }
 
-      const fetchAll = async (date) => {
-        const all = [];
-        let from = 0;
-        while (true) {
-          const { data } = await db.from("holdings")
-            .select("etf_idx, code, name, weight, value, holding_amount")
-            .eq("date", date)
-            .range(from, from + 999);
-          if (!data?.length) break;
-          all.push(...data);
-          if (data.length < 1000) break;
-          from += 1000;
-        }
-        return normalizeRows(all);
-      };
+    // ★★★ NEW: etf_daily에서 ETF별 nav_total + effective_price 맵 생성
+    //   - effective_price = standard_price ?? nav_price (당일엔 standard_price가 NULL일 수 있음)
+    //   - nav_total은 holding_amount 폴백 계산용
+    const fetchEtfDailyMap = async (date) => {
+      const { data } = await db.from("etf_daily")
+        .select("etf_idx, nav_total, nav_price, standard_price")
+        .eq("date", date);
+      const map = {};
+      (data || []).forEach(d => {
+        map[d.etf_idx] = {
+          nav_total: d.nav_total || 0,
+          effective_price: (d.standard_price != null ? d.standard_price : d.nav_price) || 0
+        };
+      });
+      return map;
+    };
 
-const aggregate = (rows) => {
-        const map = {};
-        for (const r of rows) {
-          // ★ 현금/원화예금 등 비종목 항목 제외
-          const nm = (r.name || "").trim();
-          if (/^(현금|원화예금|예금|기타|미수금|미지급금)/.test(nm)) continue;
-
-          const code = (r.code || "").trim();
-          const key = code || r.name;
-          if (!map[key]) map[key] = {
-            code, name: r.name,
-            weight: 0, value: 0,
-            holdingAccounts: 0,
-            etfCount: 0
-          };
-          map[key].weight += (r.weight || 0);
-          map[key].value += (r.value || 0);
-          map[key].holdingAccounts += (r.holding_amount || 0);
-          map[key].etfCount += 1;
-        }
-        return map;
-      };
-
-      const curAll = await fetchAll(baseDate);
-      const curMap = aggregate(curAll);
-
-      let newItems = [], upItems = [], downItems = [], goneItems = [];
-
-      if (prev) {
-        const prevAll = await fetchAll(prev);
-        const prevMap = aggregate(prevAll);
-
-        const THRESHOLD = 100_000_000;  // 1억원
-
-        for (const key of Object.keys(curMap)) {
-          const cur = curMap[key];
-          const prv = prevMap[key];
-          if (!prv) {
-            newItems.push({ ...cur, change: cur.holdingAccounts });
-          } else {
-            const diff = cur.holdingAccounts - prv.holdingAccounts;
-            if (diff > THRESHOLD)       upItems.push({ ...cur, change: diff });
-            else if (diff < -THRESHOLD) downItems.push({ ...cur, change: diff });
+    // ★★★ MODIFIED: holdings 가져오면서 holding_amount 폴백 계산
+    const fetchAll = async (date, dailyMap) => {
+      const all = await fetchAllPages(() =>
+        db.from("holdings")
+          .select("etf_idx, code, name, weight, value, holding_amount, qty")
+          .eq("date", date)
+      );
+      const normalized = normalizeRows(all);
+      return normalized.map(h => {
+        let amt = h.holding_amount;
+        // holding_amount가 비었거나 0이면 weight × nav_total/100 로 추정
+        if (!amt || amt <= 0) {
+          const daily = dailyMap[h.etf_idx];
+          if (daily && daily.nav_total) {
+            amt = ((h.weight || 0) / 100) * daily.nav_total;
           }
         }
-        for (const key of Object.keys(prevMap)) {
-          if (!curMap[key]) goneItems.push({ ...prevMap[key], change: -prevMap[key].holdingAccounts });
-        }
+        return { ...h, _amount: amt || 0 };
+      });
+    };
 
-        newItems.sort((a, b)  => b.change - a.change);
-        upItems.sort((a, b)   => b.change - a.change);
-        downItems.sort((a, b) => a.change - b.change);
-        goneItems.sort((a, b) => a.change - b.change);
+    const aggregate = (rows) => {
+      const map = {};
+      for (const r of rows) {
+        const nm = (r.name || "").trim();
+        if (/^(현금|원화예금|예금|기타|미수금|미지급금)/.test(nm)) continue;
+        const code = (r.code || "").trim();
+        const key = code || r.name;
+        if (!map[key]) map[key] = {
+          code, name: r.name,
+          weight: 0, value: 0,
+          holdingAccounts: 0,
+          etfCount: 0
+        };
+        map[key].weight += (r.weight || 0);
+        map[key].value += (r.value || 0);
+        map[key].holdingAccounts += (r._amount || 0);   // ★ holding_amount 대신 _amount
+        map[key].etfCount += 1;
       }
+      return map;
+    };
+
+    // ★★★ MODIFIED: etf_daily도 함께 병렬 조회
+    const [curDailyMap, prevDailyMap] = await Promise.all([
+      fetchEtfDailyMap(baseDate),
+      prev ? fetchEtfDailyMap(prev) : Promise.resolve({})
+    ]);
+
+    const curAll = await fetchAll(baseDate, curDailyMap);
+    const curMap = aggregate(curAll);
+
+    let newItems = [], upItems = [], downItems = [], goneItems = [];
+
+    if (prev) {
+      const prevAll = await fetchAll(prev, prevDailyMap);
+      const prevMap = aggregate(prevAll);
+
+      const THRESHOLD = 100_000_000;
+
+      for (const key of Object.keys(curMap)) {
+        const cur = curMap[key];
+        const prv = prevMap[key];
+        if (!prv) {
+          newItems.push({ ...cur, change: cur.holdingAccounts });
+        } else {
+          const diff = cur.holdingAccounts - prv.holdingAccounts;
+          if (diff > THRESHOLD)       upItems.push({ ...cur, change: diff });
+          else if (diff < -THRESHOLD) downItems.push({ ...cur, change: diff });
+        }
+      }
+      for (const key of Object.keys(prevMap)) {
+        if (!curMap[key]) goneItems.push({ ...prevMap[key], change: -prevMap[key].holdingAccounts });
+      }
+
+      newItems.sort((a, b)  => b.change - a.change);
+      upItems.sort((a, b)   => b.change - a.change);
+      downItems.sort((a, b) => a.change - b.change);
+      goneItems.sort((a, b) => a.change - b.change);
+    }
+
 
       const renderCard = (baseId, items, fmtChange, emptyMsg) => {
         const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 10);
