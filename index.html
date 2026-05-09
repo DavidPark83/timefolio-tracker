@@ -1494,7 +1494,14 @@ const aggregate = (rows) => {
   // =========================================================
   // ⑦ 공지사항
   // =========================================================
-  async function loadNotices() {
+    function autoLink(text) {
+    if (!text) return '';
+    return text.replace(
+      /(https?:\/\/[^\s<>"]+)/g,
+      '<a href="$1" target="_blank" rel="noopener" style="color:#00D4AA;text-decoration:underline;word-break:break-all">$1</a>'
+    );
+  }
+  async function loadNotices() { 
     if (!db) return;
     const { data } = await db
       .from("notices")
