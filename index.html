@@ -1506,62 +1506,102 @@ const aggregate = (rows) => {
     if (!data?.length) return;
 
     const typeStyle = {
-      info:    { border: "#00D4AA", icon: "📢", color: "#00D4AA" },
-      warning: { border: "#F59E0B", icon: "⚠️", color: "#F59E0B" },
-      update:  { border: "#3B82F6", icon: "🆕", color: "#60a5fa" },
+      info:    { border: "#00D4AA", icon: "📢", color: "#00D4AA", label: "공지" },
+      warning: { border: "#F59E0B", icon: "⚠️", color: "#F59E0B", label: "긴급" },
+      update:  { border: "#3B82F6", icon: "🆕", color: "#60a5fa", label: "NEW" },
     };
 
-    const items = data.map((n, i) => {
+    const renderRow = (n, i) => {
       const s = typeStyle[n.type] || typeStyle.info;
       const date = new Date(n.created_at).toLocaleDateString("ko-KR");
-      const isFirst = i === 0;
       return `
         <div style="border-bottom: 1px solid #1e2d4a;">
           <div onclick="toggleNotice(${i})" style="
             display:flex; align-items:center; gap:10px;
-            padding: 11px 16px; cursor:pointer;
-            transition: background 0.15s;
+            padding:11px 16px; cursor:pointer;
           " onmouseover="this.style.background='rgba(255,255,255,0.02)'"
              onmouseout="this.style.background='transparent'">
             <span style="font-size:13px;flex-shrink:0">${s.icon}</span>
-            <span style="
-              font-size:11px; font-weight:700; letter-spacing:1px;
-              color:${s.color}; flex-shrink:0; min-width:36px;
-            ">${n.type === 'warning' ? '긴급' : n.type === 'update' ? 'NEW' : '공지'}</span>
-            <span style="
-              font-size:13px; font-weight:600; color:#e2e8f0;
-              flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-            ">${n.title}</span>
-            <span style="font-size:11px; color:#475569; flex-shrink:0; margin-right:8px">${date}</span>
-            <span id="notice-arrow-${i}" style="color:#475569; font-size:11px; transition:transform 0.2s; display:inline-block; transform:${isFirst ? 'rotate(180deg)' : 'rotate(0deg)'}">▼</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:${s.color};flex-shrink:0;min-width:36px">${s.label}</span>
+            <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.title}</span>
+            <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${date}</span>
+            <span id="notice-arrow-${i}" style="color:#475569;font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(0deg)">▼</span>
           </div>
           <div id="notice-body-${i}" style="
-            display:${isFirst ? 'block' : 'none'};
-            padding: 0 16px 14px 55px;
-            font-size:12px; color:#94a3b8; line-height:1.7;
-            border-left: 2px solid ${s.border}40; margin-left:16px;
+            display:none;
+            padding:0 16px 14px 55px;
+            font-size:12px;color:#94a3b8;line-height:1.7;
+            border-left:2px solid ${s.border}40;margin-left:16px;
           ">${n.content || ''}</div>
         </div>`;
-    }).join("");
+    };
+
+    const latest = data[0];
+    const rest   = data.slice(1);
+    const s0 = typeStyle[latest.type] || typeStyle.info;
+    const date0 = new Date(latest.created_at).toLocaleDateString("ko-KR");
+
+    // 최신 공지 1개 행
+    const latestRow = `
+      <div style="border-bottom:${rest.length ? '1px solid #1e2d4a' : 'none'}">
+        <div onclick="toggleNotice(0)" style="
+          display:flex;align-items:center;gap:10px;
+          padding:11px 16px;cursor:pointer;
+        " onmouseover="this.style.background='rgba(255,255,255,0.02)'"
+           onmouseout="this.style.background='transparent'">
+          <span style="font-size:13px;flex-shrink:0">${s0.icon}</span>
+          <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:${s0.color};flex-shrink:0;min-width:36px">${s0.label}</span>
+          <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${latest.title}</span>
+          <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${date0}</span>
+          <span id="notice-arrow-0" style="color:#475569;font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(0deg)">▼</span>
+        </div>
+        <div id="notice-body-0" style="
+          display:none;padding:0 16px 14px 55px;
+          font-size:12px;color:#94a3b8;line-height:1.7;
+          border-left:2px solid ${s0.border}40;margin-left:16px;
+        ">${latest.content || ''}</div>
+      </div>`;
+
+    // 나머지 공지 (기본 숨김)
+    const restRows = rest.map((n, i) => renderRow(n, i + 1)).join("");
+
+    // 전체보기 버튼 (공지가 2개 이상일 때만)
+    const moreBtn = rest.length ? `
+      <div id="noticeMoreWrap" style="border-top:1px solid #1e2d4a">
+        <div onclick="toggleAllNotices()" style="
+          display:flex;align-items:center;justify-content:center;gap:6px;
+          padding:9px;cursor:pointer;font-size:11px;color:#475569;
+          transition:color 0.15s;
+        " onmouseover="this.style.color='#00D4AA'"
+           onmouseout="this.style.color='#475569'">
+          <span id="moreBtnText">이전 공지 ${rest.length}개 더보기</span>
+          <span id="moreBtnArrow" style="transition:transform 0.2s">▼</span>
+        </div>
+      </div>` : "";
+
+    const restWrap = rest.length ? `
+      <div id="noticeRestWrap" style="display:none">${restRows}</div>` : "";
 
     document.getElementById("noticeArea").innerHTML = `
       <div style="
-        background:#0d1526; border:1px solid #1e2d4a; border-radius:12px;
-        overflow:hidden; margin-bottom:4px;
+        background:#0d1526;border:1px solid #1e2d4a;border-radius:12px;
+        overflow:hidden;margin-bottom:4px;
       ">
         <div style="
-          padding:10px 16px; background:#111827;
+          padding:10px 16px;background:#111827;
           border-bottom:1px solid #1e2d4a;
-          display:flex; align-items:center; gap:8px;
+          display:flex;align-items:center;gap:8px;
         ">
           <span style="font-size:12px">📋</span>
-          <span style="font-size:12px; font-weight:700; color:#94a3b8; letter-spacing:1px">공지사항</span>
+          <span style="font-size:12px;font-weight:700;color:#94a3b8;letter-spacing:1px">공지사항</span>
           <span style="
-            font-size:10px; background:rgba(0,212,170,0.15);
-            color:#00D4AA; border-radius:10px; padding:1px 8px; font-weight:700;
+            font-size:10px;background:rgba(0,212,170,0.15);
+            color:#00D4AA;border-radius:10px;padding:1px 8px;font-weight:700;
           ">${data.length}</span>
         </div>
-        ${items}
+        ${latestRow}
+        ${restWrap}
+        ${moreBtn}
       </div>`;
   }
 
@@ -1569,8 +1609,20 @@ const aggregate = (rows) => {
     const body  = document.getElementById(`notice-body-${i}`);
     const arrow = document.getElementById(`notice-arrow-${i}`);
     const isOpen = body.style.display !== 'none';
-    body.style.display  = isOpen ? 'none'  : 'block';
+    body.style.display    = isOpen ? 'none' : 'block';
     arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  function toggleAllNotices() {
+    const wrap  = document.getElementById("noticeRestWrap");
+    const btn   = document.getElementById("moreBtnText");
+    const arrow = document.getElementById("moreBtnArrow");
+    const isOpen = wrap.style.display !== 'none';
+    wrap.style.display    = isOpen ? 'none'  : 'block';
+    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    btn.textContent = isOpen
+      ? `이전 공지 ${wrap.children.length}개 더보기`
+      : "접기";
   }
   
   // =========================================================
