@@ -249,9 +249,11 @@
 </header>
 
 <div class="container">
-
   <div id="errorBox" style="display:none;padding:14px 18px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:10px;margin-bottom:16px;font-size:13px;color:#fca5a5;line-height:1.6"></div>
 
+  <!-- 공지사항 배너 -->
+  <div id="noticeArea" style="margin-bottom: 16px;"></div>
+    
   <!-- ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통) -->
   <div class="card" style="margin-bottom: 20px;">
     <div class="card-header">
@@ -1490,6 +1492,50 @@ const aggregate = (rows) => {
   }
 
   // =========================================================
+  // ⑦ 공지사항
+  // =========================================================
+  async function loadNotices() {
+    if (!db) return;
+    const { data } = await db
+      .from("notices")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!data?.length) return;
+
+    const typeStyle = {
+      info:    { bg: "rgba(0,212,170,0.08)",  border: "#00D4AA", icon: "📢", color: "#00D4AA" },
+      warning: { bg: "rgba(245,158,11,0.08)", border: "#F59E0B", icon: "⚠️", color: "#F59E0B" },
+      update:  { bg: "rgba(59,130,246,0.08)", border: "#3B82F6", icon: "🆕", color: "#60a5fa" },
+    };
+
+    const html = data.map(n => {
+      const s = typeStyle[n.type] || typeStyle.info;
+      const date = new Date(n.created_at).toLocaleDateString("ko-KR");
+      return `
+        <div style="
+          background:${s.bg}; border:1px solid ${s.border}40;
+          border-left: 3px solid ${s.border};
+          border-radius:10px; padding:12px 16px; margin-bottom:8px;
+          display:flex; gap:12px; align-items:flex-start;
+        ">
+          <span style="font-size:16px;flex-shrink:0">${s.icon}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:${s.color};margin-bottom:3px">
+              ${n.title}
+              <span style="font-size:10px;color:#475569;font-weight:400;margin-left:8px">${date}</span>
+            </div>
+            ${n.content ? `<div style="font-size:12px;color:#94a3b8;line-height:1.5">${n.content}</div>` : ""}
+          </div>
+        </div>`;
+    }).join("");
+
+    document.getElementById("noticeArea").innerHTML = html;
+  }
+  
+  // =========================================================
   // 시작
   //   ① ETF 탭을 순자산총액 내림차순으로 정렬 (해외/국내 섹션 내)
   //   ② 정보 박스 갱신 (정렬 후 새로 active된 ETF 기준)
@@ -1499,6 +1545,7 @@ const aggregate = (rows) => {
     await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
     renderInfo();
     initGlobalDates();
+    loadNotices();
   })();
   
 </script>
