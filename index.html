@@ -1262,7 +1262,7 @@ const aggregate = (rows) => {
 
       renderCard("Hold", holdAll,
       x => hlMode === 'qty'
-        ? `<span style="color:#00D4AA;font-family:monospace">${Number(x.holdings_qty).toLocaleString('ko-KR')}주</span>`
+        ? `<span style="color:#00D4AA;font-family:monospace">${Math.round(x.holdings_qty).toLocaleString('ko-KR')}주</span>`
         : `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
         "데이터 없음");
 
@@ -1274,7 +1274,7 @@ const aggregate = (rows) => {
           if (hlMode === 'qty') {
             const sign = x.change > 0 ? '+' : '';
             const cls  = x.change >= 0 ? 'pos' : 'neg';
-            return `<span class="${cls}">${sign}${Number(x.change).toLocaleString('ko-KR')}주</span>`;
+            return `<span class="${cls}">${sign}${Math.round(x.change).toLocaleString('ko-KR')}주</span>`;
           }
           const cls = x.change >= 0 ? 'pos' : 'neg';
           return `<span class="${cls}">${fmtEokSigned(x.change)}</span>`;
