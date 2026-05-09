@@ -1108,7 +1108,7 @@ const fetchAll = async (date) => {
         const [holdingsAll, dailyResp] = await Promise.all([
           fetchAllPages(() =>
             db.from("holdings")
-              .select("etf_idx, code, name, weight, value, holding_amount, qty")
+              .select("etf_idx, code, name, weight, value, holding_amount, qty, holdings_qty")
               .eq("date", date)
           ),
           db.from("etf_daily")
@@ -1160,7 +1160,8 @@ const aggregate = (rows) => {
           map[key].weight += (r.weight || 0);
           map[key].value += (r.value || 0);
           map[key].holdingAccounts += (r._amount || 0);   // ★ holding_amount → _amount (폴백 적용된 값)
-          map[key].qty = (map[key].qty || 0) + (r.qty || 0);
+          map[key].qty          = (map[key].qty          || 0) + (r.qty          || 0);
+          map[key].holdings_qty = (map[key].holdings_qty || 0) + (r.holdings_qty || 0);
           map[key].etfCount += 1;
         }
         return map;
@@ -1183,9 +1184,9 @@ const aggregate = (rows) => {
           const prv = prevMap[key];
           if (hlMode === 'qty') {
             if (!prv) {
-              newItems.push({ ...cur, change: cur.qty });
+              newItems.push({ ...cur, change: cur.holdings_qty });
             } else {
-              const diff = cur.qty - prv.qty;
+              const diff = cur.holdings_qty - prv.holdings_qty;
               if (diff > THRESHOLD_QTY)       upItems.push({ ...cur, change: diff });
               else if (diff < -THRESHOLD_QTY) downItems.push({ ...cur, change: diff });
             }
@@ -1202,7 +1203,7 @@ const aggregate = (rows) => {
         for (const key of Object.keys(prevMap)) {
           if (!curMap[key]) {
             const prv = prevMap[key];
-            goneItems.push({ ...prv, change: hlMode === 'qty' ? -prv.qty : -prv.holdingAccounts });
+            goneItems.push({ ...prv, change: hlMode === 'qty' ? -prv.holdings_qty : -prv.holdingAccounts });
           }
         }
         
@@ -1239,8 +1240,8 @@ const aggregate = (rows) => {
 
       // 현재 보유 TOP — holding_amount 합산 기준 (18개 ETF 전체)
       const holdAll = Object.values(curMap)
-        .filter(x => hlMode === 'qty' ? x.qty > 0 : x.holdingAccounts > 0)
-        .sort((a, b) => hlMode === 'qty' ? b.qty - a.qty : b.holdingAccounts - a.holdingAccounts);
+        .filter(x => hlMode === 'qty' ? x.holdings_qty > 0 : x.holdingAccounts > 0)
+        .sort((a, b) => hlMode === 'qty' ? b.holdings_qty - a.holdings_qty : b.holdingAccounts - a.holdingAccounts);
 
       // 억 단위 포맷터 (통합된 fmtMoney 사용)
       const fmtEok = (v) => fmtMoney(v);
@@ -1260,9 +1261,9 @@ const aggregate = (rows) => {
       } catch (e) { console.error("총 순자산 표시 실패:", e); }
 
       renderCard("Hold", holdAll,
-        x => hlMode === 'qty'
-          ? `<span style="color:#00D4AA;font-family:monospace">${Number(x.qty).toLocaleString('ko-KR')}주</span>`
-          : `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
+      x => hlMode === 'qty'
+        ? `<span style="color:#00D4AA;font-family:monospace">${Number(x.holdings_qty).toLocaleString('ko-KR')}주</span>`
+        : `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
         "데이터 없음");
 
       // 변화 카드 4종
