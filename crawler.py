@@ -25,7 +25,7 @@ import os
 import sys
 import time
 import io
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import List, Dict, Optional
 
 import re
@@ -123,6 +123,15 @@ def to_float_or_none(s) -> Optional[float]:
         return v if v > 0 else None
     except (ValueError, TypeError):
         return None
+
+def get_prev_business_date(target_date: str) -> str:
+    """주어진 날짜의 직전 영업일 반환 (토·일 건너뜀, 공휴일 미처리)"""
+    from datetime import timedelta
+    d = datetime.strptime(target_date, "%Y-%m-%d").date()
+    d -= timedelta(days=1)
+    while d.weekday() >= 5:   # 5=토, 6=일
+        d -= timedelta(days=1)
+    return str(d)
 
 def normalize_stock_code(raw) -> str:
     """
@@ -305,7 +314,8 @@ def _parse_standard_price_from_html(soup: BeautifulSoup, target_date: str) -> Op
 
 def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
     """
-    상세 페이지에서 순자산총액, 기준가(nav_price), 기준가격(standard_price)을 추출.
+    당일 순자산총액(nav_total)과 기준가(nav_price)만 수집.
+    standard_price는 전일자 기준으로 별도 수집 (process_one 참고).
     """
     url = f"https://timeetf.co.kr/m11_view.php?idx={idx}&pdfDate={target_date}"
     res = fetch_with_retry(url)
@@ -315,39 +325,17 @@ def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
     soup = BeautifulSoup(res.text, "html.parser")
     text = soup.get_text(separator="\n")
 
-    # 순자산총액: "순자산총액 : 980 억원"
     nav_total = None
     m = re.search(r"순자산총액[^0-9]*([0-9,]+)\s*억", text)
     if m:
-        nav_total = to_int(m.group(1)) * 100_000_000  # 억 → 원
+        nav_total = to_int(m.group(1)) * 100_000_000
 
-    # 기준가 (summary 영역 — 전일 기준가)
     nav_price = None
     m = re.search(r"기준가\s*\(원\)\s*[:\s]*([0-9,]+\.?[0-9]*)", text)
     if m:
         nav_price = to_float(m.group(1))
 
-    # standard_price: 엑셀(1차) → HTML(2차) 방식으로 수집
-    # HTML은 이미 위에서 받았으므로 먼저 HTML 파싱 시도, 실패 시 엑셀 요청
-    standard_price = _parse_standard_price_from_html(soup, target_date)
-
-    if standard_price is None:
-        # HTML에서 못 찾으면 엑셀로 재시도
-        time.sleep(0.5)
-        url_xls = (
-            f"https://timeetf.co.kr/nav_xls.php"
-            f"?idx={idx}&navStartDate={target_date}&navEndDate={target_date}"
-        )
-        res_xls = fetch_with_retry(url_xls)
-        if res_xls and res_xls.content:
-            standard_price = _parse_standard_price_from_excel(res_xls.content, target_date)
-
-    if standard_price is not None:
-        print(f"  💰 standard_price: {standard_price:,.2f}원")
-    else:
-        print(f"  ⚠️ standard_price: 수집 실패 (NULL로 저장)")
-
-    if nav_total is None and nav_price is None and standard_price is None:
+    if nav_total is None and nav_price is None:
         return None
 
     result: Dict = {
@@ -355,9 +343,8 @@ def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
         "etf_idx":  idx,
         "etf_name": etf_name,
     }
-    if nav_total   is not None: result["nav_total"]       = nav_total
-    if nav_price   is not None: result["nav_price"]       = nav_price
-    if standard_price is not None: result["standard_price"] = standard_price
+    if nav_total is not None: result["nav_total"] = nav_total
+    if nav_price is not None: result["nav_price"] = nav_price
 
     return result
 
@@ -369,11 +356,11 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
     """반환: (저장된 종목 수, NAV 저장 여부)"""
     print(f"  📊 [{etf_name}] {target_date}")
 
-    # 1) 구성종목
+    # 1) 구성종목 (당일)
     holdings = crawl_holdings(idx, etf_name, target_date)
     time.sleep(DELAY_BETWEEN_REQUESTS)
 
-    # 2) NAV + standard_price
+    # 2) NAV (당일) — standard_price 제외
     nav = crawl_nav(idx, etf_name, target_date)
     time.sleep(DELAY_BETWEEN_REQUESTS)
 
@@ -382,7 +369,7 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
         print(f"  ⏭️ 데이터 없음 (주말/공휴일 추정)")
         return 0, False
 
-    # Supabase 저장
+    # Supabase 저장 — holdings
     if holdings:
         try:
             supabase.table("holdings").upsert(
@@ -393,20 +380,36 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             print(f"  ❌ holdings 저장 실패: {e}")
             holdings = []
 
+    # Supabase 저장 — etf_daily (nav_total, nav_price)
     nav_saved = False
     if nav:
         try:
             supabase.table("etf_daily").upsert(
                 [nav], on_conflict="date,etf_idx"
             ).execute()
-            sp_str = f"{nav['standard_price']:,.2f}" if nav.get("standard_price") else "NULL"
-            print(f"  ✅ etf_daily 저장 (standard_price: {sp_str}원)")
+            print(f"  ✅ etf_daily 저장 (nav_total, nav_price)")
             nav_saved = True
         except Exception as e:
             print(f"  ❌ etf_daily 저장 실패: {e}")
 
-    return len(holdings), nav_saved
+    # 3) 전일 standard_price 업데이트
+    #    당일 크롤링 시점(오전 9시)에는 당일 기준가격 미공시
+    #    → 전 영업일 날짜로 수집해서 해당 날짜 행 업데이트
+    prev_date = get_prev_business_date(target_date)
+    print(f"  🔍 전일({prev_date}) standard_price 수집 시도")
+    prev_sp = crawl_standard_price(idx, prev_date)
+    if prev_sp is not None:
+        try:
+            supabase.table("etf_daily").update(
+                {"standard_price": prev_sp}
+            ).eq("date", prev_date).eq("etf_idx", idx).execute()
+            print(f"  ✅ 전일({prev_date}) standard_price 업데이트: {prev_sp:,.2f}원")
+        except Exception as e:
+            print(f"  ❌ 전일 standard_price 저장 실패: {e}")
+    time.sleep(DELAY_BETWEEN_REQUESTS)
 
+    return len(holdings), nav_saved
+  
 # ============================================================
 # 메인 — 기존과 동일
 # ============================================================
