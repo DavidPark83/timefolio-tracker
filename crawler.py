@@ -380,8 +380,17 @@ def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
         "etf_idx":  idx,
         "etf_name": etf_name,
     }
-    if nav_total is not None: result["nav_total"] = nav_total
-    if nav_price is not None: result["nav_price"] = nav_price
+
+    # nav_total, nav_price(실시간 기준가)는 오늘 날짜만 저장
+    # 과거 날짜 재실행 시 현재 시점 값으로 원본 덮어쓰기 방지
+    today = str(date.today())
+    if target_date == today:
+        if nav_total is not None: result["nav_total"] = nav_total
+        if nav_price is not None: result["nav_price"] = nav_price
+
+    # nav_total, nav_price 둘 다 없으면 저장할 내용 없음
+    if len(result) == 3:  # date, etf_idx, etf_name만 있는 경우
+        return None
 
     return result
 
