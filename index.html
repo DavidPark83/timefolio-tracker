@@ -806,19 +806,15 @@ function selectEtf(el) {
     }
     if (!db) return;
 
-    // ★ 페이지네이션 헬퍼로 모든 date를 가져옴
+    // etf_daily 테이블 = ETF 18개 × 영업일 수백 일 → 수천 행 (18배 가벼움)
     let allRows = [];
     try {
       allRows = await fetchAllPages(() =>
-        db.from("holdings").select("date").order("date", { ascending: false })
+        db.from("etf_daily").select("date").order("date", { ascending: false })
       );
     } catch (error) {
-      showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
-      return;
+      ...
     }
-    if (!allRows.length) return;
-    
-    hideError();
     globalAllDates = [...new Set(allRows.map(d => d.date))];
 
     const s1 = document.getElementById("globalDateSelect");
@@ -1308,39 +1304,44 @@ const aggregate = (rows) => {
     });
 
     if (!db || !normCode) return;
-    const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-    const latest = latestRows?.[0]?.date;
-    if (latest) {
-      const candidates = [normCode];
-      const stripped = normCode.replace(/^0+/, "");
-      if (stripped && stripped !== normCode) candidates.push(stripped);
-      const { data: holdings } = await db.from("holdings")
-        .select("etf_idx, etf_name, weight, qty, value, code")
-        .eq("date", latest)
-        .in("code", candidates)
-        .order("weight", { ascending: false });
-      if (holdings?.length) {
-        document.getElementById("holdingList").innerHTML = holdings.map(h => `
-          <div class="holding-row">
-            <span class="hr-etf">TIME ${h.etf_name}</span>
-            <span class="hr-q">수량 ${fmt(h.qty)}</span>
-            <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
-          </div>`).join("");
-      } else {
-        document.getElementById("holdingList").innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
-      }
-    }
+
+    // ① latest date: DB 재조회 제거 → globalAllDates[0] 활용
+    const latest = globalAllDates[0];
+    if (!latest) return;
+
     const candidates = [normCode];
     const stripped = normCode.replace(/^0+/, "");
     if (stripped && stripped !== normCode) candidates.push(stripped);
-    const { data: trend } = await db.from("holdings")
-      .select("date, etf_idx, etf_name, weight")
-      .in("code", candidates)
-      .order("date", { ascending: true })
-      .limit(2000);
-    drawTrendChart(trend || [], name);
-  }
 
+    // ② holdings + trend 병렬 조회 (Promise.all)
+    const [holdingsResp, trendResp] = await Promise.all([
+      db.from("holdings")
+        .select("etf_idx, etf_name, weight, qty, value, code")
+        .eq("date", latest)
+        .in("code", candidates)
+        .order("weight", { ascending: false }),
+      db.from("holdings")
+        .select("date, etf_idx, etf_name, weight")
+        .in("code", candidates)
+        .order("date", { ascending: true })
+        .limit(2000)
+    ]);
+
+    const holdings = holdingsResp.data;
+    if (holdings?.length) {
+      document.getElementById("holdingList").innerHTML = holdings.map(h => `
+        <div class="holding-row">
+          <span class="hr-etf">TIME ${h.etf_name}</span>
+          <span class="hr-q">수량 ${fmt(h.qty)}</span>
+          <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
+        </div>`).join("");
+    } else {
+      document.getElementById("holdingList").innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
+    }
+
+    drawTrendChart(trendResp.data || [], name);
+  }
+  
   function drawTrendChart(rows, securityName) {
     const ctx = document.getElementById("trendChart").getContext("2d");
     if (trendChartInstance) trendChartInstance.destroy();
@@ -1390,7 +1391,7 @@ const aggregate = (rows) => {
   // =========================================================
   // ⑤ ETF 비교 모드
   // =========================================================
-  async function loadCompareMode() {
+    async function loadCompareMode() {
     const cmpDateSel = document.getElementById("cmpDateSelect");
     if (!cmpEtfA || !cmpEtfB) {
       document.getElementById("cmpBoth").innerHTML = '<div class="hl-empty">위 ETF 탭에서 비교할 두 ETF를 클릭해 주세요</div>';
@@ -1401,11 +1402,14 @@ const aggregate = (rows) => {
       document.getElementById("cmpOnlyBCount").textContent = "0";
       return;
     }
-    if (cmpDateSel.options.length <= 1 || cmpDateSel.options[0].textContent === "로딩 중...") {
-      const { data } = await db.from("holdings").select("date").in("etf_idx", [cmpEtfA, cmpEtfB]).order("date", { ascending: false }).limit(2000);
-      const ds = [...new Set((data || []).map(d => d.date))];
-      cmpDateSel.innerHTML = ds.map(d => `<option value="${d}">${d}</option>`).join("");
+
+    // DB 재조회 제거 → globalAllDates 활용
+    if (globalAllDates.length > 0 &&
+       (cmpDateSel.options.length <= 1 || cmpDateSel.options[0].textContent === "로딩 중...")) {
+      cmpDateSel.innerHTML = globalAllDates.map(d =>
+        `<option value="${d}">${d}</option>`).join("");
     }
+
     const date = cmpDateSel.value || cmpDateSel.options[0]?.value;
     if (!date) return;
     const [rA, rB] = await Promise.all([
@@ -1453,7 +1457,7 @@ const aggregate = (rows) => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(async () => {
       const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-      const latest = latestRows?.[0]?.date;
+      const latest = globalAllDates[0];
       if (!latest) return;
       const { data } = await db.from("holdings")
         .select("code, name, etf_idx, etf_name, weight")
