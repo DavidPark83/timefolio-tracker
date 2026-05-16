@@ -810,7 +810,7 @@ function selectEtf(el) {
     let allRows = [];
     try {
       allRows = await fetchAllPages(() =>
-        db.from("etf_daily").select("date").order("date", { ascending: false })
+        db.from("holdings").select("date").order("date", { ascending: false })
       );
     } catch (error) {
       ...
