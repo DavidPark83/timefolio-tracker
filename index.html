@@ -992,8 +992,8 @@ function selectEtf(el) {
       const isNew = !prev && hasCompare;
       let status = "—";
       if (isNew) status = "신규";
-      else if (weightDiff !== null && weightDiff > 0.01)  status = "증가";
-      else if (weightDiff !== null && weightDiff < -0.01) status = "감소";
+      else if (weightDiff !== null && weightDiff > 0)  status = "증가";
+      else if (weightDiff !== null && weightDiff < 0) status = "감소";
       else if (weightDiff !== null) status = "유지";
       return { rank: i + 1, code: h.code, name: h.name, weight: h.weight, weightDiff, qty: h.qty, qtyDiff, value: h.value, status, removed: false };
     });
