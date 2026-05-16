@@ -406,14 +406,13 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
     holdings = crawl_holdings(idx, etf_name, target_date)
     time.sleep(DELAY_BETWEEN_REQUESTS)
 
-    # 2) NAV (당일) — standard_price 제외
+    # 2) NAV (당일) — standard_price 제외, 과거 날짜면 nav_total/nav_price도 제외
     nav = crawl_nav(idx, etf_name, target_date)
     time.sleep(DELAY_BETWEEN_REQUESTS)
 
-    # 데이터 없는 날(주말/공휴일) 스킵
-    if not holdings and not nav:
+    is_business_day = bool(holdings or nav)
 
-    # Supabase 저장 — holdings (영업일만)
+    # Supabase 저장 — holdings
     if holdings:
         try:
             supabase.table("holdings").upsert(
@@ -424,20 +423,19 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             print(f"  ❌ holdings 저장 실패: {e}")
             holdings = []
 
-    # Supabase 저장 — etf_daily (영업일만)
+    # Supabase 저장 — etf_daily (오늘 날짜만 nav_total, nav_price 저장)
     nav_saved = False
     if nav:
         try:
             supabase.table("etf_daily").upsert(
                 [nav], on_conflict="date,etf_idx"
             ).execute()
-            print(f"  ✅ etf_daily 저장 (nav_total, nav_price)")
+            print(f"  ✅ etf_daily 저장")
             nav_saved = True
         except Exception as e:
             print(f"  ❌ etf_daily 저장 실패: {e}")
 
-    # 3) 전일 standard_price — 주말/공휴일 포함 항상 실행
-    #    (주말에 실행해도 전 영업일 값 업데이트 가능)
+    # 3) 전일 standard_price 업데이트 (주말/공휴일 포함 항상 실행)
     prev_date = get_prev_business_date(target_date)
     print(f"  🔍 전일({prev_date}) standard_price 수집 시도")
     prev_sp = crawl_standard_price(idx, prev_date)
@@ -446,7 +444,7 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             supabase.table("etf_daily").update(
                 {"standard_price": prev_sp}
             ).eq("date", prev_date).eq("etf_idx", idx).execute()
-            print(f"  ✅ 전일({prev_date}) standard_price 업데이트: {prev_sp:,.2f}원")
+            print(f"  ✅ 전일({prev_date}) standard_price: {prev_sp:,.2f}원")
         except Exception as e:
             print(f"  ❌ 전일 standard_price 저장 실패: {e}")
     time.sleep(DELAY_BETWEEN_REQUESTS)
