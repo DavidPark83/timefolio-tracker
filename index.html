@@ -614,13 +614,17 @@
   // =========================================================
   // 국내/해외 판별
   // =========================================================
-  function isKorean(code, name) {
-    const c = String(code ?? "").trim();
-    const n = String(name ?? "").trim();
-    if (c && /^\d+$/.test(c)) return true;
-    if (n && /^[가-힣\s]+$/.test(n)) return true;
-    return false;
-  }
+    function isKorean(code, name) {
+      const c = String(code ?? "").trim();
+      const n = String(name ?? "").trim();
+      // 6자리 숫자 → 한국 거래소 종목코드 (예: 005930)
+      if (c && /^\d{6}$/.test(c)) return true;
+      // 6자리 영숫자 → 한국 거래소 파생코드 (예: 0043Y0)
+      if (c && /^[0-9A-Z]{6}$/.test(c)) return true;
+      // 이름에 한글 1자라도 포함 → 국내 (예: TIME 차이나AI테크액티브)
+      if (n && /[가-힣]/.test(n)) return true;
+      return false;
+    }
 
   // =========================================================
   // ★★★ ETF 탭을 순자산총액 내림차순으로 정렬
