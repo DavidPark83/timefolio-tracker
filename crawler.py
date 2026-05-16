@@ -423,9 +423,9 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             print(f"  ❌ holdings 저장 실패: {e}")
             holdings = []
 
-    # Supabase 저장 — etf_daily (오늘 날짜만 nav_total, nav_price 저장)
+    # Supabase 저장 — etf_daily (holdings 데이터가 있는 영업일만 저장)
     nav_saved = False
-    if nav:
+    if nav and holdings:
         try:
             supabase.table("etf_daily").upsert(
                 [nav], on_conflict="date,etf_idx"
