@@ -403,10 +403,8 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
 
     # 데이터 없는 날(주말/공휴일) 스킵
     if not holdings and not nav:
-        print(f"  ⏭️ 데이터 없음 (주말/공휴일 추정)")
-        return 0, False
 
-    # Supabase 저장 — holdings
+    # Supabase 저장 — holdings (영업일만)
     if holdings:
         try:
             supabase.table("holdings").upsert(
@@ -417,7 +415,7 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             print(f"  ❌ holdings 저장 실패: {e}")
             holdings = []
 
-    # Supabase 저장 — etf_daily (nav_total, nav_price)
+    # Supabase 저장 — etf_daily (영업일만)
     nav_saved = False
     if nav:
         try:
@@ -429,9 +427,8 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
         except Exception as e:
             print(f"  ❌ etf_daily 저장 실패: {e}")
 
-    # 3) 전일 standard_price 업데이트
-    #    당일 크롤링 시점(오전 9시)에는 당일 기준가격 미공시
-    #    → 전 영업일 날짜로 수집해서 해당 날짜 행 업데이트
+    # 3) 전일 standard_price — 주말/공휴일 포함 항상 실행
+    #    (주말에 실행해도 전 영업일 값 업데이트 가능)
     prev_date = get_prev_business_date(target_date)
     print(f"  🔍 전일({prev_date}) standard_price 수집 시도")
     prev_sp = crawl_standard_price(idx, prev_date)
@@ -444,6 +441,10 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
         except Exception as e:
             print(f"  ❌ 전일 standard_price 저장 실패: {e}")
     time.sleep(DELAY_BETWEEN_REQUESTS)
+
+    if not is_business_day:
+        print(f"  ⏭️ 당일 데이터 없음 (주말/공휴일)")
+        return 0, False
 
     return len(holdings), nav_saved
   
