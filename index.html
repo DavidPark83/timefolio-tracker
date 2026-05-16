@@ -1291,13 +1291,12 @@ const aggregate = (rows) => {
   // =========================================================
   // ② 종목 모달 + ④ 추이 차트
   // =========================================================
-    async function openSecurityModal(code, name) {
+  async function openSecurityModal(code, name) {
     const normCode = normalizeCode(code);
     document.getElementById("modalTitle").textContent = name + (normCode ? `  (${normCode})` : "");
     document.getElementById("modalOverlay").classList.add("show");
     document.getElementById("holdingList").innerHTML = '<div class="hl-empty">로딩 중...</div>';
 
-    // ★ 이벤트 추적
     trackEvent('security_modal_open', {
       security_code: normCode || '',
       security_name: name || ''
@@ -1305,7 +1304,6 @@ const aggregate = (rows) => {
 
     if (!db || !normCode) return;
 
-    // ① latest date: DB 재조회 제거 → globalAllDates[0] 활용
     const latest = globalAllDates[0];
     if (!latest) return;
 
@@ -1313,7 +1311,6 @@ const aggregate = (rows) => {
     const stripped = normCode.replace(/^0+/, "");
     if (stripped && stripped !== normCode) candidates.push(stripped);
 
-    // ② holdings + trend 병렬 조회 (Promise.all)
     const [holdingsResp, trendResp] = await Promise.all([
       db.from("holdings")
         .select("etf_idx, etf_name, weight, qty, value, code")
@@ -1391,7 +1388,7 @@ const aggregate = (rows) => {
   // =========================================================
   // ⑤ ETF 비교 모드
   // =========================================================
-    async function loadCompareMode() {
+async function loadCompareMode() {
     const cmpDateSel = document.getElementById("cmpDateSelect");
     if (!cmpEtfA || !cmpEtfB) {
       document.getElementById("cmpBoth").innerHTML = '<div class="hl-empty">위 ETF 탭에서 비교할 두 ETF를 클릭해 주세요</div>';
@@ -1403,7 +1400,6 @@ const aggregate = (rows) => {
       return;
     }
 
-    // DB 재조회 제거 → globalAllDates 활용
     if (globalAllDates.length > 0 &&
        (cmpDateSel.options.length <= 1 || cmpDateSel.options[0].textContent === "로딩 중...")) {
       cmpDateSel.innerHTML = globalAllDates.map(d =>
