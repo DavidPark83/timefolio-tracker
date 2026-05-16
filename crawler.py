@@ -1,7 +1,7 @@
 """
 TIMEFOLIO ACTIVE ETF 일일 크롤러
 ================================
-역할: 매일 오전 8시(KST), 18개 ETF의 그날 구성종목 / NAV / 기준가격을 수집하여 Supabase에 저장
+역할: 매영업일 오전 8시(1차), 8시 30분(1차 실패시, 2차)(KST), 18개 ETF의 그날 구성종목 / NAV / 기준가격을 수집하여 Supabase에 저장
 실행: GitHub Actions가 .github/workflows/crawl.yml 스케줄에 따라 자동 호출
 
 변경 이력:
