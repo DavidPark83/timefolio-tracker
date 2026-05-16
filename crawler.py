@@ -308,6 +308,43 @@ def _parse_standard_price_from_html(soup: BeautifulSoup, target_date: str) -> Op
 
     return None
 
+def crawl_standard_price(idx: int, target_date: str) -> Optional[float]:
+    """
+    기준가격(standard_price) 수집.
+    1차: nav_xls.php 엑셀 (날짜 파라미터)
+    2차: m11_view.php HTML fallback
+    """
+    # ── 1차: 엑셀 ──────────────────────────────────────────
+    url_xls = (
+        f"https://timeetf.co.kr/nav_xls.php"
+        f"?idx={idx}&navStartDate={target_date}&navEndDate={target_date}"
+    )
+    res = fetch_with_retry(url_xls)
+    if res and res.content:
+        price = _parse_standard_price_from_excel(res.content, target_date)
+        if price is not None:
+            print(f"  💰 standard_price (엑셀): {price:,.2f}원")
+            return price
+        print(f"  ⚠️ 엑셀 파싱 실패 → HTML fallback")
+    else:
+        print(f"  ⚠️ 엑셀 응답 없음 → HTML fallback")
+
+    # ── 2차: HTML fallback ──────────────────────────────────
+    url_html = (
+        f"https://timeetf.co.kr/m11_view.php"
+        f"?idx={idx}&cate=&navStartDate={target_date}&navEndDate={target_date}#standardPrice"
+    )
+    res2 = fetch_with_retry(url_html)
+    if res2:
+        soup = BeautifulSoup(res2.text, "html.parser")
+        price = _parse_standard_price_from_html(soup, target_date)
+        if price is not None:
+            print(f"  💰 standard_price (HTML): {price:,.2f}원")
+            return price
+
+    print(f"  ⚠️ standard_price 수집 실패 (주말/공휴일이거나 미공시)")
+    return None
+
 # ============================================================
 # NAV(순자산총액/기준가) 크롤링 — standard_price 통합
 # ============================================================
