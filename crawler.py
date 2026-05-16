@@ -27,6 +27,7 @@ import re
 from datetime import date, datetime
 from typing import List, Dict, Optional
 
+import re
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -453,8 +454,8 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
 
 ENOUGH_ETF_COUNT = 17  # 17개 이상이면 1차에서 거의 다 받은 것 → 2차 스킵
 
-def count_saved_etfs(target_date: str) -> int:
-    """해당 날짜에 holdings에 데이터가 있는 ETF 개수를 반환"""
+def get_etf_status(target_date: str) -> tuple[int, list]:
+    """저장된 ETF 수와 누락된 ETF 목록을 한 번의 쿼리로 반환"""
     try:
         res = (
             supabase.table("holdings")
@@ -463,26 +464,13 @@ def count_saved_etfs(target_date: str) -> int:
             .limit(2000)
             .execute()
         )
-        return len(set(r["etf_idx"] for r in (res.data or [])))
+        rows = res.data or []
+        saved_idx = set(r["etf_idx"] for r in rows)
+        missing = [etf for etf in ETF_LIST if etf["idx"] not in saved_idx]
+        return len(saved_idx), missing
     except Exception as e:
-        print(f"  ⚠️ 사전 체크 실패 (계속 진행): {e}")
-        return 0
-
-def get_missing_etfs(target_date: str) -> list:
-    """해당 날짜에 아직 데이터가 없는 ETF 목록 반환"""
-    try:
-        res = (
-            supabase.table("holdings")
-            .select("etf_idx")
-            .eq("date", target_date)
-            .limit(2000)
-            .execute()
-        )
-        saved_idx = set(r["etf_idx"] for r in (res.data or []))
-        return [etf for etf in ETF_LIST if etf["idx"] not in saved_idx]
-    except Exception as e:
-        print(f"  ⚠️ 누락 ETF 조회 실패 (전체 재시도): {e}")
-        return ETF_LIST
+        print(f"  ⚠️ 상태 조회 실패 (전체 재시도): {e}")
+        return 0, ETF_LIST
 
 def main():
     target_date = os.environ.get("TARGET_DATE") or str(date.today())
@@ -494,12 +482,18 @@ def main():
     print("=" * 60)
 
     if not is_manual:
-        already = count_saved_etfs(target_date)
+        already, missing = get_etf_status(target_date)   # ← 쿼리 1번으로 통합
         print(f"📊 사전 체크: 이미 {already}/{len(ETF_LIST)}개 ETF 수집됨")
         if already >= ENOUGH_ETF_COUNT:
             print(f"✅ {ENOUGH_ETF_COUNT}개 이상 수집 완료 상태 → 이번 실행은 스킵합니다")
+            print(" (1차 cron이 성공했거나 이미 처리된 날짜)")
             return
-        target_etfs = get_missing_etfs(target_date) if already > 0 else ETF_LIST
+
+        if already > 0:
+            print(f"🔄 일부만 수집됨 → 누락된 {len(missing)}개 ETF만 재시도")
+            target_etfs = missing
+        else:
+            target_etfs = ETF_LIST
     else:
         target_etfs = ETF_LIST
 
