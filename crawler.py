@@ -25,7 +25,6 @@ import os
 import sys
 import time
 import io
-import re
 from datetime import date, datetime
 from typing import List, Dict, Optional
 
@@ -186,14 +185,12 @@ def crawl_holdings(idx: int, etf_name: str, target_date: str) -> List[Dict]:
         return []
 
     # ⚠️ dtype=str 필수: 종목코드 leading zero 보존 ("000660" → 660.0 방지)
+    # pdf_excel.php는 항상 Excel을 반환 → read_html 시도 불필요
     try:
-        df = pd.read_html(io.BytesIO(res.content), dtype=str)[0]
-    except Exception:
-        try:
-            df = pd.read_excel(io.BytesIO(res.content), dtype=str)
-        except Exception as e:
-            print(f"  ❌ 엑셀 파싱 실패: {e}")
-            return []
+        df = pd.read_excel(io.BytesIO(res.content), dtype=str)
+    except Exception as e:
+        print(f"  ❌ 엑셀 파싱 실패: {e}")
+        return []
 
     df.columns = [str(c).strip() for c in df.columns]
     col_map = {}
@@ -300,46 +297,6 @@ def _parse_standard_price_from_html(soup: BeautifulSoup, target_date: str) -> Op
                 if p is not None:
                     return p
 
-    return None
-
-
-def crawl_standard_price(idx: int, target_date: str) -> Optional[float]:
-    """
-    당일 기준가격(standard_price)을 수집.
-
-    1차: nav_xls.php?navStartDate={date}&navEndDate={date}
-         → backfill에서 검증된 방식. 날짜 파라미터로 정확히 1일치만 요청.
-    2차: m11_view.php HTML 테이블 파싱 (fallback)
-    """
-    # ── 1차: 엑셀 (날짜 파라미터) ────────────────────────────
-    url_xls = (
-        f"https://timeetf.co.kr/nav_xls.php"
-        f"?idx={idx}&navStartDate={target_date}&navEndDate={target_date}"
-    )
-    res = fetch_with_retry(url_xls)
-    if res and res.content:
-        price = _parse_standard_price_from_excel(res.content, target_date)
-        if price is not None:
-            print(f"  💰 standard_price (엑셀): {price:,.2f}원")
-            return price
-        print(f"  ⚠️ 엑셀 파싱 실패 → HTML fallback")
-    else:
-        print(f"  ⚠️ 엑셀 응답 없음 → HTML fallback")
-
-    # ── 2차: HTML fallback ────────────────────────────────────
-    url_html = (
-        f"https://timeetf.co.kr/m11_view.php"
-        f"?idx={idx}&cate=&navStartDate={target_date}&navEndDate={target_date}#standardPrice"
-    )
-    res2 = fetch_with_retry(url_html)
-    if res2:
-        soup = BeautifulSoup(res2.text, "html.parser")
-        price = _parse_standard_price_from_html(soup, target_date)
-        if price is not None:
-            print(f"  💰 standard_price (HTML): {price:,.2f}원")
-            return price
-
-    print(f"  ⚠️ standard_price 수집 실패 (주말/공휴일이거나 미공시)")
     return None
 
 # ============================================================
