@@ -412,18 +412,7 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
 
     is_business_day = bool(holdings or nav)
 
-    # Supabase 저장 — holdings
-    if holdings:
-        try:
-            supabase.table("holdings").upsert(
-                holdings, on_conflict="date,etf_idx,code"
-            ).execute()
-            print(f"  ✅ holdings: {len(holdings)}개 저장")
-        except Exception as e:
-            print(f"  ❌ holdings 저장 실패: {e}")
-            holdings = []
-
-    # Supabase 저장 — etf_daily (holdings 데이터가 있는 영업일만 저장)
+    # Supabase 저장 — etf_daily 먼저 (트리거가 holdings 저장 시 etf_daily 참조하므로)
     nav_saved = False
     if nav and holdings:
         try:
@@ -434,6 +423,17 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             nav_saved = True
         except Exception as e:
             print(f"  ❌ etf_daily 저장 실패: {e}")
+
+    # Supabase 저장 — holdings (etf_daily 저장 후 → 트리거가 holdings_qty 자동 계산)
+    if holdings:
+        try:
+            supabase.table("holdings").upsert(
+                holdings, on_conflict="date,etf_idx,code"
+            ).execute()
+            print(f"  ✅ holdings: {len(holdings)}개 저장 (holdings_qty 자동 계산)")
+        except Exception as e:
+            print(f"  ❌ holdings 저장 실패: {e}")
+            holdings = []
 
     # 3) 전일 standard_price 업데이트 (주말/공휴일 포함 항상 실행)
     prev_date = get_prev_business_date(target_date)
