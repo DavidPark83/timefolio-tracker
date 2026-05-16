@@ -19,6 +19,8 @@ TIMEFOLIO ACTIVE ETF 일일 크롤러
   5. upsert → 같은 날 재실행해도 안전
 """
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import os
 import sys
 import time
@@ -498,16 +500,24 @@ def main():
         target_etfs = ETF_LIST
 
     total_holdings = 0
-    success_etfs   = 0
-
-    for etf in target_etfs:
-        try:
-            n, _ = process_one(etf["idx"], etf["etf_name"], target_date)
-            total_holdings += n
-            if n > 0:
-                success_etfs += 1
-        except Exception as e:
-            print(f"  ❌ [{etf['etf_name']}] 예외: {e}")
+    success_etfs = 0
+    
+    MAX_WORKERS = 4  # timeetf.co.kr 부하 고려, 4 이상은 올리지 마세요
+    
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {
+            executor.submit(process_one, etf["idx"], etf["etf_name"], target_date): etf
+            for etf in target_etfs
+        }
+        for future in as_completed(futures):
+            etf = futures[future]
+            try:
+                n, _ = future.result()
+                total_holdings += n
+                if n > 0:
+                    success_etfs += 1
+            except Exception as e:
+                print(f"  ❌ [{etf['etf_name']}] 예외: {e}")
 
     print("=" * 60)
     print(f"✅ 완료: {success_etfs}/{len(target_etfs)} ETF, 총 {total_holdings}개 종목")
