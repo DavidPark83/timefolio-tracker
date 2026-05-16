@@ -813,8 +813,10 @@ function selectEtf(el) {
         db.from("holdings").select("date").order("date", { ascending: false })
       );
     } catch (error) {
-      ...
+      showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
+      return;
     }
+    if (!allRows.length) return;
     globalAllDates = [...new Set(allRows.map(d => d.date))];
 
     const s1 = document.getElementById("globalDateSelect");
@@ -1452,7 +1454,6 @@ async function loadCompareMode() {
     if (!db) return;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(async () => {
-      const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
       const latest = globalAllDates[0];
       if (!latest) return;
       const { data } = await db.from("holdings")
