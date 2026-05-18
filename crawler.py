@@ -480,7 +480,8 @@ def get_etf_status(target_date: str) -> tuple[int, list]:
         return 0, ETF_LIST
 
 def main():
-    target_date = os.environ.get("TARGET_DATE") or str(date.today())
+    KST = timezone(timedelta(hours=9))
+    target_date = os.environ.get("TARGET_DATE") or datetime.now(KST).strftime("%Y-%m-%d")
     is_manual   = bool(os.environ.get("TARGET_DATE"))  # 수동 실행 여부
 
     print(f"🚀 크롤링 시작: {target_date}")
