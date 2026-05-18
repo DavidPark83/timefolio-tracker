@@ -449,12 +449,6 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             print(f"  ❌ 전일 standard_price 저장 실패: {e}")
     time.sleep(DELAY_BETWEEN_REQUESTS)
 
-    if not is_business_day:
-        print(f"  ⏭️ 당일 데이터 없음 (주말/공휴일)")
-        return 0, False
-
-    return len(holdings), nav_saved
-
     # 4) holding_amount NULL 보정 (etf_daily 저장 후 holdings 값이 비어있을 경우 대비)
     if holdings and nav_saved:
         try:
@@ -465,6 +459,13 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
             print(f"  ✅ holding_amount 재계산 완료")
         except Exception as e:
             print(f"  ⚠️ holding_amount 재계산 실패: {e}")
+
+  
+    if not is_business_day:
+        print(f"  ⏭️ 당일 데이터 없음 (주말/공휴일)")
+        return 0, False
+
+    return len(holdings), nav_saved
 
   
 # ============================================================
