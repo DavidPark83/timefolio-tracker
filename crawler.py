@@ -383,7 +383,8 @@ def crawl_nav(idx: int, etf_name: str, target_date: str) -> Optional[Dict]:
 
     # nav_total, nav_price(실시간 기준가)는 오늘 날짜만 저장
     # 과거 날짜 재실행 시 현재 시점 값으로 원본 덮어쓰기 방지
-    today = str(date.today())
+    KST = timezone(timedelta(hours=9))
+    today = datetime.now(KST).strftime("%Y-%m-%d")   # ← KST 기준
     if target_date == today:
         if nav_total is not None: result["nav_total"] = nav_total
         if nav_price is not None: result["nav_price"] = nav_price
