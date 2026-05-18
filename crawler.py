@@ -454,6 +454,18 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
         return 0, False
 
     return len(holdings), nav_saved
+
+    # 4) holding_amount NULL 보정 (etf_daily 저장 후 holdings 값이 비어있을 경우 대비)
+    if holdings and nav_saved:
+        try:
+            supabase.rpc(
+                "recalc_holdings_for_date",
+                {"target_date": target_date}
+            ).execute()
+            print(f"  ✅ holding_amount 재계산 완료")
+        except Exception as e:
+            print(f"  ⚠️ holding_amount 재계산 실패: {e}")
+
   
 # ============================================================
 # 메인 — 기존과 동일
