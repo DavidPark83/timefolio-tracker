@@ -126,7 +126,6 @@ def to_float_or_none(s) -> Optional[float]:
 
 def get_prev_business_date(target_date: str) -> str:
     """주어진 날짜의 직전 영업일 반환 (토·일 건너뜀, 공휴일 미처리)"""
-    from datetime import timedelta
     d = datetime.strptime(target_date, "%Y-%m-%d").date()
     d -= timedelta(days=1)
     while d.weekday() >= 5:   # 5=토, 6=일
