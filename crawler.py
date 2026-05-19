@@ -506,8 +506,8 @@ def main():
     if not is_manual:
         already, missing = get_etf_status(target_date)   # ← 쿼리 1번으로 통합
         print(f"📊 사전 체크: 이미 {already}/{len(ETF_LIST)}개 ETF 수집됨")
-        if already >= ENOUGH_ETF_COUNT and len(missing) == 0:
-            print(f"✅ 전체 수집 완료 상태 → 이번 실행은 스킵합니다")
+        if already >= ENOUGH_ETF_COUNT:
+            print(f"✅ {ENOUGH_ETF_COUNT}개 이상 수집 완료 상태 → 이번 실행은 스킵합니다")
             print(" (1차 cron이 성공했거나 이미 처리된 날짜)")
             return
 
