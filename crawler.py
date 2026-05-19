@@ -61,7 +61,7 @@ REQUEST_TIMEOUT = 20       # 초
 DELAY_BETWEEN_REQUESTS = 1.5  # 초 (차단 방지)
 MAX_RETRY = 3
 
-# 18개 ETF 목록
+# 19개 ETF 목록
 ETF_LIST = [
     {"idx": 22, "etf_name": "글로벌탑픽액티브"},
     {"idx": 6,  "etf_name": "글로벌AI인공지능액티브"},
@@ -81,6 +81,7 @@ ETF_LIST = [
     {"idx": 17, "etf_name": "K이노베이션액티브"},
     {"idx": 1,  "etf_name": "K컬처액티브"},
     {"idx": 19, "etf_name": "차이나AI테크액티브"},
+    {"idx": 25, "etf_name": "글로벌휴머노이드로봇산업액티브"},  # 2026-05-19 추가
 ]
 
 # ============================================================
