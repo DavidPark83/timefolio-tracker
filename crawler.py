@@ -473,7 +473,7 @@ def process_one(idx: int, etf_name: str, target_date: str) -> tuple[int, bool]:
 # 메인 — 기존과 동일
 # ============================================================
 
-ENOUGH_ETF_COUNT = 17  # 17개 이상이면 1차에서 거의 다 받은 것 → 2차 스킵
+ENOUGH_ETF_COUNT = len(ETF_LIST) - 1  # ETF 추가 시 자동 반영 # 18개 이상이면 1차에서 거의 다 받은 것 → 2차 스킵
 
 def get_etf_status(target_date: str) -> tuple[int, list]:
     """저장된 ETF 수와 누락된 ETF 목록을 한 번의 쿼리로 반환"""
