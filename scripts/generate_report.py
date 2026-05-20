@@ -115,8 +115,18 @@ for idx, data in etf_cur.items():
         elif dq < -ETF_THR: e_down.append(itm)
     e_up.sort(key=lambda x: x["qty_change"], reverse=True)
     e_down.sort(key=lambda x: x["qty_change"])
-    etf_reports[idx] = {"name": data["name"], "top_up": e_up[:5], "top_down": e_down[:5]}
-    if e_up or e_down:
+# 신규 종목 수 계산 (이 ETF에 어제 없던 종목)
+    new_in_etf = sum(1 for key in data["stocks"] if key not in prev_stocks)
+
+    etf_reports[idx] = {
+        "name":         data["name"],
+        "top_up":       e_up[:5],
+        "top_down":     e_down[:5],
+        "total_stocks": len(data["stocks"]),
+        "up_count":     len(e_up),
+        "down_count":   len(e_down),
+        "new_count":    new_in_etf
+    }    if e_up or e_down:
         etf_summaries[data["name"]] = {
             "순매수": [f"{x['name']}(+{x['qty_change']:,}주)" for x in e_up[:3]],
             "순매도": [f"{x['name']}({x['qty_change']:,}주)" for x in e_down[:3]]
