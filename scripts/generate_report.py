@@ -174,6 +174,28 @@ for name, comment in ai.get("etf_comments", {}).items():
         if data["name"] == name:
             data["comment"] = comment
 
+# ── 뉴스 조회 (Gemini + Google Search Grounding) ──────────
+top5_names = [x["name"] for x in top10[:5]]
+news_data  = []
+try:
+    news_prompt = f"""{today} 기준, 다음 종목 관련 최신 금융 뉴스를 검색해 
+중요도 높은 뉴스 5개를 한국어로 요약해주세요: {', '.join(top5_names)}
+JSON만 응답:
+{{"news":[{{"stock":"관련종목명","headline":"뉴스제목","summary":"2문장 요약","source":"출처매체"}}]}}"""
+    nr = requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_KEY}",
+        json={"contents":[{"parts":[{"text":news_prompt}]}],"tools":[{"google_search":{}}]},
+        timeout=30
+    )
+    if nr.status_code == 200:
+        nr_raw = nr.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+        if nr_raw.startswith("```"): nr_raw = nr_raw.split("\n",1)[1]
+        if nr_raw.endswith("```"):   nr_raw = nr_raw.rsplit("```",1)[0]
+        news_data = json.loads(nr_raw.strip()).get("news",[])
+        print(f"  뉴스: {len(news_data)}개")
+except Exception as e:
+    print(f"  뉴스 조회 실패: {e}")
+
 # ── 5. 저장 ───────────────────────────────────────────────
 sb.table("daily_reports").upsert({
     "report_date": today,
@@ -186,6 +208,7 @@ sb.table("daily_reports").upsert({
         "top10":       top10,
         "top_up":      up_all[:5],
         "top_down":    down_all[:5],
+        "news":        news_data,          # ← 추가
         "stats":       {"total_stocks": len(cur_map), "up_count": len(up_all), "down_count": len(down_all)},
         "new_count":   len(new_all)
     }
