@@ -38,7 +38,7 @@ for r in rows:
     stock_map[name]["weight"] += float(r["weight"] or 0)
     stock_map[name]["etfs"].append(r["etf_name"])
 
-ranked = sorted(stock_map.items(), key=lambda x: x[1]["weight"], desc=True)
+ranked = sorted(stock_map.items(), key=lambda x: x[1]["weight"], reverse=True)
 
 top10 = [
     {"name": n, "weight": round(v["weight"], 2), "etf_count": len(set(v["etfs"]))}
