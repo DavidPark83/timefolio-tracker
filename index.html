@@ -1755,31 +1755,38 @@ async function loadCompareMode() {
     document.getElementById("rStatDown").textContent  = stats.down_count  != null ? stats.down_count + "개" : "—";
     document.getElementById("rStatNew").textContent   = (c.new_count || 0) + "개";
 
-    const topUp = c.top_up || [];
-    document.getElementById("reportTopUp").innerHTML = topUp.length
-      ? topUp.map(x => `
-        <div class="report-stock-row">
-          <div><div style="font-weight:600;color:#f1f5f9">${x.name}</div>
-          <div style="font-size:10px;color:#475569">${x.etf_count || 1}개 ETF</div></div>
-          <div style="text-align:right;">
-            <div style="font-family:monospace;color:#00D4AA">${(x.weight||0).toFixed(2)}%</div>
-            <div style="font-size:11px;color:#34d399">+${(x.change||0).toFixed(2)}%p</div>
-          </div>
-        </div>`).join("")
-      : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">데이터 없음</div>';
+  const topUp = c.top_up || [];
+  const topDown = c.top_down || [];
+  const stockComments = c.stock_comments || {};
 
-    const topDown = c.top_down || [];
-    document.getElementById("reportTopDown").innerHTML = topDown.length
-      ? topDown.map(x => `
-        <div class="report-stock-row">
-          <div><div style="font-weight:600;color:#f1f5f9">${x.name}</div>
-          <div style="font-size:10px;color:#475569">${x.etf_count || 1}개 ETF</div></div>
-          <div style="text-align:right;">
-            <div style="font-family:monospace;color:#94a3b8">${(x.weight||0).toFixed(2)}%</div>
-            <div style="font-size:11px;color:#f87171">${(x.change||0).toFixed(2)}%p</div>
+  const renderStockList = (items, colorClass, sign) =>
+    items.length ? items.map((x, i) => {
+      const comment  = stockComments[x.name] || "";
+      const qty      = x.qty_change != null
+        ? (sign > 0 ? "+" : "") + Math.round(x.qty_change).toLocaleString("ko-KR") + "주"
+        : "";
+      const domId    = `sc-${colorClass}-${i}`;
+      const arrow    = comment ? `<span id="arr-${domId}" style="color:#475569;font-size:10px;margin-left:6px">▼</span>` : "";
+      return `
+        <div>
+          <div class="report-stock-row" style="${comment ? 'cursor:pointer' : ''}"
+               onclick="toggleStockComment('${domId}')">
+            <div>
+              <div style="font-weight:600;color:#f1f5f9">${x.name}${arrow}</div>
+              <div style="font-size:10px;color:#475569">${x.etf_count || 1}개 ETF</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:monospace;color:#94a3b8">${(x.weight||0).toFixed(2)}%</div>
+              <div style="font-size:11px;color:${sign > 0 ? '#34d399' : '#f87171'}">${qty}</div>
+            </div>
           </div>
-        </div>`).join("")
-      : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">데이터 없음</div>';
+          ${comment ? `<div class="stock-comment-box" id="${domId}">${comment}</div>` : ""}
+        </div>`;
+    }).join("")
+    : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">데이터 없음</div>';
+
+  document.getElementById("reportTopUp").innerHTML   = renderStockList(topUp,   "up",   1);
+  document.getElementById("reportTopDown").innerHTML = renderStockList(topDown, "down", -1);
 
     const signals = c.signals || [];
     const signalIcon  = { bull:"🟢", bear:"🔴", neutral:"⚪" };
@@ -1795,6 +1802,15 @@ async function loadCompareMode() {
     document.getElementById("reportComment").textContent = c.comment || "—";
   }
 
+  function toggleStockComment(id) {
+    const box   = document.getElementById(id);
+    const arrow = document.getElementById("arr-" + id);
+    if (!box) return;
+    const isOpen = box.style.display === "block";
+    box.style.display    = isOpen ? "none"         : "block";
+    if (arrow) arrow.textContent = isOpen ? "▼" : "▲";
+  }
+  
   function renderReportHistory(reports) {
     const history = reports.slice(1, 8);
     if (!history.length) {
