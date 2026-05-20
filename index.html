@@ -361,8 +361,9 @@
 
   <!-- 모드 전환 -->
   <div class="mode-tabs">
-  <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div>
-  <div class="mode-tab" data-mode="report" onclick="switchMode('report')">📰 Daily Report</div>
+    <div class="mode-tab active" data-mode="single" onclick="switchMode('single')">📊 단일 ETF 보기</div>
+    <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div>
+    <div class="mode-tab" data-mode="report" onclick="switchMode('report')">📰 Daily Report</div>
   </div>
 
   <!-- ETF 탭 (페이지 로드 시 sortEtfTabsByNav()가 순자산총액 내림차순으로 재배치) -->
