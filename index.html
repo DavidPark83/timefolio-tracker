@@ -1805,52 +1805,64 @@ let currentReport = null;
   }
 
 function renderReportBody(report, etfIdx) {
-    const c       = report.content || {};
-    const etfData = etfIdx ? (c.etf_reports?.[etfIdx] || null) : null;
-    const comment = etfData ? (etfData.comment || "—") : (c.comment || "—");
-    const stats   = c.stats || {};
-    const prefix  = etfData ? `[${etfData.name}] ` : "";
+  const c       = report.content || {};
+  const etfData = etfIdx ? (c.etf_reports?.[etfIdx] || null) : null;
+  const comment = etfData ? (etfData.comment || "—") : (c.comment || "—");
+  const stats   = c.stats || {};
+  const prefix  = etfData ? `[${etfData.name}] ` : "";
+  const isGlobal = !etfIdx; // 전체 보기인지 개별 ETF 보기인지 판별
 
-    // 제목 + 통계
-    document.getElementById("reportTitle").textContent   = prefix + (report.title || "—");
-    // 전체 보유 종목
-    document.getElementById("rStatTotal").textContent = etfData
-      ? (etfData.total_stocks || 0) + "개"
-      : (stats.total_stocks   ? stats.total_stocks + "개" : "—");
+  // 1. 제목 + 통계 업데이트
+  document.getElementById("reportTitle").textContent = prefix + (report.title || "—");
+  
+  document.getElementById("rStatTotal").textContent = etfData
+    ? (etfData.total_stocks || 0) + "개"
+    : (stats.total_stocks   ? stats.total_stocks + "개" : "—");
+    
+  document.getElementById("rStatUp").textContent = etfData
+    ? (etfData.up_count   || 0) + "개"
+    : (stats.up_count   != null ? stats.up_count   + "개" : "—");
+    
+  document.getElementById("rStatDown").textContent = etfData
+    ? (etfData.down_count || 0) + "개"
+    : (stats.down_count != null ? stats.down_count + "개" : "—");
+    
+  document.getElementById("rStatNew").textContent = etfData
+    ? (etfData.new_count  || 0) + "개"
+    : ((c.new_count || 0) + "개");
 
-    // 비중 증가 종목
-    document.getElementById("rStatUp").textContent = etfData
-      ? (etfData.up_count   || 0) + "개"
-      : (stats.up_count   != null ? stats.up_count   + "개" : "—");
+  // 2. AI 운용 코멘트 업데이트
+  document.getElementById("reportComment").textContent = comment;
 
-    // 비중 감소 종목
-    document.getElementById("rStatDown").textContent = etfData
-      ? (etfData.down_count || 0) + "개"
-      : (stats.down_count != null ? stats.down_count + "개" : "—");
-
-    // 신규 진입 종목
-    document.getElementById("rStatNew").textContent = etfData
-      ? (etfData.new_count  || 0) + "개"
-      : ((c.new_count || 0) + "개");
-
-    // AI 코멘트
-    document.getElementById("reportComment").textContent = comment;
-
-    // 뉴스
+  // 3. 뉴스 영역 제어 (전체 리포트일 때만 표시)
+  const newsCard = document.getElementById("reportNews").closest('.card');
+  if (isGlobal) {
+    newsCard.style.display = "block";
     const news = c.news || [];
     document.getElementById("reportNews").innerHTML = news.length
       ? news.map(n => `
         <div style="padding:10px 0;border-bottom:1px solid #1a2235;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-size:10px;background:rgba(0,212,170,0.1);color:#00D4AA;
-              border-radius:6px;padding:2px 8px;font-weight:700;flex-shrink:0">${n.stock||""}</span>
+            <span style="font-size:10px;background:rgba(0,212,170,0.1);color:#00D4AA;border-radius:6px;padding:2px 8px;font-weight:700;flex-shrink:0">${n.stock||""}</span>
             <span style="font-size:12px;font-weight:600;color:#f1f5f9;line-height:1.4">${n.headline||""}</span>
           </div>
           <div style="font-size:12px;color:#94a3b8;line-height:1.6;padding-left:4px">${n.summary||""}</div>
           <div style="font-size:10px;color:#475569;margin-top:4px;padding-left:4px">${n.source||""}</div>
         </div>`).join("")
       : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">뉴스 데이터 없음</div>';
+  } else {
+    newsCard.style.display = "none";
   }
+
+  // 4. 시그널 영역 제어 (전체 리포트일 때만 표시)
+  const signalCard = document.getElementById("reportSignals").closest('.card');
+  if (isGlobal) {
+    signalCard.style.display = "block";
+  } else {
+    signalCard.style.display = "none";
+  }
+}
+
 
   
   function renderReportHistory(reports) {
