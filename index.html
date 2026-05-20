@@ -175,8 +175,8 @@
       padding: 12px 16px; font-size: 12px; font-weight: 700; letter-spacing: 1px;
       text-transform: uppercase; border-bottom: 1px solid #1e2d4a;
     }
-    .compare-col.both .compare-col-header { background: rgba(139,92,246,0.08); color: #8B5CF6; }
-    .compare-col.only-a .compare-col-header { background: rgba(0,212,170,0.08); color: #00D4AA; }
+    .compare-col.both .compare-col-header { background: rgba(0,212,170,0.08); color: #00D4AA; }
+    .compare-col.only-a .compare-col-header { background: rgba(59,130,246,0.08); color: #60a5fa; }
     .compare-col.only-b .compare-col-header { background: rgba(245,158,11,0.08); color: #F59E0B; }
     .compare-list { padding: 8px; max-height: 600px; overflow-y: auto; }
     .compare-item {
@@ -205,38 +205,6 @@
       .header-row { flex-direction: column; align-items: flex-start; }
       .search-wrap { max-width: 100%; }
     }
-
-/* ===== 하이라이트 모드 스위처 ===== */
-.hl-mode-switch {
-  display: flex; gap: 0; margin-bottom: 16px;
-  background: #0d1526; border: 1px solid #1e2d4a; border-radius: 10px; padding: 4px;
-  width: fit-content;
-}
-.hl-mode-btn {
-  padding: 6px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
-  cursor: pointer; border-radius: 7px; color: #475569;
-  transition: all 0.18s; background: transparent; border: none; font-family: inherit;
-}
-.hl-mode-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
-
-/* ===== Daily Report ===== */
-.report-signal { display:flex; gap:10px; padding:9px 0; border-bottom:1px solid #1a2235; font-size:12px; align-items:flex-start; }
-.report-signal:last-child { border:none; }
-.report-stock-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #1a2235; font-size:13px; }
-.report-stock-row:last-child { border:none; }
-.report-history-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #1a2235; cursor:pointer; font-size:13px; }
-.report-history-row:hover { color:#00D4AA; }
-.report-history-row:last-child { border:none; }
-
-.stock-comment-box {
-  display:none; padding:8px 12px 10px;
-  border-left: 2px solid #00D4AA;
-  margin: 0 0 4px; font-size:12px;
-  color:#94a3b8; line-height:1.6;
-  background: rgba(0,212,170,0.04);
-}
-
-    
   </style>
   
 <!-- Google tag (gtag.js) -->
@@ -267,11 +235,9 @@
 </header>
 
 <div class="container">
+
   <div id="errorBox" style="display:none;padding:14px 18px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:10px;margin-bottom:16px;font-size:13px;color:#fca5a5;line-height:1.6"></div>
 
-  <!-- 공지사항 배너 -->
-  <div id="noticeArea" style="margin-bottom: 16px;"></div>
-    
   <!-- ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통) -->
   <div class="card" style="margin-bottom: 20px;">
     <div class="card-header">
@@ -304,11 +270,6 @@
   </div>
 
   <!-- ① 오늘의 변화 하이라이트 -->
-  <div class="hl-mode-switch">
-    <button class="hl-mode-btn active" onclick="switchHlMode('amount', this)">💰 보유평가금액</button>
-    <button class="hl-mode-btn" onclick="switchHlMode('qty', this)">📦 보유주식수</button>
-  </div>
-  
   <div class="highlights" id="highlights">
 
     <!-- 현재 보유 TOP -->
@@ -372,7 +333,6 @@
   <div class="mode-tabs">
     <div class="mode-tab active" data-mode="single" onclick="switchMode('single')">📊 단일 ETF 보기</div>
     <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div>
-    <div class="mode-tab" data-mode="report" onclick="switchMode('report')">📰 Daily Report</div>
   </div>
 
   <!-- ETF 탭 (페이지 로드 시 sortEtfTabsByNav()가 순자산총액 내림차순으로 재배치) -->
@@ -388,7 +348,6 @@
     <div class="etf-tab" data-idx="18" onclick="selectEtf(this)">미국배당다우존스액티브</div>
     <div class="etf-tab" data-idx="10" onclick="selectEtf(this)">미국나스닥100채권혼합50액티브</div>
     <div class="etf-tab" data-idx="8"  onclick="selectEtf(this)">글로벌소비트렌드액티브</div>
-    <div class="etf-tab" data-idx="25" onclick="selectEtf(this)">글로벌휴머노이드로봇산업액티브</div>   <!-- 2026-05-19 출시 -->
     <div class="tab-section-label" style="margin-top:8px">국내투자</div>
     <div class="etf-tab" data-idx="12" onclick="selectEtf(this)">Korea플러스배당액티브</div>
     <div class="etf-tab" data-idx="11" onclick="selectEtf(this)">코스피액티브</div>
@@ -434,7 +393,8 @@
   <div id="modeCompare" class="hidden">
     <div class="info-box">
       <div style="font-size:13px;color:#94a3b8;line-height:1.6">
-        💡 두 개의 ETF를 선택하면 <b style="color:#8B5CF6">공통 보유 종목</b> · <b style="color:#00D4AA">A에만 있는 종목</b> · <b style="color:#F59E0B">B에만 있는 종목</b>으로 자동 분류됩니다.        <br>현재 모드: <b style="color:#00D4AA">A</b> = <span id="cmpAName">—</span> / <b style="color:#F59E0B">B</b> = <span id="cmpBName">선택 필요</span>
+        💡 두 개의 ETF를 선택하면 <b style="color:#00D4AA">공통 보유 종목</b> · <b style="color:#60a5fa">A에만 있는 종목</b> · <b style="color:#F59E0B">B에만 있는 종목</b>으로 자동 분류됩니다.
+        <br>현재 모드: <b style="color:#00D4AA">A</b> = <span id="cmpAName">—</span> / <b style="color:#F59E0B">B</b> = <span id="cmpBName">선택 필요</span>
         <br><span style="font-size:11px;color:#64748b">위 ETF 탭에서 첫 번째(A)를 클릭한 뒤, 비교할 ETF를 한 번 더 클릭하면 B로 지정됩니다.</span>
       </div>
     </div>
@@ -461,51 +421,6 @@
     </div>
   </div>
 
-<!-- Daily Report 모드 -->
-  <div id="modeReport" class="hidden">
-    <div id="reportLoading" class="loading">리포트 불러오는 중...</div>
-    <div id="reportContent" style="display:none">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
-        <div>
-          <div id="reportDate" style="font-size:11px;color:#64748b;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;"></div>
-          <div id="reportTitle" style="font-size:20px;font-weight:700;color:#f1f5f9;line-height:1.4;"></div>
-        </div>
-        <div style="background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:8px;padding:6px 12px;font-size:11px;color:#00D4AA;white-space:nowrap;flex-shrink:0;">✨ Gemini AI 자동 생성</div>
-      </div>
-        <div class="stat"><div class="stat-label">전체 보유 종목</div><div class="stat-value" id="rStatTotal">—</div></div>
-        <div class="stat"><div class="stat-label">비중 증가 종목</div><div class="stat-value" id="rStatUp" style="color:#34d399">—</div></div>
-        <div class="stat"><div class="stat-label">비중 감소 종목</div><div class="stat-value" id="rStatDown" style="color:#f87171">—</div></div>
-        <div class="stat"><div class="stat-label">신규 진입 종목</div><div class="stat-value" id="rStatNew" style="color:#00D4AA">—</div></div>
-      </div>
-      <div class="card" style="margin-bottom:16px;">
-        <div class="card-header">
-          📰 관련 뉴스
-          <span style="font-size:10px;color:#475569;font-weight:400;margin-left:8px;">Gemini + Google Search</span>
-        </div>
-        <div id="reportNews" style="padding:8px 16px;"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-        <div class="card">
-          <div class="card-header">👁 주목 시그널</div>
-          <div id="reportSignals" style="padding:8px 16px;"></div>
-        </div>
-        <div class="card">
-          <div class="card-header">🤖 AI 운용 코멘트<span style="font-size:10px;color:#475569;margin-left:8px;font-weight:400">Gemini 2.0 Flash</span></div>
-          <div id="reportComment" style="padding:16px;font-size:13px;color:#94a3b8;line-height:1.8;"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">📚 이전 리포트</div>
-        <div id="reportHistory" style="padding:8px 16px;"></div>
-      </div>
-    </div>
-    <div id="reportEmpty" style="display:none;padding:60px;text-align:center;color:#475569;font-size:14px;">
-      아직 생성된 리포트가 없습니다.<br>
-      <span style="font-size:12px;margin-top:8px;display:block;">매일 18:30 KST에 자동 생성됩니다.</span>
-    </div>
-  </div>
-
-  
   <div class="footer">
     ※ 데이터 출처: timeetf.co.kr 공시 기준<br>
     ※ 비즈니스 문의: global.etf.tracker@gmail.com / made by David.Park<br>
@@ -577,8 +492,6 @@
     13: { listDate: "2023.08.17", risk: "2등급(높은 위험)", bench: "KRX 헬스케어 지수", desc: "신약/바이오베터, 의료기기, 디지털 헬스케어 등 국내 바이오 핵심기업을 엄선하여 투자하는 액티브 ETF" },
     17: { listDate: "2021.05.25", risk: "1등급(매우 높은 위험)", bench: "KRX BBIG", desc: "미래 성장성 높은 테마에 투자하면서, 신성장 기업들을 적극적으로 발굴 및 투자하는 액티브 ETF" },
     1:  { listDate: "2021.12.15", risk: "1등급(매우 높은 위험)", bench: "FnGuide K-컬쳐 지수", desc: "K-Pop, 영화, 드라마 등 글로벌 트렌드를 주도하는 한국의 문화경쟁력에 투자하는 액티브 ETF" },
-    25: { listDate: "2026.05.19", risk: "2등급(높은 위험)", bench: "—", desc: "피지컬AI로의 전환. 글로벌 휴머노이드로봇산업 대표 기업에 투자하는 액티브 ETF" },
-    
   };
 
   const { createClient } = supabase;
@@ -609,7 +522,6 @@
   let cmpEtfA = null;
   let cmpEtfB = null;
   let trendChartInstance = null;
-  let hlMode = 'amount'; // 'amount' | 'qty'
 
   // =========================================================
   // ★ 종목코드 정규화 (leading zero 복구)
@@ -680,17 +592,13 @@
   // =========================================================
   // 국내/해외 판별
   // =========================================================
-    function isKorean(code, name) {
-      const c = String(code ?? "").trim();
-      const n = String(name ?? "").trim();
-      // 6자리 숫자 → 한국 거래소 종목코드 (예: 005930)
-      if (c && /^\d{6}$/.test(c)) return true;
-      // 6자리 영숫자 → 한국 거래소 파생코드 (예: 0043Y0)
-      if (c && /^[0-9A-Z]{6}$/.test(c)) return true;
-      // 이름에 한글 1자라도 포함 → 국내 (예: TIME 차이나AI테크액티브)
-      if (n && /[가-힣]/.test(n)) return true;
-      return false;
-    }
+  function isKorean(code, name) {
+    const c = String(code ?? "").trim();
+    const n = String(name ?? "").trim();
+    if (c && /^\d+$/.test(c)) return true;
+    if (n && /^[가-힣\s]+$/.test(n)) return true;
+    return false;
+  }
 
   // =========================================================
   // ★★★ ETF 탭을 순자산총액 내림차순으로 정렬
@@ -765,22 +673,13 @@
   // =========================================================
   // 하이라이트 탭 전환
   // =========================================================
-    function switchHlTab(card, region, el) {
-      const cardEl = el.closest('.hl-card');
-      cardEl.querySelectorAll('.hl-tab').forEach(t => t.classList.remove('active'));
-      cardEl.querySelectorAll('.hl-pane').forEach(p => p.classList.remove('active'));
-      el.classList.add('active');
-      document.getElementById(`hl${card}-${region}`)?.classList.add('active');
-    }
-    
-    function switchHlMode(mode, btn) {
-      hlMode = mode;
-      document.querySelectorAll('.hl-mode-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const base = document.getElementById("globalDateSelect")?.value;
-      const cmp  = document.getElementById("globalCompareSelect")?.value;
-      if (base) loadHighlights(base, cmp);
-    }
+  function switchHlTab(card, region, el) {
+    const cardEl = el.closest('.hl-card');
+    cardEl.querySelectorAll('.hl-tab').forEach(t => t.classList.remove('active'));
+    cardEl.querySelectorAll('.hl-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`hl${card}-${region}`)?.classList.add('active');
+  }
 
   // =========================================================
   // 모드 전환
@@ -790,16 +689,15 @@
     document.querySelectorAll(".mode-tab").forEach(t => t.classList.toggle("active", t.dataset.mode === mode));
     document.getElementById("modeSingle").classList.toggle("hidden", mode !== "single");
     document.getElementById("modeCompare").classList.toggle("hidden", mode !== "compare");
-    document.getElementById("modeReport").classList.toggle("hidden", mode !== "report");
     if (mode === "compare") {
       if (!cmpEtfA) cmpEtfA = currentIdx;
       updateCompareTabsHighlight();
       loadCompareMode();
-    } else if (mode === "report") {
-      loadDailyReport();
     } else {
       document.querySelectorAll(".etf-tab").forEach(t => t.classList.remove("compare-active"));
     }
+
+    // ★ 이벤트 추적
     trackEvent('mode_switch', { mode });
   }
 
@@ -816,14 +714,6 @@ function selectEtf(el) {
       else { cmpEtfA = idx; cmpEtfB = null; }
       updateCompareTabsHighlight();
       loadCompareMode();
-      return;
-    }
-    if (currentMode === "report") {
-      document.querySelectorAll('.etf-tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-      currentIdx = idx;
-      if (currentReport) renderReportBody(currentReport, String(idx));
-      trackEvent('etf_tab_click', { etf_idx: idx, etf_name: getEtfName(idx) });
       return;
     }
     document.querySelectorAll('.etf-tab').forEach(t => t.classList.remove('active'));
@@ -885,7 +775,7 @@ function selectEtf(el) {
     }
     if (!db) return;
 
-    // etf_daily 테이블 = ETF 18개 × 영업일 수백 일 → 수천 행 (18배 가벼움)
+    // ★ 페이지네이션 헬퍼로 모든 date를 가져옴
     let allRows = [];
     try {
       allRows = await fetchAllPages(() =>
@@ -896,6 +786,8 @@ function selectEtf(el) {
       return;
     }
     if (!allRows.length) return;
+    
+    hideError();
     globalAllDates = [...new Set(allRows.map(d => d.date))];
 
     const s1 = document.getElementById("globalDateSelect");
@@ -1068,8 +960,8 @@ function selectEtf(el) {
       const isNew = !prev && hasCompare;
       let status = "—";
       if (isNew) status = "신규";
-      else if (weightDiff !== null && weightDiff > 0)  status = "증가";
-      else if (weightDiff !== null && weightDiff < 0) status = "감소";
+      else if (weightDiff !== null && weightDiff > 0.5)  status = "증가";
+      else if (weightDiff !== null && weightDiff < -0.5) status = "감소";
       else if (weightDiff !== null) status = "유지";
       return { rank: i + 1, code: h.code, name: h.name, weight: h.weight, weightDiff, qty: h.qty, qtyDiff, value: h.value, status, removed: false };
     });
@@ -1187,7 +1079,7 @@ const fetchAll = async (date) => {
         const [holdingsAll, dailyResp] = await Promise.all([
           fetchAllPages(() =>
             db.from("holdings")
-              .select("etf_idx, code, name, weight, value, holding_amount, qty, holdings_qty")
+              .select("etf_idx, code, name, weight, value, holding_amount")
               .eq("date", date)
           ),
           db.from("etf_daily")
@@ -1239,8 +1131,6 @@ const aggregate = (rows) => {
           map[key].weight += (r.weight || 0);
           map[key].value += (r.value || 0);
           map[key].holdingAccounts += (r._amount || 0);   // ★ holding_amount → _amount (폴백 적용된 값)
-          map[key].qty          = (map[key].qty          || 0) + (r.qty          || 0);
-          map[key].holdings_qty = (map[key].holdings_qty || 0) + (r.holdings_qty || 0);
           map[key].etfCount += 1;
         }
         return map;
@@ -1255,37 +1145,23 @@ const aggregate = (rows) => {
         const prevAll = await fetchAll(prev);
         const prevMap = aggregate(prevAll);
 
-        const THRESHOLD_AMT = 100_000_000;  // 1억원
-        const THRESHOLD_QTY = 1_000;        // 1,000주
-        
+        const THRESHOLD = 100_000_000;  // 1억원
+
         for (const key of Object.keys(curMap)) {
           const cur = curMap[key];
           const prv = prevMap[key];
-          if (hlMode === 'qty') {
-            if (!prv) {
-              newItems.push({ ...cur, change: cur.holdings_qty });
-            } else {
-              const diff = cur.holdings_qty - prv.holdings_qty;
-              if (diff > THRESHOLD_QTY)       upItems.push({ ...cur, change: diff });
-              else if (diff < -THRESHOLD_QTY) downItems.push({ ...cur, change: diff });
-            }
+          if (!prv) {
+            newItems.push({ ...cur, change: cur.holdingAccounts });
           } else {
-            if (!prv) {
-              newItems.push({ ...cur, change: cur.holdingAccounts });
-            } else {
-              const diff = cur.holdingAccounts - prv.holdingAccounts;
-              if (diff > THRESHOLD_AMT)       upItems.push({ ...cur, change: diff });
-              else if (diff < -THRESHOLD_AMT) downItems.push({ ...cur, change: diff });
-            }
+            const diff = cur.holdingAccounts - prv.holdingAccounts;
+            if (diff > THRESHOLD)       upItems.push({ ...cur, change: diff });
+            else if (diff < -THRESHOLD) downItems.push({ ...cur, change: diff });
           }
         }
         for (const key of Object.keys(prevMap)) {
-          if (!curMap[key]) {
-            const prv = prevMap[key];
-            goneItems.push({ ...prv, change: hlMode === 'qty' ? -prv.holdings_qty : -prv.holdingAccounts });
-          }
+          if (!curMap[key]) goneItems.push({ ...prevMap[key], change: -prevMap[key].holdingAccounts });
         }
-        
+
         newItems.sort((a, b)  => b.change - a.change);
         upItems.sort((a, b)   => b.change - a.change);
         downItems.sort((a, b) => a.change - b.change);
@@ -1319,8 +1195,8 @@ const aggregate = (rows) => {
 
       // 현재 보유 TOP — holding_amount 합산 기준 (18개 ETF 전체)
       const holdAll = Object.values(curMap)
-        .filter(x => hlMode === 'qty' ? x.holdings_qty > 0 : x.holdingAccounts > 0)
-        .sort((a, b) => hlMode === 'qty' ? b.holdings_qty - a.holdings_qty : b.holdingAccounts - a.holdingAccounts);
+        .filter(x => x.holdingAccounts > 0)
+        .sort((a, b) => b.holdingAccounts - a.holdingAccounts);
 
       // 억 단위 포맷터 (통합된 fmtMoney 사용)
       const fmtEok = (v) => fmtMoney(v);
@@ -1340,29 +1216,19 @@ const aggregate = (rows) => {
       } catch (e) { console.error("총 순자산 표시 실패:", e); }
 
       renderCard("Hold", holdAll,
-      x => hlMode === 'qty'
-        ? `<span style="color:#00D4AA;font-family:monospace">${Math.round(x.holdings_qty).toLocaleString('ko-KR')}주</span>`
-        : `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
+        x => `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
         "데이터 없음");
 
       // 변화 카드 4종
-        const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
-        
-        const fmtEokSigned = (v) => fmtMoney(v, { signed: true });
-        const fmtChange = (x) => {
-          if (hlMode === 'qty') {
-            const sign = x.change > 0 ? '+' : '';
-            const cls  = x.change >= 0 ? 'pos' : 'neg';
-            return `<span class="${cls}">${sign}${Math.round(x.change).toLocaleString('ko-KR')}주</span>`;
-          }
-          const cls = x.change >= 0 ? 'pos' : 'neg';
-          return `<span class="${cls}">${fmtEokSigned(x.change)}</span>`;
-        };
-        
-        renderCard("New",  newItems,  fmtChange, emptyMsg);
-        renderCard("Up",   upItems,   fmtChange, emptyMsg);
-        renderCard("Down", downItems, fmtChange, emptyMsg);
-        renderCard("Gone", goneItems, fmtChange, emptyMsg);
+      const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
+
+      // 부호가 들어간 포맷터 (통합된 fmtMoney 사용)
+      const fmtEokSigned = (v) => fmtMoney(v, { signed: true });
+
+      renderCard("New",  newItems,  x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Up",   upItems,   x => `<span class="pos">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Down", downItems, x => `<span class="neg">${fmtEokSigned(x.change)}</span>`, emptyMsg);
+      renderCard("Gone", goneItems, x => `<span class="neg">${fmtEokSigned(x.change)}</span>`, emptyMsg);
 
     } catch (e) {
       console.error("Highlights 로딩 실패:", e);
@@ -1372,54 +1238,52 @@ const aggregate = (rows) => {
   // =========================================================
   // ② 종목 모달 + ④ 추이 차트
   // =========================================================
-  async function openSecurityModal(code, name) {
+    async function openSecurityModal(code, name) {
     const normCode = normalizeCode(code);
     document.getElementById("modalTitle").textContent = name + (normCode ? `  (${normCode})` : "");
     document.getElementById("modalOverlay").classList.add("show");
     document.getElementById("holdingList").innerHTML = '<div class="hl-empty">로딩 중...</div>';
 
+    // ★ 이벤트 추적
     trackEvent('security_modal_open', {
       security_code: normCode || '',
       security_name: name || ''
     });
 
     if (!db || !normCode) return;
-
-    const latest = globalAllDates[0];
-    if (!latest) return;
-
-    const candidates = [normCode];
-    const stripped = normCode.replace(/^0+/, "");
-    if (stripped && stripped !== normCode) candidates.push(stripped);
-
-    const [holdingsResp, trendResp] = await Promise.all([
-      db.from("holdings")
+    const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
+    const latest = latestRows?.[0]?.date;
+    if (latest) {
+      const candidates = [normCode];
+      const stripped = normCode.replace(/^0+/, "");
+      if (stripped && stripped !== normCode) candidates.push(stripped);
+      const { data: holdings } = await db.from("holdings")
         .select("etf_idx, etf_name, weight, qty, value, code")
         .eq("date", latest)
         .in("code", candidates)
-        .order("weight", { ascending: false }),
-      db.from("holdings")
-        .select("date, etf_idx, etf_name, weight")
-        .in("code", candidates)
-        .order("date", { ascending: true })
-        .limit(2000)
-    ]);
-
-    const holdings = holdingsResp.data;
-    if (holdings?.length) {
-      document.getElementById("holdingList").innerHTML = holdings.map(h => `
-        <div class="holding-row">
-          <span class="hr-etf">TIME ${h.etf_name}</span>
-          <span class="hr-q">수량 ${fmt(h.qty)}</span>
-          <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
-        </div>`).join("");
-    } else {
-      document.getElementById("holdingList").innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
+        .order("weight", { ascending: false });
+      if (holdings?.length) {
+        document.getElementById("holdingList").innerHTML = holdings.map(h => `
+          <div class="holding-row">
+            <span class="hr-etf">TIME ${h.etf_name}</span>
+            <span class="hr-q">수량 ${fmt(h.qty)}</span>
+            <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
+          </div>`).join("");
+      } else {
+        document.getElementById("holdingList").innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
+      }
     }
-
-    drawTrendChart(trendResp.data || [], name);
+    const candidates = [normCode];
+    const stripped = normCode.replace(/^0+/, "");
+    if (stripped && stripped !== normCode) candidates.push(stripped);
+    const { data: trend } = await db.from("holdings")
+      .select("date, etf_idx, etf_name, weight")
+      .in("code", candidates)
+      .order("date", { ascending: true })
+      .limit(2000);
+    drawTrendChart(trend || [], name);
   }
-  
+
   function drawTrendChart(rows, securityName) {
     const ctx = document.getElementById("trendChart").getContext("2d");
     if (trendChartInstance) trendChartInstance.destroy();
@@ -1469,7 +1333,7 @@ const aggregate = (rows) => {
   // =========================================================
   // ⑤ ETF 비교 모드
   // =========================================================
-async function loadCompareMode() {
+  async function loadCompareMode() {
     const cmpDateSel = document.getElementById("cmpDateSelect");
     if (!cmpEtfA || !cmpEtfB) {
       document.getElementById("cmpBoth").innerHTML = '<div class="hl-empty">위 ETF 탭에서 비교할 두 ETF를 클릭해 주세요</div>';
@@ -1480,13 +1344,11 @@ async function loadCompareMode() {
       document.getElementById("cmpOnlyBCount").textContent = "0";
       return;
     }
-
-    if (globalAllDates.length > 0 &&
-       (cmpDateSel.options.length <= 1 || cmpDateSel.options[0].textContent === "로딩 중...")) {
-      cmpDateSel.innerHTML = globalAllDates.map(d =>
-        `<option value="${d}">${d}</option>`).join("");
+    if (cmpDateSel.options.length <= 1 || cmpDateSel.options[0].textContent === "로딩 중...") {
+      const { data } = await db.from("holdings").select("date").in("etf_idx", [cmpEtfA, cmpEtfB]).order("date", { ascending: false }).limit(2000);
+      const ds = [...new Set((data || []).map(d => d.date))];
+      cmpDateSel.innerHTML = ds.map(d => `<option value="${d}">${d}</option>`).join("");
     }
-
     const date = cmpDateSel.value || cmpDateSel.options[0]?.value;
     if (!date) return;
     const [rA, rB] = await Promise.all([
@@ -1533,7 +1395,8 @@ async function loadCompareMode() {
     if (!db) return;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(async () => {
-      const latest = globalAllDates[0];
+      const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
+      const latest = latestRows?.[0]?.date;
       if (!latest) return;
       const { data } = await db.from("holdings")
         .select("code, name, etf_idx, etf_name, weight")
@@ -1572,317 +1435,6 @@ async function loadCompareMode() {
   }
 
   // =========================================================
-  // ⑦ 공지사항
-  // =========================================================
-    function autoLink(text) {
-    if (!text) return '';
-    return text.replace(
-      /(https?:\/\/[^\s<>"]+)/g,
-      '<a href="$1" target="_blank" rel="noopener" style="color:#00D4AA;text-decoration:underline;word-break:break-all">$1</a>'
-    );
-  }
-  async function loadNotices() { 
-    if (!db) return;
-    const { data } = await db
-      .from("notices")
-      .select("*")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (!data?.length) return;
-
-    const typeStyle = {
-      info:    { border: "#00D4AA", icon: "📢", color: "#00D4AA", label: "공지" },
-      warning: { border: "#F59E0B", icon: "⚠️", color: "#F59E0B", label: "긴급" },
-      update:  { border: "#3B82F6", icon: "🆕", color: "#60a5fa", label: "NEW" },
-    };
-
-    const renderRow = (n, i) => {
-      const s = typeStyle[n.type] || typeStyle.info;
-      const date = new Date(n.created_at).toLocaleDateString("ko-KR");
-      return `
-        <div style="border-bottom: 1px solid #1e2d4a;">
-          <div onclick="toggleNotice(${i})" style="
-            display:flex; align-items:center; gap:10px;
-            padding:11px 16px; cursor:pointer;
-          " onmouseover="this.style.background='rgba(255,255,255,0.02)'"
-             onmouseout="this.style.background='transparent'">
-            <span style="font-size:13px;flex-shrink:0">${s.icon}</span>
-            <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:${s.color};flex-shrink:0;min-width:36px">${s.label}</span>
-            <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.title}</span>
-            <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${date}</span>
-            <span id="notice-arrow-${i}" style="color:#475569;font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(0deg)">▼</span>
-          </div>
-          <div id="notice-body-${i}" style="
-            display:none;
-            padding:0 16px 14px 55px;
-            font-size:12px;color:#94a3b8;line-height:1.7;
-            border-left:2px solid ${s.border}40;margin-left:16px;
-          ">${autoLink(n.content || '')}</div>
-        </div>`;
-    };
-
-    const latest = data[0];
-    const rest   = data.slice(1);
-    const s0 = typeStyle[latest.type] || typeStyle.info;
-    const date0 = new Date(latest.created_at).toLocaleDateString("ko-KR");
-
-    // 최신 공지 1개 행
-    const latestRow = `
-      <div style="border-bottom:${rest.length ? '1px solid #1e2d4a' : 'none'}">
-        <div onclick="toggleNotice(0)" style="
-          display:flex;align-items:center;gap:10px;
-          padding:11px 16px;cursor:pointer;
-        " onmouseover="this.style.background='rgba(255,255,255,0.02)'"
-           onmouseout="this.style.background='transparent'">
-          <span style="font-size:13px;flex-shrink:0">${s0.icon}</span>
-          <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:${s0.color};flex-shrink:0;min-width:36px">${s0.label}</span>
-          <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${latest.title}</span>
-          <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${date0}</span>
-          <span id="notice-arrow-0" style="color:#475569;font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(0deg)">▼</span>
-        </div>
-        <div id="notice-body-0" style="
-          display:none;padding:0 16px 14px 55px;
-          font-size:12px;color:#94a3b8;line-height:1.7;
-          border-left:2px solid ${s0.border}40;margin-left:16px;
-        ">${autoLink(latest.content || '')}</div>
-      </div>`;
-
-    // 나머지 공지 (기본 숨김)
-    const restRows = rest.map((n, i) => renderRow(n, i + 1)).join("");
-
-    // 전체보기 버튼 (공지가 2개 이상일 때만)
-    const moreBtn = rest.length ? `
-      <div id="noticeMoreWrap" style="border-top:1px solid #1e2d4a">
-        <div onclick="toggleAllNotices()" style="
-          display:flex;align-items:center;justify-content:center;gap:6px;
-          padding:9px;cursor:pointer;font-size:11px;color:#475569;
-          transition:color 0.15s;
-        " onmouseover="this.style.color='#00D4AA'"
-           onmouseout="this.style.color='#475569'">
-          <span id="moreBtnText">이전 공지 ${rest.length}개 더보기</span>
-          <span id="moreBtnArrow" style="transition:transform 0.2s">▼</span>
-        </div>
-      </div>` : "";
-
-    const restWrap = rest.length ? `
-      <div id="noticeRestWrap" style="display:none">${restRows}</div>` : "";
-
-    document.getElementById("noticeArea").innerHTML = `
-      <div style="
-        background:#0d1526;border:1px solid #1e2d4a;border-radius:12px;
-        overflow:hidden;margin-bottom:4px;
-      ">
-        <div style="
-          padding:10px 16px;background:#111827;
-          border-bottom:1px solid #1e2d4a;
-          display:flex;align-items:center;gap:8px;
-        ">
-          <span style="font-size:12px">📋</span>
-          <span style="font-size:12px;font-weight:700;color:#94a3b8;letter-spacing:1px">공지사항</span>
-          <span style="
-            font-size:10px;background:rgba(0,212,170,0.15);
-            color:#00D4AA;border-radius:10px;padding:1px 8px;font-weight:700;
-          ">${data.length}</span>
-        </div>
-        ${latestRow}
-        ${restWrap}
-        ${moreBtn}
-      </div>`;
-  }
-
-  function toggleNotice(i) {
-    const body  = document.getElementById(`notice-body-${i}`);
-    const arrow = document.getElementById(`notice-arrow-${i}`);
-    const isOpen = body.style.display !== 'none';
-    body.style.display    = isOpen ? 'none' : 'block';
-    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-  }
-
-  function toggleAllNotices() {
-    const wrap  = document.getElementById("noticeRestWrap");
-    const btn   = document.getElementById("moreBtnText");
-    const arrow = document.getElementById("moreBtnArrow");
-    const isOpen = wrap.style.display !== 'none';
-    wrap.style.display    = isOpen ? 'none'  : 'block';
-    arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    btn.textContent = isOpen
-      ? `이전 공지 ${wrap.children.length}개 더보기`
-      : "접기";
-  }
-
-
-// =========================================================
-  // Daily Report
-  // =========================================================
-  let allReports = [];
-
-  async function loadDailyReport() {
-    if (!db) return;
-    document.getElementById("reportLoading").style.display = "block";
-    document.getElementById("reportContent").style.display = "none";
-    document.getElementById("reportEmpty").style.display = "none";
-    try {
-      const { data, error } = await db
-        .from("daily_reports")
-        .select("*")
-        .order("report_date", { ascending: false })
-        .limit(30);
-      if (error) throw error;
-      if (!data?.length) {
-        document.getElementById("reportLoading").style.display = "none";
-        document.getElementById("reportEmpty").style.display = "block";
-        return;
-      }
-      allReports = data;
-      renderReport(data[0]);
-      renderReportHistory(data);
-    } catch (e) {
-      console.error("Daily Report 로딩 실패:", e);
-      document.getElementById("reportLoading").style.display = "none";
-      document.getElementById("reportEmpty").style.display = "block";
-    }
-  }
-
-function renderReport(report) {
-    document.getElementById("reportLoading").style.display = "none";
-    document.getElementById("reportContent").style.display = "block";
-    const c     = report.content || {};
-    const stats = c.stats || {};
-
-    document.getElementById("reportDate").textContent =
-      new Date(report.report_date + "T00:00:00").toLocaleDateString("ko-KR",
-        { year:"numeric", month:"long", day:"numeric", weekday:"long" }) + " · 장 마감 후 자동 생성";
-
-    const signals = c.signals || [];
-    const signalIcon  = { bull:"🟢", bear:"🔴", neutral:"⚪" };
-    const signalColor = { bull:"#34d399", bear:"#f87171", neutral:"#64748b" };
-    document.getElementById("reportSignals").innerHTML = signals.length
-      ? signals.map(s => `
-        <div class="report-signal">
-          <span style="flex-shrink:0">${signalIcon[s.type]||"⚪"}</span>
-          <span style="color:${signalColor[s.type]||"#94a3b8"};line-height:1.6">${s.text}</span>
-        </div>`).join("")
-      : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">시그널 없음</div>';
-
-    currentReport = report;
-    renderReportBody(report, null);
-  }
-
-  function toggleStockComment(id) {
-    const box   = document.getElementById(id);
-    const arrow = document.getElementById("arr-" + id);
-    if (!box) return;
-    const isOpen = box.style.display === "block";
-    box.style.display    = isOpen ? "none"         : "block";
-    if (arrow) arrow.textContent = isOpen ? "▼" : "▲";
-  }
-
-let currentReport = null;
-
-  function renderEtfPills(report) {
-    const etfReports = report.content?.etf_reports || {};
-    const el = document.getElementById("reportEtfFilter");
-    if (!el) return;
-    let html = `<button class="quick-btn active" onclick="selectReportEtf(null,this)">전체 (18개 ETF)</button>`;
-    Object.entries(etfReports).forEach(([idx, d]) => {
-      html += `<button class="quick-btn" onclick="selectReportEtf('${idx}',this)">${d.name}</button>`;
-    });
-    el.innerHTML = html;
-  }
-
-  function selectReportEtf(etfIdx, btn) {
-    document.querySelectorAll("#reportEtfFilter .quick-btn")
-      .forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    if (!currentReport) return;
-    if (!etfIdx) {
-      renderReportBody(currentReport, null);
-    } else {
-      renderReportBody(currentReport, etfIdx);
-    }
-  }
-
-function renderReportBody(report, etfIdx) {
-  const c       = report.content || {};
-  const etfData = etfIdx ? (c.etf_reports?.[etfIdx] || null) : null;
-  const comment = etfData ? (etfData.comment || "—") : (c.comment || "—");
-  const stats   = c.stats || {};
-  const prefix  = etfData ? `[${etfData.name}] ` : "";
-  const isGlobal = !etfIdx; // 전체 보기인지 개별 ETF 보기인지 판별
-
-  // 1. 제목 + 통계 업데이트
-  document.getElementById("reportTitle").textContent = prefix + (report.title || "—");
-  
-  document.getElementById("rStatTotal").textContent = etfData
-    ? (etfData.total_stocks || 0) + "개"
-    : (stats.total_stocks   ? stats.total_stocks + "개" : "—");
-    
-  document.getElementById("rStatUp").textContent = etfData
-    ? (etfData.up_count   || 0) + "개"
-    : (stats.up_count   != null ? stats.up_count   + "개" : "—");
-    
-  document.getElementById("rStatDown").textContent = etfData
-    ? (etfData.down_count || 0) + "개"
-    : (stats.down_count != null ? stats.down_count + "개" : "—");
-    
-  document.getElementById("rStatNew").textContent = etfData
-    ? (etfData.new_count  || 0) + "개"
-    : ((c.new_count || 0) + "개");
-
-  // 2. AI 운용 코멘트 업데이트
-  document.getElementById("reportComment").textContent = comment;
-
-  // 3. 뉴스 영역 제어 (전체 리포트일 때만 표시)
-  const newsCard = document.getElementById("reportNews").closest('.card');
-  if (isGlobal) {
-    newsCard.style.display = "block";
-    const news = c.news || [];
-    document.getElementById("reportNews").innerHTML = news.length
-      ? news.map(n => `
-        <div style="padding:10px 0;border-bottom:1px solid #1a2235;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-size:10px;background:rgba(0,212,170,0.1);color:#00D4AA;border-radius:6px;padding:2px 8px;font-weight:700;flex-shrink:0">${n.stock||""}</span>
-            <span style="font-size:12px;font-weight:600;color:#f1f5f9;line-height:1.4">${n.headline||""}</span>
-          </div>
-          <div style="font-size:12px;color:#94a3b8;line-height:1.6;padding-left:4px">${n.summary||""}</div>
-          <div style="font-size:10px;color:#475569;margin-top:4px;padding-left:4px">${n.source||""}</div>
-        </div>`).join("")
-      : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">뉴스 데이터 없음</div>';
-  } else {
-    newsCard.style.display = "none";
-  }
-
-  // 4. 시그널 영역 제어 (전체 리포트일 때만 표시)
-  const signalCard = document.getElementById("reportSignals").closest('.card');
-  if (isGlobal) {
-    signalCard.style.display = "block";
-  } else {
-    signalCard.style.display = "none";
-  }
-}
-
-
-  
-  function renderReportHistory(reports) {
-    const history = reports.slice(1, 8);
-    if (!history.length) {
-      document.getElementById("reportHistory").innerHTML =
-        '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">이전 리포트 없음</div>';
-      return;
-    }
-    document.getElementById("reportHistory").innerHTML = history.map((r, i) => `
-      <div class="report-history-row" onclick="renderReport(allReports[${i+1}])">
-        <span style="font-weight:500;color:#e2e8f0">${r.title}</span>
-        <span style="font-size:11px;color:#475569;flex-shrink:0;margin-left:12px">${r.report_date}</span>
-      </div>`).join("");
-  }
-
-
-
-  
-  // =========================================================
   // 시작
   //   ① ETF 탭을 순자산총액 내림차순으로 정렬 (해외/국내 섹션 내)
   //   ② 정보 박스 갱신 (정렬 후 새로 active된 ETF 기준)
@@ -1892,7 +1444,6 @@ function renderReportBody(report, etfIdx) {
     await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
     renderInfo();
     initGlobalDates();
-    loadNotices();
   })();
   
 </script>
