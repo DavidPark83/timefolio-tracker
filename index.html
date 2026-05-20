@@ -472,21 +472,17 @@
         </div>
         <div style="background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);border-radius:8px;padding:6px 12px;font-size:11px;color:#00D4AA;white-space:nowrap;flex-shrink:0;">✨ Gemini AI 자동 생성</div>
       </div>
-      <div id="reportEtfFilter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;"></div>
         <div class="stat"><div class="stat-label">전체 보유 종목</div><div class="stat-value" id="rStatTotal">—</div></div>
         <div class="stat"><div class="stat-label">비중 증가 종목</div><div class="stat-value" id="rStatUp" style="color:#34d399">—</div></div>
         <div class="stat"><div class="stat-label">비중 감소 종목</div><div class="stat-value" id="rStatDown" style="color:#f87171">—</div></div>
         <div class="stat"><div class="stat-label">신규 진입 종목</div><div class="stat-value" id="rStatNew" style="color:#00D4AA">—</div></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-        <div class="card">
-          <div class="card-header">📈 비중 증가 TOP 5</div>
-          <div id="reportTopUp" style="padding:8px 16px;"></div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header">
+          📰 관련 뉴스
+          <span style="font-size:10px;color:#475569;font-weight:400;margin-left:8px;">Gemini + Google Search</span>
         </div>
-        <div class="card">
-          <div class="card-header">📉 비중 감소 TOP 5</div>
-          <div id="reportTopDown" style="padding:8px 16px;"></div>
-        </div>
+        <div id="reportNews" style="padding:8px 16px;"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
         <div class="card">
@@ -820,6 +816,14 @@ function selectEtf(el) {
       else { cmpEtfA = idx; cmpEtfB = null; }
       updateCompareTabsHighlight();
       loadCompareMode();
+      return;
+    }
+    if (currentMode === "report") {
+      document.querySelectorAll('.etf-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      currentIdx = idx;
+      if (currentReport) renderReportBody(currentReport, String(idx));
+      trackEvent('etf_tab_click', { etf_idx: idx, etf_name: getEtfName(idx) });
       return;
     }
     document.querySelectorAll('.etf-tab').forEach(t => t.classList.remove('active'));
@@ -1765,7 +1769,6 @@ function renderReport(report) {
       : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">시그널 없음</div>';
 
     currentReport = report;
-    renderEtfPills(report);
     renderReportBody(report, null);
   }
 
@@ -1803,45 +1806,39 @@ let currentReport = null;
     }
   }
 
-  function renderReportBody(report, etfIdx) {
-    const c           = report.content || {};
-    const etfData     = etfIdx ? (c.etf_reports?.[etfIdx] || null) : null;
-    const topUp       = etfData ? (etfData.top_up   || []) : (c.top_up   || []);
-    const topDown     = etfData ? (etfData.top_down  || []) : (c.top_down  || []);
-    const comment     = etfData ? (etfData.comment   || "—") : (c.comment   || "—");
-    const titlePrefix = etfData ? `[${etfData.name}] ` : "";
+function renderReportBody(report, etfIdx) {
+    const c       = report.content || {};
+    const etfData = etfIdx ? (c.etf_reports?.[etfIdx] || null) : null;
+    const comment = etfData ? (etfData.comment || "—") : (c.comment || "—");
+    const stats   = c.stats || {};
+    const prefix  = etfData ? `[${etfData.name}] ` : "";
 
-    document.getElementById("reportTitle").textContent  = titlePrefix + report.title;
-    document.getElementById("rStatUp").textContent      = topUp.length + "개";
-    document.getElementById("rStatDown").textContent    = topDown.length + "개";
+    // 제목 + 통계
+    document.getElementById("reportTitle").textContent   = prefix + (report.title || "—");
+    document.getElementById("rStatUp").textContent       = etfData
+      ? (etfData.top_up?.length  || 0) + "개"
+      : (stats.up_count   != null ? stats.up_count   + "개" : "—");
+    document.getElementById("rStatDown").textContent     = etfData
+      ? (etfData.top_down?.length || 0) + "개"
+      : (stats.down_count != null ? stats.down_count + "개" : "—");
+
+    // AI 코멘트
     document.getElementById("reportComment").textContent = comment;
 
-    const renderStockList = (items, dir) =>
-      items.length ? items.map((x, i) => {
-        const domId = `sc-${dir}-${i}`;
-        const qty   = x.qty_change != null
-          ? (x.qty_change > 0 ? "+" : "") + Math.round(x.qty_change).toLocaleString("ko-KR") + "주" : "";
-        return `
-          <div>
-            <div class="report-stock-row" style="cursor:pointer" onclick="toggleStockComment('${domId}')">
-              <div>
-                <div style="font-weight:600;color:#f1f5f9">${x.name}
-                  <span id="arr-${domId}" style="color:#475569;font-size:10px;margin-left:4px">▼</span>
-                </div>
-                <div style="font-size:10px;color:#475569">${x.etf_count || 1}개 ETF</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-family:monospace;color:#94a3b8">${(x.weight||0).toFixed(2)}%</div>
-                <div style="font-size:11px;color:${dir==='up'?'#34d399':'#f87171'}">${qty}</div>
-              </div>
-            </div>
-            <div class="stock-comment-box" id="${domId}">불러오는 중...</div>
-          </div>`;
-      }).join("")
-      : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">데이터 없음</div>';
-
-    document.getElementById("reportTopUp").innerHTML   = renderStockList(topUp,   "up");
-    document.getElementById("reportTopDown").innerHTML = renderStockList(topDown, "down");
+    // 뉴스
+    const news = c.news || [];
+    document.getElementById("reportNews").innerHTML = news.length
+      ? news.map(n => `
+        <div style="padding:10px 0;border-bottom:1px solid #1a2235;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="font-size:10px;background:rgba(0,212,170,0.1);color:#00D4AA;
+              border-radius:6px;padding:2px 8px;font-weight:700;flex-shrink:0">${n.stock||""}</span>
+            <span style="font-size:12px;font-weight:600;color:#f1f5f9;line-height:1.4">${n.headline||""}</span>
+          </div>
+          <div style="font-size:12px;color:#94a3b8;line-height:1.6;padding-left:4px">${n.summary||""}</div>
+          <div style="font-size:10px;color:#475569;margin-top:4px;padding-left:4px">${n.source||""}</div>
+        </div>`).join("")
+      : '<div style="color:#475569;padding:12px 0;font-size:12px;text-align:center;">뉴스 데이터 없음</div>';
   }
 
   
