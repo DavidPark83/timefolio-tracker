@@ -126,7 +126,8 @@ for idx, data in etf_cur.items():
         "up_count":     len(e_up),
         "down_count":   len(e_down),
         "new_count":    new_in_etf
-    }    if e_up or e_down:
+    }    
+    if e_up or e_down:
         etf_summaries[data["name"]] = {
             "순매수": [f"{x['name']}(+{x['qty_change']:,}주)" for x in e_up[:3]],
             "순매도": [f"{x['name']}({x['qty_change']:,}주)" for x in e_down[:3]]
