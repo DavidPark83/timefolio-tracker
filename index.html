@@ -1754,8 +1754,6 @@ function renderReport(report) {
     document.getElementById("reportDate").textContent =
       new Date(report.report_date + "T00:00:00").toLocaleDateString("ko-KR",
         { year:"numeric", month:"long", day:"numeric", weekday:"long" }) + " · 장 마감 후 자동 생성";
-    document.getElementById("rStatTotal").textContent = stats.total_stocks ? stats.total_stocks + "개" : "—";
-    document.getElementById("rStatNew").textContent   = (c.new_count || 0) + "개";
 
     const signals = c.signals || [];
     const signalIcon  = { bull:"🟢", bear:"🔴", neutral:"⚪" };
@@ -1815,12 +1813,25 @@ function renderReportBody(report, etfIdx) {
 
     // 제목 + 통계
     document.getElementById("reportTitle").textContent   = prefix + (report.title || "—");
-    document.getElementById("rStatUp").textContent       = etfData
-      ? (etfData.top_up?.length  || 0) + "개"
+    // 전체 보유 종목
+    document.getElementById("rStatTotal").textContent = etfData
+      ? (etfData.total_stocks || 0) + "개"
+      : (stats.total_stocks   ? stats.total_stocks + "개" : "—");
+
+    // 비중 증가 종목
+    document.getElementById("rStatUp").textContent = etfData
+      ? (etfData.up_count   || 0) + "개"
       : (stats.up_count   != null ? stats.up_count   + "개" : "—");
-    document.getElementById("rStatDown").textContent     = etfData
-      ? (etfData.top_down?.length || 0) + "개"
+
+    // 비중 감소 종목
+    document.getElementById("rStatDown").textContent = etfData
+      ? (etfData.down_count || 0) + "개"
       : (stats.down_count != null ? stats.down_count + "개" : "—");
+
+    // 신규 진입 종목
+    document.getElementById("rStatNew").textContent = etfData
+      ? (etfData.new_count  || 0) + "개"
+      : ((c.new_count || 0) + "개");
 
     // AI 코멘트
     document.getElementById("reportComment").textContent = comment;
