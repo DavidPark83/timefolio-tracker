@@ -369,6 +369,7 @@
     <div class="etf-tab" data-idx="18" onclick="selectEtf(this)">미국배당다우존스액티브</div>
     <div class="etf-tab" data-idx="10" onclick="selectEtf(this)">미국나스닥100채권혼합50액티브</div>
     <div class="etf-tab" data-idx="8"  onclick="selectEtf(this)">글로벌소비트렌드액티브</div>
+    <div class="etf-tab" data-idx="25" onclick="selectEtf(this)">글로벌휴머노이드액티브</div>
     <div class="tab-section-label" style="margin-top:8px">국내투자</div>
     <div class="etf-tab" data-idx="12" onclick="selectEtf(this)">Korea플러스배당액티브</div>
     <div class="etf-tab" data-idx="11" onclick="selectEtf(this)">코스피액티브</div>
@@ -495,16 +496,16 @@
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxcHF1bW1jb3VqbXlteWRmdGxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDQxMDAsImV4cCI6MjA5MzMyMDEwMH0.n6iaxMNx0pDR5vp3ed1Cat8kHqM5PVwxyFNMh9sWIw0";
 
   const ETF_META = {
-    22: { listDate: "2025.10.28", risk: "2등급(높은 위험)", bench: "Bloomberg World Large, Mid & Small Cap Index PR(원화환산)", desc: "전 세계 핵심 ETF만 선별하여 투자하는 초분산 액티브 포트폴리오 ETF" },
+    22: { listDate: "2025.10.28", risk: "2등급(높은 위험)", bench: "Bloomberg World Large, Mid & Small Cap Index(KRW)", desc: "전 세계 핵심 ETF만 선별하여 투자하는 초분산 액티브 포트폴리오 ETF" },
     2:  { listDate: "2022.05.11", risk: "1등급(매우 높은 위험)", bench: "NASDAQ 100 Index(KRW)", desc: "메가트렌드를 주도하는 글로벌 대표 테크 기업에 투자하는 액티브 ETF" },
     5:  { listDate: "2022.05.11", risk: "2등급(높은 위험)", bench: "S&P500 Index(KRW)", desc: "글로벌 경제 성장을 이끄는 대형주가 편입된 S&P500지수를 더 액티브하게 운용하는 ETF" },
     6:  { listDate: "2023.05.16", risk: "2등급(높은 위험)", bench: "Solactive Global Artificial Intelligence Index(KRW)", desc: "빠르게 변화하고 발전하는 AI 인공지능 산업의 글로벌 리더를 엄선하여 투자하는 액티브ETF" },
-    9:  { listDate: "2024.07.02", risk: "2등급(높은 위험)", bench: "KEDI 글로벌불로장생바이오지수(PR, KRW)", desc: "첨단 의학 혁신을 주도하는 글로벌 바이오 기업에 투자하여, 미래 건강 가치를 한발 앞서 선점하는 액티브 ETF" },
-    20: { listDate: "2024.04.23", risk: "2등급(높은 위험)", bench: "Solactive Aerospace and Defense USD Index(PR)(KRW)", desc: "To the Moon! 우주산업의 폭발적인 성장성과 방산분야의 안정적인 실적을 겸비한 글로벌 기업들에 투자하는 액티브ETF" },
-    19: { listDate: "2025.05.13", risk: "2등급(높은 위험)", bench: "Solactive China Artificial Intelligence Index PR (원화환산)", desc: "중국 AI산업의 성장을 주도하는 중국, 홍콩, 대만 리딩 테크 기업에 투자하는 ETF" },
-    18: { listDate: "2025.04.29", risk: "2등급(높은 위험)", bench: "Dow Jones U.S. Dividend 100 Index(PR)", desc: "매월 중순 월배당을 지급하며 배당이 성장하는 미국 고배당기업에 투자 가능한 액티브 ETF" },
-    10: { listDate: "2025.03.25", risk: "4등급(보통 위험)", bench: "FnGuide 미국 나스닥100 단기채권혼합 지수", desc: "글로벌 테크 주도주와 국내 단기채 조합으로 연금계좌(DC/IRP)에서 100% 투자 가능한 액티브 ETF" },
-    8:  { listDate: "2024.10.29", risk: "2등급(높은 위험)", bench: "Solactive New Age Consumer USD Index PR(KRW)", desc: "빠르게 변하는 소비트렌드를 주도하는 기업을 더 빠르게 투자하는 액티브 ETF" },
+    9:  { listDate: "2024.07.02", risk: "2등급(높은 위험)", bench: "KEDI 글로벌불로장생바이오지수(KRW)", desc: "첨단 의학 혁신을 주도하는 글로벌 바이오 기업에 투자하여, 미래 건강 가치를 한발 앞서 선점하는 액티브 ETF" },
+    20: { listDate: "2024.04.23", risk: "2등급(높은 위험)", bench: "Solactive Aerospace and Defense USD Index(KRW)", desc: "To the Moon! 우주산업의 폭발적인 성장성과 방산분야의 안정적인 실적을 겸비한 글로벌 기업들에 투자하는 액티브ETF" },
+    19: { listDate: "2025.05.13", risk: "2등급(높은 위험)", bench: "Solactive China Artificial Intelligence Index(KRW)", desc: "중국 AI산업의 성장을 주도하는 중국, 홍콩, 대만 리딩 테크 기업에 투자하는 ETF" },
+    18: { listDate: "2025.04.29", risk: "2등급(높은 위험)", bench: "Dow Jones U.S. Dividend 100 Index(KRW)", desc: "매월 중순 월배당을 지급하며 배당이 성장하는 미국 고배당기업에 투자 가능한 액티브 ETF" },
+    10: { listDate: "2025.03.25", risk: "4등급(보통 위험)", bench: "FnGuide 미국 나스닥100 단기채권혼합  지수", desc: "글로벌 테크 주도주와 국내 단기채 조합으로 연금계좌(DC/IRP)에서 100% 투자 가능한 액티브 ETF" },
+    8:  { listDate: "2024.10.29", risk: "2등급(높은 위험)", bench: "Solactive New Age Consumer USD Index(KRW)", desc: "빠르게 변하는 소비트렌드를 주도하는 기업을 더 빠르게 투자하는 액티브 ETF" },
     12: { listDate: "2022.09.27", risk: "2등급(높은 위험)", bench: "KOSPI200", desc: "월배당과 자본이익을 동시에 추구하는 액티브 ETF" },
     11: { listDate: "2021.05.25", risk: "2등급(높은 위험)", bench: "KOSPI", desc: "주도 섹터와 종목을 시의 적절하게 발굴하여 코스피 대비 나은 성과를 추구하는 액티브 ETF" },
     15: { listDate: "2024.11.04", risk: "2등급(높은 위험)", bench: "코리아 밸류업 지수", desc: "대한민국을 주식시장의 가치를 올리는 코리아밸류업 주식에 투자하는 액티브ETF" },
@@ -513,6 +514,7 @@
     13: { listDate: "2023.08.17", risk: "2등급(높은 위험)", bench: "KRX 헬스케어 지수", desc: "신약/바이오베터, 의료기기, 디지털 헬스케어 등 국내 바이오 핵심기업을 엄선하여 투자하는 액티브 ETF" },
     17: { listDate: "2021.05.25", risk: "1등급(매우 높은 위험)", bench: "KRX BBIG", desc: "미래 성장성 높은 테마에 투자하면서, 신성장 기업들을 적극적으로 발굴 및 투자하는 액티브 ETF" },
     1:  { listDate: "2021.12.15", risk: "1등급(매우 높은 위험)", bench: "FnGuide K-컬쳐 지수", desc: "K-Pop, 영화, 드라마 등 글로벌 트렌드를 주도하는 한국의 문화경쟁력에 투자하는 액티브 ETF" },
+    25: { listDate: "2026.05.19", risk: "2등급(높은 위험)", bench: "Solactive Global AI Humanoid Robotics Index(KRW)", desc: "글로벌 휴머노이드 로봇 기업에 투자하는 액티브 ETF" },
   };
 
   const { createClient } = supabase;
