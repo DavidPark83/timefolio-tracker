@@ -298,7 +298,7 @@
 
     <!-- 현재 보유 TOP -->
     <div class="hl-card">
-      <div class="hl-title"><span class="hl-icon">🏆</span>현재 보유 TOP</div>
+      <div class="hl-title"><span class="hl-icon">🏆</span>보유 현황 TOP</div>
       <div class="hl-tabs">
         <div class="hl-tab active" onclick="switchHlTab('Hold','kr',this)">🇰🇷 국내</div>
         <div class="hl-tab"        onclick="switchHlTab('Hold','gl',this)">🌍 해외</div>
@@ -1298,7 +1298,7 @@ const aggregate = (rows) => {
           const jo = totalNav / 1_000_000_000_000;  // 1조 = 10^12
           const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           holdTitleEl.innerHTML =
-            `<span class="hl-icon">🏆</span>현재 보유 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${joStr}조원)</span>`;
+            `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${joStr}조원)</span>`;
         }
       } catch (e) { console.error("총 순자산 표시 실패:", e); }
 
