@@ -1221,8 +1221,8 @@ const aggregate = (rows) => {
       }
 
       const renderCard = (baseId, items, fmtChange, emptyMsg) => {
-        const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 100);
-        const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 100);
+        const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 1000);
+        const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 1000);
 
         [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
           const el = document.getElementById(`hl${baseId}-${region}`);
