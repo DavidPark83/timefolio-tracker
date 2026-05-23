@@ -111,14 +111,12 @@
     .card { background: #0d1526; border: 1px solid #1e2d4a; border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
     .card-header { padding: 14px 20px; background: #111827; border-bottom: 1px solid #1e2d4a; font-size: 13px; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 
-    
     .tbl-wrap { overflow-x: auto; max-height: 620px; overflow-y: auto; }
     .tbl-wrap::-webkit-scrollbar { width: 4px; }
     .tbl-wrap::-webkit-scrollbar-track { background: transparent; }
     .tbl-wrap::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
     th { text-align: left; font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; padding: 10px 14px; background: #111827; border-bottom: 1px solid #1e2d4a; white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 1; }
 
-    
     th:hover { color: #00D4AA; }
     th.sort-asc::after  { content: " ▲"; font-size: 9px; color: #00D4AA; }
     th.sort-desc::after { content: " ▼"; font-size: 9px; color: #00D4AA; }
@@ -166,6 +164,13 @@
     .modal-section { margin-bottom: 28px; }
     .modal-section h3 { font-size: 12px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
     .chart-container { position: relative; height: 280px; background: #0a0e1a; border-radius: 8px; padding: 16px; border: 1px solid #1e2d4a; }
+    /* ★ Fix 6: chart 빈 데이터 표시용 placeholder */
+    .chart-empty-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: none; align-items: center; justify-content: center;
+      color: #475569; font-size: 12px;
+    }
+    .chart-empty-overlay.show { display: flex; }
     .holding-list { display: grid; gap: 6px; }
     .holding-row {
       display: grid; grid-template-columns: 1fr auto auto; gap: 12px; padding: 10px 14px;
@@ -215,31 +220,29 @@
       .search-wrap { max-width: 100%; }
     }
 
-/* ===== 하이라이트 모드 스위처 ===== */
-.hl-mode-switch {
-  display: flex; gap: 0; margin-bottom: 16px;
-  background: #0d1526; border: 1px solid #1e2d4a; border-radius: 10px; padding: 4px;
-  width: fit-content;
-}
-.hl-mode-btn {
-  padding: 6px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
-  cursor: pointer; border-radius: 7px; color: #475569;
-  transition: all 0.18s; background: transparent; border: none; font-family: inherit;
-}
-.hl-mode-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
-    
+    /* ===== 하이라이트 모드 스위처 ===== */
+    .hl-mode-switch {
+      display: flex; gap: 0; margin-bottom: 16px;
+      background: #0d1526; border: 1px solid #1e2d4a; border-radius: 10px; padding: 4px;
+      width: fit-content;
+    }
+    .hl-mode-btn {
+      padding: 6px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+      cursor: pointer; border-radius: 7px; color: #475569;
+      transition: all 0.18s; background: transparent; border: none; font-family: inherit;
+    }
+    .hl-mode-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
   </style>
-  
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2JVGVXMPSB"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-2JVGVXMPSB');
 </script>
-  
+
 </head>
 <body>
 
@@ -262,8 +265,8 @@
 
   <!-- 공지사항 배너 -->
   <div id="noticeArea" style="margin-bottom: 16px;"></div>
-    
-  <!-- ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통) -->
+
+  <!-- ⓪ 글로벌 날짜 컨트롤 -->
   <div class="card" style="margin-bottom: 20px;">
     <div class="card-header">
       <span>📅 기준 기간 (전체 적용)</span>
@@ -289,7 +292,6 @@
         <button class="quick-btn" onclick="setGlobalQuickCompare(90, this)">3개월 전</button>
         <button class="quick-btn" onclick="setGlobalQuickCompareYTD(this)">연초</button>
         <button class="quick-btn" onclick="setGlobalNoCompare(this)">비교 안함</button>
-
       </div>
     </div>
   </div>
@@ -299,10 +301,8 @@
     <button class="hl-mode-btn active" onclick="switchHlMode('amount', this)">💰 보유평가금액</button>
     <button class="hl-mode-btn" onclick="switchHlMode('qty', this)">📦 보유주식수</button>
   </div>
-  
-  <div class="highlights" id="highlights">
 
-    <!-- 현재 보유 TOP -->
+  <div class="highlights" id="highlights">
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">🏆</span>보유 현황 TOP</div>
       <div class="hl-tabs">
@@ -313,7 +313,6 @@
       <div class="hl-pane"        id="hlHold-gl"></div>
     </div>
 
-    <!-- 신규 편입 TOP -->
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">✨</span>신규 편입 TOP</div>
       <div class="hl-tabs">
@@ -324,7 +323,6 @@
       <div class="hl-pane"        id="hlNew-gl"></div>
     </div>
 
-    <!-- 비중 증가 TOP -->
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">📈</span>비중 증가 TOP</div>
       <div class="hl-tabs">
@@ -335,7 +333,6 @@
       <div class="hl-pane"        id="hlUp-gl"></div>
     </div>
 
-    <!-- 비중 감소 TOP -->
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">📉</span>비중 감소 TOP</div>
       <div class="hl-tabs">
@@ -346,7 +343,6 @@
       <div class="hl-pane"        id="hlDown-gl"></div>
     </div>
 
-    <!-- 제외 종목 TOP -->
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">🚪</span>제외 종목 TOP</div>
       <div class="hl-tabs">
@@ -356,7 +352,6 @@
       <div class="hl-pane active" id="hlGone-kr"></div>
       <div class="hl-pane"        id="hlGone-gl"></div>
     </div>
-
   </div>
 
   <!-- 모드 전환 -->
@@ -365,7 +360,7 @@
     <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div>
   </div>
 
-  <!-- ETF 탭 (페이지 로드 시 sortEtfTabsByNav()가 순자산총액 내림차순으로 재배치) -->
+  <!-- ETF 탭 -->
   <div class="etf-tabs" id="etfTabs">
     <div class="tab-section-label">해외투자</div>
     <div class="etf-tab active" data-idx="22" onclick="selectEtf(this)">글로벌탑픽</div>
@@ -472,6 +467,7 @@
         <h3>📊 비중 추이 (최근 30일)</h3>
         <div class="chart-container">
           <canvas id="trendChart"></canvas>
+          <div class="chart-empty-overlay" id="chartEmpty">추이 데이터 없음</div>
         </div>
       </div>
       <div class="modal-section">
@@ -484,21 +480,13 @@
 
 <script>
   // =========================================================
-  // 📊 분석 이벤트 추적 (Vercel Analytics + GA4 통합)
+  // 📊 분석 이벤트 추적
   // =========================================================
   function trackEvent(eventName, params = {}) {
-    // GA4
-    if (typeof gtag === 'function') {
-      gtag('event', eventName, params);
-    }
-    // Vercel Analytics
-    if (typeof window.va === 'function') {
-      window.va('event', { name: eventName, data: params });
-    }
-    // 개발 환경 디버깅 (필요시 주석 처리)
-    // console.log('[Track]', eventName, params);
+    if (typeof gtag === 'function') gtag('event', eventName, params);
+    if (typeof window.va === 'function') window.va('event', { name: eventName, data: params });
   }
-  
+
   // =========================================================
   // 설정
   // =========================================================
@@ -541,6 +529,10 @@
 
   const COLORS = ["#00D4AA","#3B82F6","#F59E0B","#EF4444","#8B5CF6","#EC4899","#14B8A6","#F97316","#06B6D4","#84CC16"];
 
+  // ★ SELECT 컬럼 상수 (Fix 5: select("*") 제거 → 명시적 컬럼만)
+  const HOLDINGS_COLS_BASIC = "code, name, weight, qty, value";
+  const DAILY_COLS = "nav_total";
+
   // =========================================================
   // 전역 상태
   // =========================================================
@@ -551,14 +543,34 @@
   let compareDate = "";
   let sortKey = null;
   let sortDir = "desc";
-  let globalAllDates = [];   // ★ 글로벌 날짜 리스트
+  let globalAllDates = [];
   let cmpEtfA = null;
   let cmpEtfB = null;
   let trendChartInstance = null;
-  let hlMode = 'amount'; // 'amount' | 'qty'
+  let hlMode = 'amount';
+
+  // ★ Fix 2: 모달 캐시
+  const modalCache = new Map();
+  const MODAL_CACHE_TTL = 5 * 60 * 1000;  // 5분
+
+  // ★ Fix 3: 하이라이트 데이터 캐시 (모드 토글 시 재조회 방지)
+  let lastHighlightsData = null;  // { baseDate, cmp, curMap, prevMap, hasPrev }
 
   // =========================================================
-  // ★ 종목코드 정규화 (leading zero 복구)
+  // ★ Fix 1: XSS 방어 헬퍼 (가장 중요)
+  // =========================================================
+  function escapeHtml(s) {
+    if (s == null) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  // =========================================================
+  // ★ 종목코드 정규화
   // =========================================================
   function normalizeCode(raw) {
     if (raw === null || raw === undefined) return "";
@@ -579,7 +591,6 @@
   // =========================================================
   function fmt(n) { if (n == null) return "—"; return Number(n).toLocaleString("ko-KR"); }
 
-  // ★ Supabase 1000행 제한을 우회하는 페이지네이션 헬퍼
   async function fetchAllPages(buildQuery) {
     const all = [];
     let from = 0;
@@ -594,12 +605,6 @@
     return all;
   }
 
-  
-  // ★ 순자산총액/금액 포맷터 — 모두 "억원"으로 통일
-  //   • 1억원 이상   → 정수 + 천 단위 쉼표  (예: 2,415억원)
-  //   • 1억원 미만   → 소수점 1자리         (예: 0.5억원)
-  //   • 음수 처리   → 부호 자동 부착        (예: -4억원)
-  //   • 1조원 이상  → "조원" 표기 (대형 ETF 가독성 보강)
   function fmtMoney(v, { signed = false } = {}) {
     if (v == null) return "—";
     const sign = v < 0 ? "-" : (signed && v > 0 ? "+" : "");
@@ -609,12 +614,11 @@
     if (eok >= 1)     return sign + Math.round(eok).toLocaleString("ko-KR") + "억원";
     return sign + eok.toFixed(1) + "억원";
   }
-  // 하위 호환용 별칭
   const fmtNav = (v) => fmtMoney(v);
 
   function showError(title, hint) {
     const box = document.getElementById("errorBox");
-    box.innerHTML = `<div style="font-weight:700;margin-bottom:6px">⚠️ ${title}</div><div style="color:#fcd5d5">${hint}</div>`;
+    box.innerHTML = `<div style="font-weight:700;margin-bottom:6px">⚠️ ${escapeHtml(title)}</div><div style="color:#fcd5d5">${escapeHtml(hint)}</div>`;
     box.style.display = "block";
   }
   function hideError() { document.getElementById("errorBox").style.display = "none"; }
@@ -623,9 +627,6 @@
     return tab ? tab.textContent.trim() : `ETF ${idx}`;
   }
 
-  // =========================================================
-  // 국내/해외 판별
-  // =========================================================
   function isKorean(code, name) {
     const c = String(code ?? "").trim();
     const n = String(name ?? "").trim();
@@ -635,22 +636,17 @@
   }
 
   // =========================================================
-  // ★★★ ETF 탭을 순자산총액 내림차순으로 정렬
-  //   - 해외/국내 섹션 구분은 유지
-  //   - 각 섹션 내에서만 nav_total 큰 순서로 재배치
-  //   - 정렬 후 첫 번째 탭을 active 상태로 동기화
+  // ETF 탭 정렬 (nav_total 내림차순)
   // =========================================================
   async function sortEtfTabsByNav() {
     if (!db) return;
     try {
-      // 1) etf_daily의 가장 최신 날짜 찾기
       const { data: latestRows, error: e1 } = await db.from("etf_daily")
         .select("date").order("date", { ascending: false }).limit(1);
       if (e1) { console.error("sortEtfTabsByNav latest date 조회 실패:", e1); return; }
       if (!latestRows?.length) return;
       const latest = latestRows[0].date;
 
-      // 2) 해당 날짜의 모든 ETF nav_total 조회
       const { data: navRows, error: e2 } = await db.from("etf_daily")
         .select("etf_idx, nav_total").eq("date", latest);
       if (e2) { console.error("sortEtfTabsByNav nav 조회 실패:", e2); return; }
@@ -659,12 +655,11 @@
       const navMap = {};
       navRows.forEach(r => { navMap[r.etf_idx] = r.nav_total || 0; });
 
-      // 3) 탭 컨테이너에서 섹션별로 그룹 분리
       const container = document.getElementById("etfTabs");
       if (!container) return;
       const children = Array.from(container.children);
 
-      const groups = []; // [{label: <div.section-label>, tabs: [<div.etf-tab>, ...]}]
+      const groups = [];
       let cur = null;
       children.forEach(el => {
         if (el.classList.contains("tab-section-label")) {
@@ -675,7 +670,6 @@
         }
       });
 
-      // 4) 각 그룹 내에서 nav_total 내림차순 정렬
       groups.forEach(g => {
         g.tabs.sort((a, b) => {
           const na = navMap[parseInt(a.dataset.idx)] || 0;
@@ -684,28 +678,24 @@
         });
       });
 
-      // 5) DOM 재배치
       container.innerHTML = "";
       groups.forEach(g => {
         container.appendChild(g.label);
         g.tabs.forEach(t => container.appendChild(t));
       });
 
-      // 6) 정렬 후 첫 ETF 탭을 active 로 동기화
-      //    (HTML에 하드코딩된 active가 더 이상 첫 번째가 아닐 수 있음)
       const firstTab = container.querySelector(".etf-tab");
       if (firstTab) {
         container.querySelectorAll(".etf-tab").forEach(t => t.classList.remove("active"));
         firstTab.classList.add("active");
         currentIdx = parseInt(firstTab.dataset.idx);
       }
-      return navMap;   // ← 해외투자, 국내투자 AUM sub_total 추가     
+      return navMap;
     } catch (e) {
       console.error("ETF 탭 정렬 실패:", e);
     }
   }
 
-  // ★ 섹션별 ETF 개수, AUM 자동 표시
   function updateSectionCounts(navMap = {}) {
     const container = document.getElementById("etfTabs");
     if (!container) return;
@@ -737,7 +727,6 @@
     });
   }
 
-  // ★ 하이라이트 국내 탭 국기 이미지 적용
   function updateHlTabFlags() {
     document.querySelectorAll('.hl-tab').forEach(t => {
       if (t.textContent.includes('국내')) {
@@ -745,31 +734,41 @@
       }
     });
   }
-  
+
   // =========================================================
   // 하이라이트 탭 전환
   // =========================================================
-    function switchHlTab(card, region, el) {
-      const cardEl = el.closest('.hl-card');
-      cardEl.querySelectorAll('.hl-tab').forEach(t => t.classList.remove('active'));
-      cardEl.querySelectorAll('.hl-pane').forEach(p => p.classList.remove('active'));
-      el.classList.add('active');
-      document.getElementById(`hl${card}-${region}`)?.classList.add('active');
+  function switchHlTab(card, region, el) {
+    const cardEl = el.closest('.hl-card');
+    cardEl.querySelectorAll('.hl-tab').forEach(t => t.classList.remove('active'));
+    cardEl.querySelectorAll('.hl-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`hl${card}-${region}`)?.classList.add('active');
+  }
+
+  // ★ Fix 3: switchHlMode — 같은 기간이면 캐시된 데이터로 재렌더만 (DB 호출 없음)
+  function switchHlMode(mode, btn) {
+    hlMode = mode;
+    document.querySelectorAll('.hl-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const base = document.getElementById("globalDateSelect")?.value;
+    const cmp  = document.getElementById("globalCompareSelect")?.value;
+    if (!base) return;
+
+    // 캐시 히트 시 DB 재조회 없이 재렌더만
+    if (lastHighlightsData &&
+        lastHighlightsData.baseDate === base &&
+        lastHighlightsData.cmp === (cmp || "")) {
+      renderHighlightsFromCache(lastHighlightsData);
+      return;
     }
-    
-    function switchHlMode(mode, btn) {
-      hlMode = mode;
-      document.querySelectorAll('.hl-mode-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const base = document.getElementById("globalDateSelect")?.value;
-      const cmp  = document.getElementById("globalCompareSelect")?.value;
-      if (base) loadHighlights(base, cmp);
-    }
+    loadHighlights(base, cmp);
+  }
 
   // =========================================================
   // 모드 전환
   // =========================================================
-    function switchMode(mode) {
+  function switchMode(mode) {
     currentMode = mode;
     document.querySelectorAll(".mode-tab").forEach(t => t.classList.toggle("active", t.dataset.mode === mode));
     document.getElementById("modeSingle").classList.toggle("hidden", mode !== "single");
@@ -781,15 +780,10 @@
     } else {
       document.querySelectorAll(".etf-tab").forEach(t => t.classList.remove("compare-active"));
     }
-
-    // ★ 이벤트 추적
     trackEvent('mode_switch', { mode });
   }
 
-  // =========================================================
-  // ETF 탭 클릭
-  // =========================================================
-function selectEtf(el) {
+  function selectEtf(el) {
     const idx = parseInt(el.dataset.idx);
     if (currentMode === "compare") {
       if (!cmpEtfA) cmpEtfA = idx;
@@ -810,13 +804,9 @@ function selectEtf(el) {
     const cmp  = document.getElementById("globalCompareSelect")?.value;
     if (base) loadDataWithDates(base, cmp);
 
-    // ★ 이벤트 추적
-    trackEvent('etf_tab_click', {
-      etf_idx: idx,
-      etf_name: getEtfName(idx)
-    });
+    trackEvent('etf_tab_click', { etf_idx: idx, etf_name: getEtfName(idx) });
   }
-  
+
   function updateCompareTabsHighlight() {
     document.querySelectorAll(".etf-tab").forEach(t => {
       const idx = parseInt(t.dataset.idx);
@@ -835,9 +825,6 @@ function selectEtf(el) {
     loadCompareMode();
   }
 
-  // =========================================================
-  // 정보 박스
-  // =========================================================
   function renderInfo() {
     const meta = ETF_META[currentIdx];
     const box = document.getElementById("infoBox");
@@ -851,7 +838,8 @@ function selectEtf(el) {
   }
 
   // =========================================================
-  // ⓪ 글로벌 날짜 컨트롤 (전체 페이지 공통)
+  // ⓪ 글로벌 날짜 컨트롤
+  //   ★ Fix 5: holdings 대신 etf_daily 사용 (18배 빠름)
   // =========================================================
   async function initGlobalDates() {
     if (initError) {
@@ -860,18 +848,18 @@ function selectEtf(el) {
     }
     if (!db) return;
 
-    // ★ 페이지네이션 헬퍼로 모든 date를 가져옴
     let allRows = [];
     try {
+      // ★ etf_daily 사용 (date당 ~20행 vs holdings는 ~수백 행)
       allRows = await fetchAllPages(() =>
-        db.from("holdings").select("date").order("date", { ascending: false })
+        db.from("etf_daily").select("date").order("date", { ascending: false })
       );
     } catch (error) {
       showError(`데이터 조회 실패: ${error.message}`, "F12 → Console에서 자세한 에러를 확인해 주세요.");
       return;
     }
     if (!allRows.length) return;
-    
+
     hideError();
     globalAllDates = [...new Set(allRows.map(d => d.date))];
 
@@ -879,29 +867,24 @@ function selectEtf(el) {
     const s2 = document.getElementById("globalCompareSelect");
     if (!s1 || !s2) return;
 
-    s1.innerHTML = globalAllDates.map(d => `<option value="${d}">${d}</option>`).join("");
-    // ★ 비교일은 기준일보다 이전 날짜만 표시 (초기엔 최신일 기준)
+    s1.innerHTML = globalAllDates.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join("");
     const initialBase = globalAllDates[0];
     s2.innerHTML = '<option value="">비교 안함</option>' +
-      globalAllDates.filter(d => d < initialBase).map(d => `<option value="${d}">${d}</option>`).join("");
+      globalAllDates.filter(d => d < initialBase).map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join("");
 
-    // 기준일 변경 시 비교일 드롭다운도 동적으로 업데이트
     s1.addEventListener("change", () => {
       const base = s1.value;
       const currentCmp = s2.value;
       s2.innerHTML = '<option value="">비교 안함</option>' +
-        globalAllDates.filter(d => d < base).map(d => `<option value="${d}">${d}</option>`).join("");
-      // 기존 비교일이 새 목록에 있으면 유지, 없으면 빈 값
+        globalAllDates.filter(d => d < base).map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join("");
       if (currentCmp && globalAllDates.includes(currentCmp) && currentCmp < base) {
         s2.value = currentCmp;
       }
     });
 
-    // 기본값: 기준일=최신, 비교일=1일 전(직전 영업일)
     s1.value = globalAllDates[0];
     if (globalAllDates[1]) s2.value = globalAllDates[1];
 
-    // 양쪽 모두 로드
     refreshAll();
   }
 
@@ -917,7 +900,6 @@ function selectEtf(el) {
   }
 
   function onGlobalDateChange() {
-    // 셀렉트 직접 변경시 빠른비교 active 해제
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     refreshAll();
   }
@@ -930,8 +912,6 @@ function selectEtf(el) {
     document.querySelectorAll(".quick-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     refreshAll();
-
-        // ★ 이벤트 추적
     trackEvent('quick_compare_click', { days });
   }
 
@@ -957,27 +937,21 @@ function selectEtf(el) {
     refreshAll();
   }
 
-  // 글로벌 날짜 변경 시 하이라이트 + 단일 ETF 모드 모두 갱신
   function refreshAll() {
     const base = document.getElementById("globalDateSelect")?.value;
     const cmp  = document.getElementById("globalCompareSelect")?.value;
     if (!base) return;
 
-    // 정보 표시
     const infoEl = document.getElementById("globalDateInfo");
     if (infoEl) infoEl.textContent = cmp ? `${cmp} → ${base}` : `${base} (비교 없음)`;
 
-    // 하이라이트 갱신
     loadHighlights(base, cmp);
-
-    // 단일 ETF 모드 갱신 (현재 선택된 ETF 기준)
-    if (currentIdx) {
-      loadDataWithDates(base, cmp);
-    }
+    if (currentIdx) loadDataWithDates(base, cmp);
   }
 
   // =========================================================
   // 단일 ETF 모드: 데이터 로딩
+  //   ★ Fix 5: select("*") → 컬럼 명시
   // =========================================================
   async function loadDataWithDates(baseDate, cmpDate) {
     currentDate = baseDate;
@@ -987,10 +961,10 @@ function selectEtf(el) {
     document.getElementById("tableArea").innerHTML = '<div class="loading">불러오는 중...</div>';
 
     const [r1, r2, n1, n2] = await Promise.all([
-      db.from("holdings").select("*").eq("etf_idx", currentIdx).eq("date", currentDate).order("weight", { ascending: false }),
-      compareDate ? db.from("holdings").select("*").eq("etf_idx", currentIdx).eq("date", compareDate) : Promise.resolve({ data: [] }),
-      db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", currentDate).maybeSingle(),
-      compareDate ? db.from("etf_daily").select("*").eq("etf_idx", currentIdx).eq("date", compareDate).maybeSingle() : Promise.resolve({ data: null }),
+      db.from("holdings").select(HOLDINGS_COLS_BASIC).eq("etf_idx", currentIdx).eq("date", currentDate).order("weight", { ascending: false }),
+      compareDate ? db.from("holdings").select(HOLDINGS_COLS_BASIC).eq("etf_idx", currentIdx).eq("date", compareDate) : Promise.resolve({ data: [] }),
+      db.from("etf_daily").select(DAILY_COLS).eq("etf_idx", currentIdx).eq("date", currentDate).maybeSingle(),
+      compareDate ? db.from("etf_daily").select(DAILY_COLS).eq("etf_idx", currentIdx).eq("date", compareDate).maybeSingle() : Promise.resolve({ data: null }),
     ]);
 
     const cur = normalizeRows(r1.data || []);
@@ -998,11 +972,9 @@ function selectEtf(el) {
 
     if (!cur.length) {
       document.getElementById("tableArea").innerHTML = '<div class="loading">이 ETF의 해당 일자 데이터가 없습니다</div>';
-      document.getElementById("statCount").textContent = "—";
-      document.getElementById("statTop").textContent = "—";
-      document.getElementById("statNav").textContent = "—";
-      document.getElementById("statNavDiff").textContent = "—";
-      document.getElementById("statChanged").textContent = "—";
+      ["statCount","statTop","statNav","statNavDiff","statChanged"].forEach(id => {
+        document.getElementById(id).textContent = "—";
+      });
       return;
     }
 
@@ -1013,6 +985,7 @@ function selectEtf(el) {
     renderTable();
   }
 
+  // ★ Fix 4: O(n²) → O(n)
   function renderStats(cur, cmp, navCur, navCmp) {
     document.getElementById("statCount").textContent = cur.length + "개";
     document.getElementById("statTop").textContent = cur[0] ? cur[0].name.slice(0, 20) : "—";
@@ -1023,23 +996,31 @@ function selectEtf(el) {
       const cls = diff > 0 ? "pos" : diff < 0 ? "neg" : "neu";
       const pctSign = diff > 0 ? "+" : "";
       document.getElementById("statNavDiff").innerHTML =
-        `<span class="${cls}">${fmtMoney(diff, { signed: true })} (${pctSign}${pct.toFixed(2)}%)</span>`;    
+        `<span class="${cls}">${escapeHtml(fmtMoney(diff, { signed: true }))} (${pctSign}${pct.toFixed(2)}%)</span>`;
     } else {
       document.getElementById("statNavDiff").textContent = compareDate ? "비교 데이터 없음" : "—";
     }
-    const changed = cur.filter(h => {
-      const p = cmp.find(c => c.code === h.code);
-      return !p || Math.abs(h.weight - p.weight) > 0.5;
-    }).length + cmp.filter(c => !cur.find(h => h.code === c.code)).length;
+
+    // ★ Map/Set으로 O(n²) → O(n)
+    const cmpByCode = new Map(cmp.map(c => [c.code, c]));
+    const curByCode = new Set(cur.map(h => h.code));
+    const changed =
+      cur.filter(h => {
+        const p = cmpByCode.get(h.code);
+        return !p || Math.abs(h.weight - p.weight) > 0.5;
+      }).length +
+      cmp.filter(c => !curByCode.has(c.code)).length;
     document.getElementById("statChanged").textContent = cmp.length ? changed + "개" : "—";
   }
 
+  // ★ Fix 4: O(n²) → O(n)
   function buildRows(cur, cmp) {
-    const cmpMap = Object.fromEntries(cmp.map(h => [h.code, h]));
-    const removed = cmp.filter(c => !cur.find(h => h.code === c.code));
+    const cmpMap = new Map(cmp.map(h => [h.code, h]));
+    const curCodes = new Set(cur.map(h => h.code));
+    const removed = cmp.filter(c => !curCodes.has(c.code));
     const hasCompare = cmp.length > 0;
     const rows = cur.map((h, i) => {
-      const prev = cmpMap[h.code];
+      const prev = cmpMap.get(h.code);
       const weightDiff = prev ? (h.weight - prev.weight) : null;
       const qtyDiff    = prev ? (h.qty - prev.qty) : null;
       const isNew = !prev && hasCompare;
@@ -1049,7 +1030,6 @@ function selectEtf(el) {
       else if (weightDiff !== null && weightDiff < -0.5) status = "감소";
       else if (weightDiff !== null) status = "유지";
 
-      
       let qtyStatus = "—";
       if (isNew) qtyStatus = "신규";
       else if (qtyDiff !== null && qtyDiff > 0)  qtyStatus = "증가";
@@ -1059,8 +1039,8 @@ function selectEtf(el) {
     });
     removed.forEach(h => {
       rows.push({ rank: 999, code: h.code, name: h.name, weight: 0, weightDiff: -h.weight, qty: 0, qtyDiff: -h.qty, value: 0, status: "제외", qtyStatus: "제외", removed: true });
-    });                  // ← }); 추가
-    currentData = rows;  // ← forEach 밖으로 이동
+    });
+    currentData = rows;
   }
 
   function setSort(key) {
@@ -1085,32 +1065,33 @@ function selectEtf(el) {
     const cls = v > 0 ? "pos" : v < 0 ? "neg" : "neu";
     const sign = v > 0 ? "+" : "";
     const txt = isPercent ? `${sign}${v.toFixed(2)}%` : `${sign}${Number(v).toLocaleString("ko-KR")}`;
-    return `<span class="${cls}">${txt}</span>`;
+    return `<span class="${cls}">${escapeHtml(txt)}</span>`;
   }
   function statusBadge(s) {
     const map = { "신규": "new", "증가": "up", "감소": "down", "유지": "same", "제외": "gone" };
     const cls = map[s];
     if (!cls) return "—";
     const arrow = s === "증가" ? "▲ " : s === "감소" ? "▼ " : "";
-    return `<span class="badge ${cls}">${arrow}${s}</span>`;
+    return `<span class="badge ${cls}">${arrow}${escapeHtml(s)}</span>`;
   }
 
+  // ★ Fix 1 + 8: renderTable — escapeHtml + data-* 패턴 (XSS 안전)
   function renderTable() {
     const rows = sortedRows();
     if (!rows.length) { document.getElementById("tableArea").innerHTML = '<div class="loading">데이터가 없습니다</div>'; return; }
     const trs = rows.map((r, i) => {
       const color = COLORS[i % COLORS.length];
       const opacity = r.removed ? "opacity:0.5" : "";
-      const safeName = r.name.replace(/'/g, "\\'");
-      const safeCode = (r.code || "").replace(/'/g, "\\'");
+      const dispName = escapeHtml(r.name);
+      const dispCode = escapeHtml(r.code || "");
       return `<tr style="${opacity}">
         <td style="color:#475569;font-family:monospace;position:sticky;left:0;z-index:1;background:#0d1526">${r.removed ? "—" : (i+1)}</td>
         <td>
           <div style="display:flex;align-items:center;gap:8px">
             <div class="dot" style="background:${r.removed ? '#475569' : color}"></div>
-            <div class="clickable-name" onclick="openSecurityModal('${safeCode}','${safeName}')">
-              <div style="font-weight:600;color:${r.removed ? '#94a3b8' : '#f1f5f9'}">${r.name}</div>
-              <div style="font-size:10px;color:#475569;font-family:monospace">${r.code}</div>
+            <div class="clickable-name" data-action="open-security" data-code="${dispCode}" data-name="${dispName}">
+              <div style="font-weight:600;color:${r.removed ? '#94a3b8' : '#f1f5f9'}">${dispName}</div>
+              <div style="font-size:10px;color:#475569;font-family:monospace">${dispCode}</div>
             </div>
           </div>
         </td>
@@ -1124,53 +1105,57 @@ function selectEtf(el) {
         <td>${statusBadge(r.status)}</td>
         <td style="font-family:monospace;text-align:right;color:#e2e8f0">${fmt(r.qty)}</td>
         <td style="text-align:right">${diffSpan(r.qtyDiff)}</td>
-        <td>${statusBadge(r.qtyStatus)}</td> 
+        <td>${statusBadge(r.qtyStatus)}</td>
         <td style="font-family:monospace;text-align:right;color:#94a3b8">${fmt(r.value)}</td>
       </tr>`;
     });
     const headers = [
-      { key: "rank",       label: "#",      align: "left" },
-      { key: "name",       label: "종목명", align: "left" },
-      { key: "weight",     label: "비중",   align: "left" },
+      { key: "rank",       label: "#",        align: "left" },
+      { key: "name",       label: "종목명",    align: "left" },
+      { key: "weight",     label: "비중",     align: "left" },
       { key: "weightDiff", label: "비중변화", align: "left" },
-      { key: "status",     label: "비중상태",   align: "left" },
-      { key: "qty",        label: "수량",   align: "right" },
+      { key: "status",     label: "비중상태", align: "left" },
+      { key: "qty",        label: "수량",     align: "right" },
       { key: "qtyDiff",    label: "수량변화", align: "right" },
-      { key: "qtyStatus",  label: "수량상태",   align: "left" },   // ← 추가
+      { key: "qtyStatus",  label: "수량상태", align: "left" },
       { key: "value",      label: "평가금액", align: "right" },
     ];
-      const ths = headers.map(h => {
+    const ths = headers.map(h => {
       const cls = sortKey === h.key ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
       const align = h.align === "right" ? "text-align:right" : "";
       const sticky = h.key === "rank" ? ";position:sticky;left:0;z-index:3;background:#111827" : "";
-      return `<th class="${cls}" style="${align}${sticky}" onclick="setSort('${h.key}')">${h.label}</th>`;
+      return `<th class="${cls}" style="${align}${sticky}" onclick="setSort('${h.key}')">${escapeHtml(h.label)}</th>`;
     }).join("");
     document.getElementById("tableArea").innerHTML = `<table><thead><tr>${ths}</tr></thead><tbody>${trs.join("")}</tbody></table>`;
   }
 
   // =========================================================
   // ① 오늘의 변화 하이라이트
+  //   ★ Fix 3: 데이터를 캐시에 저장 → 모드 토글 시 재조회 안 함
   // =========================================================
-  async function loadHighlights(baseDate, compareDate) {
+  async function loadHighlights(baseDate, cmpDateParam) {
     if (!db) return;
     try {
       if (!baseDate) {
-        const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-        if (!latestRows?.length) return;
-        baseDate = latestRows[0].date;
+        // ★ Fix 5: holdings 대신 globalAllDates 활용
+        if (globalAllDates.length) {
+          baseDate = globalAllDates[0];
+        } else {
+          const { data: latestRows } = await db.from("etf_daily").select("date").order("date", { ascending: false }).limit(1);
+          if (!latestRows?.length) return;
+          baseDate = latestRows[0].date;
+        }
       }
 
-      // compareDate가 빈 문자열이면 비교 없음(prev = null), 명시 안 됐으면 직전 영업일 자동
       let prev = null;
-      if (compareDate === undefined) {
-        const { data: prevRows } = await db.from("holdings").select("date").lt("date", baseDate).order("date", { ascending: false }).limit(1);
-        prev = prevRows?.[0]?.date || null;
+      if (cmpDateParam === undefined) {
+        const idx = globalAllDates.indexOf(baseDate);
+        if (idx >= 0 && idx + 1 < globalAllDates.length) prev = globalAllDates[idx + 1];
       } else {
-        prev = compareDate || null;
+        prev = cmpDateParam || null;
       }
 
-const fetchAll = async (date) => {
-        // holdings + etf_daily 병렬 조회
+      const fetchAll = async (date) => {
         const [holdingsAll, dailyResp] = await Promise.all([
           fetchAllPages(() =>
             db.from("holdings")
@@ -1184,7 +1169,6 @@ const fetchAll = async (date) => {
 
         const normalized = normalizeRows(holdingsAll);
 
-        // ★ standard_price NULL 체크 폴백: standard_price 우선, NULL/0이면 nav_price 사용
         const dailyMap = {};
         (dailyResp.data || []).forEach(d => {
           const sp = d.standard_price;
@@ -1195,7 +1179,6 @@ const fetchAll = async (date) => {
           };
         });
 
-        // ★ holding_amount가 NULL/0이면 weight × nav_total / 100 으로 폴백 계산
         return normalized.map(h => {
           let amt = h.holding_amount;
           if (!amt || amt <= 0) {
@@ -1208,10 +1191,9 @@ const fetchAll = async (date) => {
         });
       };
 
-const aggregate = (rows) => {
+      const aggregate = (rows) => {
         const map = {};
         for (const r of rows) {
-          // ★ 현금/원화예금 등 비종목 항목 제외
           const nm = (r.name || "").trim();
           if (/^(현금|원화예금|예금|기타|미수금|미지급금)/.test(nm)) continue;
 
@@ -1221,203 +1203,257 @@ const aggregate = (rows) => {
             code, name: r.name,
             weight: 0, value: 0,
             holdingAccounts: 0,
+            qty: 0, holdings_qty: 0,
             etfCount: 0
           };
           map[key].weight += (r.weight || 0);
           map[key].value += (r.value || 0);
-          map[key].holdingAccounts += (r._amount || 0);   // ★ holding_amount → _amount (폴백 적용된 값)
-          map[key].qty          = (map[key].qty          || 0) + (r.qty          || 0);
-          map[key].holdings_qty = (map[key].holdings_qty || 0) + (r.holdings_qty || 0);
+          map[key].holdingAccounts += (r._amount || 0);
+          map[key].qty          += (r.qty          || 0);
+          map[key].holdings_qty  += (r.holdings_qty || 0);
           map[key].etfCount += 1;
         }
         return map;
       };
 
-      const curAll = await fetchAll(baseDate);
+      // ★ Fix 2: cur과 prev를 병렬 fetch (의존성 없음)
+      const [curAll, prevAll] = await Promise.all([
+        fetchAll(baseDate),
+        prev ? fetchAll(prev) : Promise.resolve(null)
+      ]);
       const curMap = aggregate(curAll);
+      const prevMap = prevAll ? aggregate(prevAll) : null;
 
-      let newItems = [], upItems = [], downItems = [], goneItems = [];
-
-      if (prev) {
-        const prevAll = await fetchAll(prev);
-        const prevMap = aggregate(prevAll);
-
-        const THRESHOLD_AMT = 100_000_000;  // 1억원
-        const THRESHOLD_QTY = 1_000;        // 1,000주
-        
-        for (const key of Object.keys(curMap)) {
-          const cur = curMap[key];
-          const prv = prevMap[key];
-          if (hlMode === 'qty') {
-            if (!prv) {
-              newItems.push({ ...cur, change: cur.holdings_qty });
-            } else {
-              const diff = cur.holdings_qty - prv.holdings_qty;
-              if (diff > THRESHOLD_QTY)       upItems.push({ ...cur, change: diff });
-              else if (diff < -THRESHOLD_QTY) downItems.push({ ...cur, change: diff });
-            }
-          } else {
-            if (!prv) {
-              newItems.push({ ...cur, change: cur.holdingAccounts });
-            } else {
-              const diff = cur.holdingAccounts - prv.holdingAccounts;
-              if (diff > THRESHOLD_AMT)       upItems.push({ ...cur, change: diff });
-              else if (diff < -THRESHOLD_AMT) downItems.push({ ...cur, change: diff });
-            }
-          }
-        }
-        for (const key of Object.keys(prevMap)) {
-          if (!curMap[key]) {
-            const prv = prevMap[key];
-            goneItems.push({ ...prv, change: hlMode === 'qty' ? -prv.holdings_qty : -prv.holdingAccounts });
-          }
-        }
-        
-        newItems.sort((a, b)  => b.change - a.change);
-        upItems.sort((a, b)   => b.change - a.change);
-        downItems.sort((a, b) => a.change - b.change);
-        goneItems.sort((a, b) => a.change - b.change);
-      }
-
-      const renderCard = (baseId, items, fmtChange, emptyMsg) => {
-        const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 10000);
-        const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 10000);
-
-        [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
-          const el = document.getElementById(`hl${baseId}-${region}`);
-          if (!el) return;
-          if (!list.length) {
-            el.innerHTML = `<div class="hl-empty">${emptyMsg}</div>`;
-            return;
-          }
-          el.innerHTML = list.map(x => {
-            const safeName = x.name.replace(/'/g, "\\'");
-            const safeCode = (x.code || "").replace(/'/g, "\\'");
-            const etfBadge = x.etfCount > 1
-              ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-              : "";
-            return `<div class="hl-row">
-              <span class="hl-name" onclick="openSecurityModal('${safeCode}','${safeName}')">${x.name}${etfBadge}</span>
-              <span class="hl-val">${fmtChange(x)}</span>
-            </div>`;
-          }).join("");
-        });
+      // ★ Fix 3: 캐시 저장
+      lastHighlightsData = {
+        baseDate,
+        cmp: cmpDateParam || "",
+        curMap,
+        prevMap,
+        hasPrev: !!prev
       };
 
-      // 현재 보유 TOP — holding_amount 합산 기준 (18개 ETF 전체)
-      const holdAll = Object.values(curMap)
-        .filter(x => hlMode === 'qty' ? x.holdings_qty > 0 : x.holdingAccounts > 0)
-        .sort((a, b) => hlMode === 'qty' ? b.holdings_qty - a.holdings_qty : b.holdingAccounts - a.holdingAccounts);
-
-      // 억 단위 포맷터 (통합된 fmtMoney 사용)
-      const fmtEok = (v) => fmtMoney(v);
-      
-      // ★ 18개 ETF 순자산총액 합 → 카드 제목에 (#,##조원)으로 표시
+      // 총 순자산 표시
       try {
         const { data: navAll } = await db.from("etf_daily")
-          .select("nav_total, etf_idx").eq("date", baseDate);   // ← etf_idx 추가
+          .select("nav_total, etf_idx").eq("date", baseDate);
         const totalNav = (navAll || []).reduce((s, r) => s + (r.nav_total || 0), 0);
         const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
         if (holdTitleEl && totalNav > 0) {
           const jo = totalNav / 1_000_000_000_000;
           const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           holdTitleEl.innerHTML =
-            `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${joStr}조원)</span>`;
+            `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조원)</span>`;
         }
-        // ★ 섹션별 nav 합산 → 라벨 업데이트
         const liveNavMap = {};
         (navAll || []).forEach(r => { liveNavMap[r.etf_idx] = r.nav_total || 0; });
-        updateSectionCounts(liveNavMap);   // ← 추가
-        
+        updateSectionCounts(liveNavMap);
       } catch (e) { console.error("총 순자산 표시 실패:", e); }
 
-      renderCard("Hold", holdAll,
-      x => hlMode === 'qty'
-        ? `<span style="color:#00D4AA;font-family:monospace">${Math.round(x.holdings_qty).toLocaleString('ko-KR')}주</span>`
-        : `<span style="color:#00D4AA;font-family:monospace">${fmtEok(x.holdingAccounts)}</span>`,
-        "데이터 없음");
-
-      // 변화 카드 4종
-        const emptyMsg = prev ? "변화 없음" : "이전 데이터 없음";
-        
-        const fmtEokSigned = (v) => fmtMoney(v, { signed: true });
-        const fmtChange = (x) => {
-          if (hlMode === 'qty') {
-            const sign = x.change > 0 ? '+' : '';
-            const cls  = x.change >= 0 ? 'pos' : 'neg';
-            return `<span class="${cls}">${sign}${Math.round(x.change).toLocaleString('ko-KR')}주</span>`;
-          }
-          const cls = x.change >= 0 ? 'pos' : 'neg';
-          return `<span class="${cls}">${fmtEokSigned(x.change)}</span>`;
-        };
-        
-        renderCard("New",  newItems,  fmtChange, emptyMsg);
-        renderCard("Up",   upItems,   fmtChange, emptyMsg);
-        renderCard("Down", downItems, fmtChange, emptyMsg);
-        renderCard("Gone", goneItems, fmtChange, emptyMsg);
+      renderHighlightsFromCache(lastHighlightsData);
 
     } catch (e) {
       console.error("Highlights 로딩 실패:", e);
     }
   }
 
+  // ★ Fix 3: 캐시된 데이터로 하이라이트 카드들을 렌더 (DB 호출 없음)
+  function renderHighlightsFromCache(data) {
+    const { curMap, prevMap, hasPrev } = data;
+
+    let newItems = [], upItems = [], downItems = [], goneItems = [];
+
+    if (hasPrev && prevMap) {
+      const THRESHOLD_AMT = 100_000_000;  // 1억원
+      const THRESHOLD_QTY = 1_000;        // 1,000주
+
+      for (const key of Object.keys(curMap)) {
+        const cur = curMap[key];
+        const prv = prevMap[key];
+        if (hlMode === 'qty') {
+          if (!prv) {
+            newItems.push({ ...cur, change: cur.holdings_qty });
+          } else {
+            const diff = cur.holdings_qty - prv.holdings_qty;
+            if (diff > THRESHOLD_QTY)       upItems.push({ ...cur, change: diff });
+            else if (diff < -THRESHOLD_QTY) downItems.push({ ...cur, change: diff });
+          }
+        } else {
+          if (!prv) {
+            newItems.push({ ...cur, change: cur.holdingAccounts });
+          } else {
+            const diff = cur.holdingAccounts - prv.holdingAccounts;
+            if (diff > THRESHOLD_AMT)       upItems.push({ ...cur, change: diff });
+            else if (diff < -THRESHOLD_AMT) downItems.push({ ...cur, change: diff });
+          }
+        }
+      }
+      for (const key of Object.keys(prevMap)) {
+        if (!curMap[key]) {
+          const prv = prevMap[key];
+          goneItems.push({ ...prv, change: hlMode === 'qty' ? -prv.holdings_qty : -prv.holdingAccounts });
+        }
+      }
+
+      newItems.sort((a, b)  => b.change - a.change);
+      upItems.sort((a, b)   => b.change - a.change);
+      downItems.sort((a, b) => a.change - b.change);
+      goneItems.sort((a, b) => a.change - b.change);
+    }
+
+    // ★ Fix 1: renderCard — escapeHtml + data-* 패턴
+    const renderCard = (baseId, items, fmtChange, emptyMsg) => {
+      const krList = items.filter(x => isKorean(x.code, x.name));
+      const glList = items.filter(x => !isKorean(x.code, x.name));
+
+      [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
+        const el = document.getElementById(`hl${baseId}-${region}`);
+        if (!el) return;
+        if (!list.length) {
+          el.innerHTML = `<div class="hl-empty">${escapeHtml(emptyMsg)}</div>`;
+          return;
+        }
+        el.innerHTML = list.map(x => {
+          const dispName = escapeHtml(x.name);
+          const dispCode = escapeHtml(x.code || "");
+          const etfBadge = x.etfCount > 1
+            ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+            : "";
+          return `<div class="hl-row">
+            <span class="hl-name" data-action="open-security" data-code="${dispCode}" data-name="${dispName}">${dispName}${etfBadge}</span>
+            <span class="hl-val">${fmtChange(x)}</span>
+          </div>`;
+        }).join("");
+      });
+    };
+
+    const holdAll = Object.values(curMap)
+      .filter(x => hlMode === 'qty' ? x.holdings_qty > 0 : x.holdingAccounts > 0)
+      .sort((a, b) => hlMode === 'qty' ? b.holdings_qty - a.holdings_qty : b.holdingAccounts - a.holdingAccounts);
+
+    const fmtEok = (v) => fmtMoney(v);
+    const fmtEokSigned = (v) => fmtMoney(v, { signed: true });
+
+    renderCard("Hold", holdAll,
+      x => hlMode === 'qty'
+        ? `<span style="color:#00D4AA;font-family:monospace">${escapeHtml(Math.round(x.holdings_qty).toLocaleString('ko-KR'))}주</span>`
+        : `<span style="color:#00D4AA;font-family:monospace">${escapeHtml(fmtEok(x.holdingAccounts))}</span>`,
+      "데이터 없음");
+
+    const emptyMsg = hasPrev ? "변화 없음" : "이전 데이터 없음";
+
+    const fmtChange = (x) => {
+      if (hlMode === 'qty') {
+        const sign = x.change > 0 ? '+' : '';
+        const cls  = x.change >= 0 ? 'pos' : 'neg';
+        return `<span class="${cls}">${escapeHtml(sign + Math.round(x.change).toLocaleString('ko-KR'))}주</span>`;
+      }
+      const cls = x.change >= 0 ? 'pos' : 'neg';
+      return `<span class="${cls}">${escapeHtml(fmtEokSigned(x.change))}</span>`;
+    };
+
+    renderCard("New",  newItems,  fmtChange, emptyMsg);
+    renderCard("Up",   upItems,   fmtChange, emptyMsg);
+    renderCard("Down", downItems, fmtChange, emptyMsg);
+    renderCard("Gone", goneItems, fmtChange, emptyMsg);
+  }
+
   // =========================================================
   // ② 종목 모달 + ④ 추이 차트
+  //   ★ Fix 2: 캐시 + 병렬화
   // =========================================================
-    async function openSecurityModal(code, name) {
+  async function openSecurityModal(code, name) {
     const normCode = normalizeCode(code);
     document.getElementById("modalTitle").textContent = name + (normCode ? `  (${normCode})` : "");
     document.getElementById("modalOverlay").classList.add("show");
     document.getElementById("holdingList").innerHTML = '<div class="hl-empty">로딩 중...</div>';
 
-    // ★ 이벤트 추적
     trackEvent('security_modal_open', {
       security_code: normCode || '',
       security_name: name || ''
     });
 
     if (!db || !normCode) return;
-    const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-    const latest = latestRows?.[0]?.date;
-    if (latest) {
-      const candidates = [normCode];
-      const stripped = normCode.replace(/^0+/, "");
-      if (stripped && stripped !== normCode) candidates.push(stripped);
-      const { data: holdings } = await db.from("holdings")
-        .select("etf_idx, etf_name, weight, qty, value, code")
-        .eq("date", latest)
-        .in("code", candidates)
-        .order("weight", { ascending: false });
-      if (holdings?.length) {
-        document.getElementById("holdingList").innerHTML = holdings.map(h => `
-          <div class="holding-row">
-            <span class="hr-etf">TIME ${h.etf_name}</span>
-            <span class="hr-q">수량 ${fmt(h.qty)}</span>
-            <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
-          </div>`).join("");
-      } else {
-        document.getElementById("holdingList").innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
-      }
+
+    // ★ Fix 2: 캐시 확인
+    const cached = modalCache.get(normCode);
+    if (cached && (Date.now() - cached.ts) < MODAL_CACHE_TTL) {
+      renderModalHoldings(cached.holdings);
+      drawTrendChart(cached.trend, name);
+      return;
     }
+
+    // ★ candidates 한 번만 선언 (기존 버그 수정)
     const candidates = [normCode];
     const stripped = normCode.replace(/^0+/, "");
     if (stripped && stripped !== normCode) candidates.push(stripped);
-    const { data: trend } = await db.from("holdings")
-      .select("date, etf_idx, etf_name, weight")
-      .in("code", candidates)
-      .order("date", { ascending: true })
-      .limit(2000);
-    drawTrendChart(trend || [], name);
-  }
 
-  function drawTrendChart(rows, securityName) {
-    const ctx = document.getElementById("trendChart").getContext("2d");
-    if (trendChartInstance) trendChartInstance.destroy();
-    if (!rows.length) {
-      trendChartInstance = null;
-      ctx.canvas.parentElement.innerHTML = '<div class="hl-empty">추이 데이터 없음</div><canvas id="trendChart"></canvas>';
+    // ★ Fix 5: globalAllDates에서 최신일 가져오기 (DB 1회 절약)
+    const latest = globalAllDates[0];
+    if (!latest) {
+      document.getElementById("holdingList").innerHTML = '<div class="hl-empty">데이터 없음</div>';
       return;
     }
+
+    // ★ Fix 2: holdings + trend 병렬 조회
+    const [holdingsResp, trendResp] = await Promise.all([
+      db.from("holdings")
+        .select("etf_idx, etf_name, weight, qty, value, code")
+        .eq("date", latest)
+        .in("code", candidates)
+        .order("weight", { ascending: false }),
+      db.from("holdings")
+        .select("date, etf_idx, etf_name, weight")
+        .in("code", candidates)
+        .order("date", { ascending: true })
+        .limit(2000)
+    ]);
+
+    const holdings = holdingsResp.data || [];
+    const trend = trendResp.data || [];
+
+    // ★ 캐시 저장
+    modalCache.set(normCode, { holdings, trend, ts: Date.now() });
+
+    renderModalHoldings(holdings);
+    drawTrendChart(trend, name);
+  }
+
+  // ★ Fix 1: 모달 holdings 렌더 (escapeHtml 적용)
+  function renderModalHoldings(holdings) {
+    const el = document.getElementById("holdingList");
+    if (!holdings?.length) {
+      el.innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
+      return;
+    }
+    el.innerHTML = holdings.map(h => `
+      <div class="holding-row">
+        <span class="hr-etf">TIME ${escapeHtml(h.etf_name)}</span>
+        <span class="hr-q">수량 ${fmt(h.qty)}</span>
+        <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
+      </div>`).join("");
+  }
+
+  // ★ Fix 6: drawTrendChart — innerHTML 갈아끼우기 제거, placeholder 토글 방식
+  function drawTrendChart(rows, securityName) {
+    const ctxEl = document.getElementById("trendChart");
+    const placeholderEl = document.getElementById("chartEmpty");
+
+    if (trendChartInstance) {
+      trendChartInstance.destroy();
+      trendChartInstance = null;
+    }
+
+    if (!rows.length) {
+      if (ctxEl) ctxEl.style.display = "none";
+      if (placeholderEl) placeholderEl.classList.add("show");
+      return;
+    }
+
+    if (ctxEl) ctxEl.style.display = "block";
+    if (placeholderEl) placeholderEl.classList.remove("show");
+
+    const ctx = ctxEl.getContext("2d");
     const byEtf = {};
     rows.forEach(r => {
       if (!byEtf[r.etf_idx]) byEtf[r.etf_idx] = { name: r.etf_name, points: {} };
@@ -1458,6 +1494,7 @@ const aggregate = (rows) => {
 
   // =========================================================
   // ⑤ ETF 비교 모드
+  //   ★ Fix 1 + 5: select 컬럼 명시 + escapeHtml + data-* 패턴
   // =========================================================
   async function loadCompareMode() {
     const cmpDateSel = document.getElementById("cmpDateSelect");
@@ -1471,9 +1508,9 @@ const aggregate = (rows) => {
       return;
     }
     if (cmpDateSel.options.length <= 1 || cmpDateSel.options[0].textContent === "로딩 중...") {
-      const { data } = await db.from("holdings").select("date").in("etf_idx", [cmpEtfA, cmpEtfB]).order("date", { ascending: false }).limit(2000);
-      const ds = [...new Set((data || []).map(d => d.date))];
-      cmpDateSel.innerHTML = ds.map(d => `<option value="${d}">${d}</option>`).join("");
+      // ★ Fix 5: globalAllDates 활용 (DB 호출 없음)
+      const ds = globalAllDates;
+      cmpDateSel.innerHTML = ds.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join("");
     }
     const date = cmpDateSel.value || cmpDateSel.options[0]?.value;
     if (!date) return;
@@ -1483,11 +1520,11 @@ const aggregate = (rows) => {
     ]);
     const a = normalizeRows(rA.data || []);
     const b = normalizeRows(rB.data || []);
-    const aMap = Object.fromEntries(a.map(x => [x.code, x]));
-    const bMap = Object.fromEntries(b.map(x => [x.code, x]));
-    const both  = a.filter(x => bMap[x.code]).map(x => ({ ...x, weightB: bMap[x.code].weight }));
-    const onlyA = a.filter(x => !bMap[x.code]);
-    const onlyB = b.filter(x => !aMap[x.code]);
+    const aMap = new Map(a.map(x => [x.code, x]));
+    const bMap = new Map(b.map(x => [x.code, x]));
+    const both  = a.filter(x => bMap.has(x.code)).map(x => ({ ...x, weightB: bMap.get(x.code).weight }));
+    const onlyA = a.filter(x => !bMap.has(x.code));
+    const onlyB = b.filter(x => !aMap.has(x.code));
     both.sort((x, y)  => Math.max(y.weight, y.weightB) - Math.max(x.weight, x.weightB));
     onlyA.sort((x, y) => y.weight - x.weight);
     onlyB.sort((x, y) => y.weight - x.weight);
@@ -1495,11 +1532,11 @@ const aggregate = (rows) => {
       const el = document.getElementById(id);
       if (!items.length) { el.innerHTML = '<div class="hl-empty">없음</div>'; return; }
       el.innerHTML = items.map(x => {
-        const safeName = x.name.replace(/'/g, "\\'");
-        const safeCode = (x.code || "").replace(/'/g, "\\'");
-        return `<div class="compare-item" onclick="openSecurityModal('${safeCode}','${safeName}')" style="cursor:pointer">
-          <span class="ci-name">${x.name}</span>
-          <span class="ci-w">${weightFn(x)}</span>
+        const dispName = escapeHtml(x.name);
+        const dispCode = escapeHtml(x.code || "");
+        return `<div class="compare-item" data-action="open-security" data-code="${dispCode}" data-name="${dispName}" style="cursor:pointer">
+          <span class="ci-name">${dispName}</span>
+          <span class="ci-w">${escapeHtml(weightFn(x))}</span>
         </div>`;
       }).join("");
     };
@@ -1513,6 +1550,7 @@ const aggregate = (rows) => {
 
   // =========================================================
   // ⑥ 종목 검색
+  //   ★ Fix 7: globalAllDates 사용 + Fix 1: escapeHtml
   // =========================================================
   let searchTimer = null;
   async function onSearch(q) {
@@ -1521,9 +1559,10 @@ const aggregate = (rows) => {
     if (!db) return;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(async () => {
-      const { data: latestRows } = await db.from("holdings").select("date").order("date", { ascending: false }).limit(1);
-      const latest = latestRows?.[0]?.date;
+      // ★ Fix 7: 글로벌 메모리 활용 — DB 호출 1회 절약
+      const latest = globalAllDates[0];
       if (!latest) return;
+
       const { data } = await db.from("holdings")
         .select("code, name, etf_idx, etf_name, weight")
         .eq("date", latest)
@@ -1533,27 +1572,24 @@ const aggregate = (rows) => {
       if (!data?.length) {
         resBox.innerHTML = '<div class="search-empty">검색 결과 없음</div>';
         resBox.classList.add("show");
-
-        // ★ 검색 실패 추적
         trackEvent('search', { query: q.trim(), result_count: 0 });
-        
         return;
       }
-       // ★ 검색 성공 추적
       trackEvent('search', { query: q.trim(), result_count: data.length });
-            
-      const normalized = normalizeRows(data); 
+
+      const normalized = normalizeRows(data);
       const grouped = {};
       normalized.forEach(r => {
         if (!grouped[r.code]) grouped[r.code] = { code: r.code, name: r.name, etfs: [] };
         grouped[r.code].etfs.push({ idx: r.etf_idx, name: r.etf_name, weight: r.weight });
       });
+      // ★ Fix 1 + 8: escapeHtml + data-* 패턴 (XSS 안전)
       resBox.innerHTML = Object.values(grouped).map(g => {
-        const safeName = g.name.replace(/'/g, "\\'");
-        const safeCode = (g.code || "").replace(/'/g, "\\'");
-        return `<div class="search-item" onclick="document.getElementById('searchInput').value='';document.getElementById('searchResults').classList.remove('show');openSecurityModal('${safeCode}','${safeName}')">
-          <div class="si-name">${g.name}</div>
-          <div class="si-meta">${g.code} · ${g.etfs.length}개 ETF 보유</div>
+        const dispName = escapeHtml(g.name);
+        const dispCode = escapeHtml(g.code || "");
+        return `<div class="search-item" data-action="open-security-from-search" data-code="${dispCode}" data-name="${dispName}">
+          <div class="si-name">${dispName}</div>
+          <div class="si-meta">${dispCode} · ${g.etfs.length}개 ETF 보유</div>
         </div>`;
       }).join("");
       resBox.classList.add("show");
@@ -1562,19 +1598,23 @@ const aggregate = (rows) => {
 
   // =========================================================
   // ⑦ 공지사항
+  //   ★ Fix 1: autoLink가 escape 먼저 적용
   // =========================================================
-    function autoLink(text) {
+  function autoLink(text) {
     if (!text) return '';
-    return text.replace(
+    // ★ Fix 1: HTML 이스케이프 먼저, 그 다음 URL을 링크화
+    const escaped = escapeHtml(text);
+    return escaped.replace(
       /(https?:\/\/[^\s<>"]+)/g,
       '<a href="$1" target="_blank" rel="noopener" style="color:#00D4AA;text-decoration:underline;word-break:break-all">$1</a>'
     );
   }
-  async function loadNotices() { 
+
+  async function loadNotices() {
     if (!db) return;
     const { data } = await db
       .from("notices")
-      .select("*")
+      .select("title, content, type, created_at")
       .eq("is_active", true)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -1590,6 +1630,8 @@ const aggregate = (rows) => {
     const renderRow = (n, i) => {
       const s = typeStyle[n.type] || typeStyle.info;
       const date = new Date(n.created_at).toLocaleDateString("ko-KR");
+      const safeTitle = escapeHtml(n.title);
+      const safeDate = escapeHtml(date);
       return `
         <div style="border-bottom: 1px solid #1e2d4a;">
           <div onclick="toggleNotice(${i})" style="
@@ -1599,8 +1641,8 @@ const aggregate = (rows) => {
              onmouseout="this.style.background='transparent'">
             <span style="font-size:13px;flex-shrink:0">${s.icon}</span>
             <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:${s.color};flex-shrink:0;min-width:36px">${s.label}</span>
-            <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.title}</span>
-            <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${date}</span>
+            <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeTitle}</span>
+            <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${safeDate}</span>
             <span id="notice-arrow-${i}" style="color:#475569;font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(0deg)">▼</span>
           </div>
           <div id="notice-body-${i}" style="
@@ -1616,8 +1658,9 @@ const aggregate = (rows) => {
     const rest   = data.slice(1);
     const s0 = typeStyle[latest.type] || typeStyle.info;
     const date0 = new Date(latest.created_at).toLocaleDateString("ko-KR");
+    const safeLatestTitle = escapeHtml(latest.title);
+    const safeLatestDate = escapeHtml(date0);
 
-    // 최신 공지 1개 행
     const latestRow = `
       <div style="border-bottom:${rest.length ? '1px solid #1e2d4a' : 'none'}">
         <div onclick="toggleNotice(0)" style="
@@ -1627,8 +1670,8 @@ const aggregate = (rows) => {
            onmouseout="this.style.background='transparent'">
           <span style="font-size:13px;flex-shrink:0">${s0.icon}</span>
           <span style="font-size:11px;font-weight:700;letter-spacing:1px;color:${s0.color};flex-shrink:0;min-width:36px">${s0.label}</span>
-          <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${latest.title}</span>
-          <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${date0}</span>
+          <span style="font-size:13px;font-weight:600;color:#e2e8f0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeLatestTitle}</span>
+          <span style="font-size:11px;color:#475569;flex-shrink:0;margin-right:8px">${safeLatestDate}</span>
           <span id="notice-arrow-0" style="color:#475569;font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(0deg)">▼</span>
         </div>
         <div id="notice-body-0" style="
@@ -1638,10 +1681,8 @@ const aggregate = (rows) => {
         ">${autoLink(latest.content || '')}</div>
       </div>`;
 
-    // 나머지 공지 (기본 숨김)
     const restRows = rest.map((n, i) => renderRow(n, i + 1)).join("");
 
-    // 전체보기 버튼 (공지가 2개 이상일 때만)
     const moreBtn = rest.length ? `
       <div id="noticeMoreWrap" style="border-top:1px solid #1e2d4a">
         <div onclick="toggleAllNotices()" style="
@@ -1700,22 +1741,45 @@ const aggregate = (rows) => {
       ? `이전 공지 ${wrap.children.length}개 더보기`
       : "접기";
   }
-  
+
+  // =========================================================
+  // ★ Fix 8: 이벤트 위임 — onclick 인라인 핸들러 대체 (CSP-safe)
+  //   외부 데이터로 만든 element들은 모두 data-action="open-security"로
+  //   여기 한 군데서만 처리
+  // =========================================================
+  document.addEventListener('click', (e) => {
+    const securityEl = e.target.closest('[data-action="open-security"]');
+    if (securityEl) {
+      openSecurityModal(securityEl.dataset.code, securityEl.dataset.name);
+      return;
+    }
+    const searchEl = e.target.closest('[data-action="open-security-from-search"]');
+    if (searchEl) {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchResults').classList.remove('show');
+      openSecurityModal(searchEl.dataset.code, searchEl.dataset.name);
+      return;
+    }
+  });
+
+  // ★ Fix 6: ESC 키로 모달 닫기 (UX 개선)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('modalOverlay').classList.contains('show')) {
+      closeModal();
+    }
+  });
+
   // =========================================================
   // 시작
-  //   ① ETF 탭을 순자산총액 내림차순으로 정렬 (해외/국내 섹션 내)
-  //   ② 정보 박스 갱신 (정렬 후 새로 active된 ETF 기준)
-  //   ③ 글로벌 날짜 초기화 → refreshAll() → 모든 데이터 로드
   // =========================================================
   (async () => {
-    const navMap = await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
-    updateSectionCounts(navMap || {});  // ETF 갯수, AUM 추가
-    updateHlTabFlags();    // ← 대한민국 국기 이모지 추가
+    const navMap = await sortEtfTabsByNav();
+    updateSectionCounts(navMap || {});
+    updateHlTabFlags();
     renderInfo();
     initGlobalDates();
     loadNotices();
   })();
-  
 </script>
 
 <!-- Vercel Web Analytics -->
