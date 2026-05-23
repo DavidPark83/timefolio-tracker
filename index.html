@@ -65,7 +65,10 @@
       background: rgba(0,212,170,0.12); color: #00D4AA;
     }
     .hl-pane { display: none; }
-    .hl-pane.active { display: block; }
+    .hl-pane.active { display: block; max-height: 280px; overflow-y: auto; }
+    .hl-pane::-webkit-scrollbar { width: 4px; }
+    .hl-pane::-webkit-scrollbar-track { background: transparent; }
+    .hl-pane::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
 
     /* ===== 모드 전환 ===== */
     .mode-tabs { display: flex; gap: 0; border-bottom: 1px solid #1e2d4a; margin-bottom: 20px; }
@@ -1218,8 +1221,8 @@ const aggregate = (rows) => {
       }
 
       const renderCard = (baseId, items, fmtChange, emptyMsg) => {
-        const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 10);
-        const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 10);
+        const krList = items.filter(x => isKorean(x.code, x.name)).slice(0, 50);
+        const glList = items.filter(x => !isKorean(x.code, x.name)).slice(0, 50);
 
         [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
           const el = document.getElementById(`hl${baseId}-${region}`);
