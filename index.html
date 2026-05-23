@@ -1025,11 +1025,17 @@ function selectEtf(el) {
       else if (weightDiff !== null && weightDiff > 0.5)  status = "증가";
       else if (weightDiff !== null && weightDiff < -0.5) status = "감소";
       else if (weightDiff !== null) status = "유지";
-      return { rank: i + 1, code: h.code, name: h.name, weight: h.weight, weightDiff, qty: h.qty, qtyDiff, value: h.value, status, removed: false };
+
+      
+      let qtyStatus = "—";
+      if (isNew) qtyStatus = "신규";
+      else if (qtyDiff !== null && qtyDiff > 0)  qtyStatus = "증가";
+      else if (qtyDiff !== null && qtyDiff < 0)  qtyStatus = "감소";
+      else if (qtyDiff !== null) qtyStatus = "유지";
+      return { rank: i + 1, code: h.code, name: h.name, weight: h.weight, weightDiff, qty: h.qty, qtyDiff, value: h.value, status, qtyStatus, removed: false };
     });
     removed.forEach(h => {
-      rows.push({ rank: 999, code: h.code, name: h.name, weight: 0, weightDiff: -h.weight, qty: 0, qtyDiff: -h.qty, value: 0, status: "제외", removed: true });
-    });
+      rows.push({ rank: 999, code: h.code, name: h.name, weight: 0, weightDiff: -h.weight, qty: 0, qtyDiff: -h.qty, value: 0, status: "제외", qtyStatus: "제외", removed: true });
     currentData = rows;
   }
 
