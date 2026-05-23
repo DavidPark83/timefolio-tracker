@@ -1100,6 +1100,7 @@ function selectEtf(el) {
         <td>${statusBadge(r.status)}</td>
         <td style="font-family:monospace;text-align:right;color:#e2e8f0">${fmt(r.qty)}</td>
         <td style="text-align:right">${diffSpan(r.qtyDiff)}</td>
+        <td>${statusBadge(r.qtyStatus)}</td> 
         <td style="font-family:monospace;text-align:right;color:#94a3b8">${fmt(r.value)}</td>
       </tr>`;
     });
@@ -1111,6 +1112,7 @@ function selectEtf(el) {
       { key: "status",     label: "상태",   align: "left" },
       { key: "qty",        label: "수량",   align: "right" },
       { key: "qtyDiff",    label: "수량변화", align: "right" },
+      { key: "qtyStatus",  label: "상태",   align: "left" },   // ← 추가
       { key: "value",      label: "평가금액", align: "right" },
     ];
     const ths = headers.map(h => {
