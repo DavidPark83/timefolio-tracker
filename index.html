@@ -1088,7 +1088,7 @@ function selectEtf(el) {
       const safeName = r.name.replace(/'/g, "\\'");
       const safeCode = (r.code || "").replace(/'/g, "\\'");
       return `<tr style="${opacity}">
-        <td style="color:#475569;font-family:monospace">${r.removed ? "—" : (i+1)}</td>
+        <td style="color:#475569;font-family:monospace;position:sticky;left:0;z-index:1;background:#0d1526">${r.removed ? "—" : (i+1)}</td>
         <td>
           <div style="display:flex;align-items:center;gap:8px">
             <div class="dot" style="background:${r.removed ? '#475569' : color}"></div>
@@ -1123,10 +1123,11 @@ function selectEtf(el) {
       { key: "qtyStatus",  label: "수량상태",   align: "left" },   // ← 추가
       { key: "value",      label: "평가금액", align: "right" },
     ];
-    const ths = headers.map(h => {
+      const ths = headers.map(h => {
       const cls = sortKey === h.key ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
       const align = h.align === "right" ? "text-align:right" : "";
-      return `<th class="${cls}" style="${align}" onclick="setSort('${h.key}')">${h.label}</th>`;
+      const sticky = h.key === "rank" ? ";position:sticky;left:0;z-index:3;background:#111827" : "";
+      return `<th class="${cls}" style="${align}${sticky}" onclick="setSort('${h.key}')">${h.label}</th>`;
     }).join("");
     document.getElementById("tableArea").innerHTML = `<table><thead><tr>${ths}</tr></thead><tbody>${trs.join("")}</tbody></table>`;
   }
