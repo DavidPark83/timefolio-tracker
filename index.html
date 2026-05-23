@@ -697,6 +697,32 @@
     }
   }
 
+  // ★ 섹션별 ETF 개수 자동 표시
+  function updateSectionCounts() {
+    const container = document.getElementById("etfTabs");
+    if (!container) return;
+    const children = Array.from(container.children);
+    let currentLabel = null;
+    let count = 0;
+    const labelCounts = [];
+
+    children.forEach(el => {
+      if (el.classList.contains("tab-section-label")) {
+        if (currentLabel) labelCounts.push({ el: currentLabel, count });
+        currentLabel = el;
+        count = 0;
+      } else if (el.classList.contains("etf-tab") && currentLabel) {
+        count++;
+      }
+    });
+    if (currentLabel) labelCounts.push({ el: currentLabel, count });
+
+    labelCounts.forEach(({ el, count }) => {
+      const baseText = el.textContent.replace(/\s*\(\d+개\)$/, "").trim();
+      el.textContent = `${baseText} (${count}개)`;
+    });
+  }
+  
   // =========================================================
   // 하이라이트 탭 전환
   // =========================================================
