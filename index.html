@@ -729,6 +729,15 @@
       el.textContent = `${baseText} (${count}개)`;
     });
   }
+
+  // ★ 하이라이트 국내 탭 국기 이미지 적용
+  function updateHlTabFlags() {
+    document.querySelectorAll('.hl-tab').forEach(t => {
+      if (t.textContent.includes('국내')) {
+        t.innerHTML = '<img src="https://flagcdn.com/16x12/kr.png" style="vertical-align:middle;margin-right:3px" alt="KR"> 국내';
+      }
+    });
+  }
   
   // =========================================================
   // 하이라이트 탭 전환
@@ -1689,6 +1698,7 @@ const aggregate = (rows) => {
   (async () => {
     await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
     updateSectionCounts();  // ETF 갯수 추가
+    updateHlTabFlags();    // ← 대한민국 국기 이모지 추가
     renderInfo();
     initGlobalDates();
     loadNotices();
