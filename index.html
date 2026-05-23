@@ -1036,7 +1036,8 @@ function selectEtf(el) {
     });
     removed.forEach(h => {
       rows.push({ rank: 999, code: h.code, name: h.name, weight: 0, weightDiff: -h.weight, qty: 0, qtyDiff: -h.qty, value: 0, status: "제외", qtyStatus: "제외", removed: true });
-    currentData = rows;
+    });                  // ← }); 추가
+    currentData = rows;  // ← forEach 밖으로 이동
   }
 
   function setSort(key) {
