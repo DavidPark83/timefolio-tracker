@@ -110,9 +110,15 @@
     /* ===== 카드 / 표 ===== */
     .card { background: #0d1526; border: 1px solid #1e2d4a; border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
     .card-header { padding: 14px 20px; background: #111827; border-bottom: 1px solid #1e2d4a; font-size: 13px; font-weight: 600; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .tbl-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 800px; }
-    th { text-align: left; font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; padding: 10px 14px; background: #111827; border-bottom: 1px solid #1e2d4a; white-space: nowrap; cursor: pointer; user-select: none; }
+
+    
+    .tbl-wrap { overflow-x: auto; max-height: 528px; overflow-y: auto; }
+    .tbl-wrap::-webkit-scrollbar { width: 4px; }
+    .tbl-wrap::-webkit-scrollbar-track { background: transparent; }
+    .tbl-wrap::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
+    th { text-align: left; font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; padding: 10px 14px; background: #111827; border-bottom: 1px solid #1e2d4a; white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 1; }
+
+    
     th:hover { color: #00D4AA; }
     th.sort-asc::after  { content: " ▲"; font-size: 9px; color: #00D4AA; }
     th.sort-desc::after { content: " ▼"; font-size: 9px; color: #00D4AA; }
