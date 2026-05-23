@@ -699,34 +699,41 @@
         firstTab.classList.add("active");
         currentIdx = parseInt(firstTab.dataset.idx);
       }
+      return navMap;   // ← 해외투자, 국내투자 AUM sub_total 추가     
     } catch (e) {
       console.error("ETF 탭 정렬 실패:", e);
     }
   }
 
-  // ★ 섹션별 ETF 개수 자동 표시
-  function updateSectionCounts() {
+  // ★ 섹션별 ETF 개수, AUM 자동 표시
+  function updateSectionCounts(navMap = {}) {
     const container = document.getElementById("etfTabs");
     if (!container) return;
     const children = Array.from(container.children);
     let currentLabel = null;
     let count = 0;
+    let currentTabs = [];
     const labelCounts = [];
 
     children.forEach(el => {
       if (el.classList.contains("tab-section-label")) {
-        if (currentLabel) labelCounts.push({ el: currentLabel, count });
+        if (currentLabel) labelCounts.push({ el: currentLabel, count, tabs: currentTabs });
         currentLabel = el;
         count = 0;
+        currentTabs = [];
       } else if (el.classList.contains("etf-tab") && currentLabel) {
         count++;
+        currentTabs.push(el);
       }
     });
-    if (currentLabel) labelCounts.push({ el: currentLabel, count });
+    if (currentLabel) labelCounts.push({ el: currentLabel, count, tabs: currentTabs });
 
-    labelCounts.forEach(({ el, count }) => {
-      const baseText = el.textContent.replace(/\s*\(\d+개\)$/, "").trim();
-      el.textContent = `${baseText} (${count}개)`;
+    labelCounts.forEach(({ el, count, tabs }) => {
+      const baseText = el.textContent.replace(/\s*\(.*\)$/, "").trim();
+      const sectionNav = tabs.reduce((sum, t) => sum + (navMap[parseInt(t.dataset.idx)] || 0), 0);
+      const jo = sectionNav / 1_000_000_000_000;
+      const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      el.textContent = `${baseText} (${count}개, ${joStr}조원)`;
     });
   }
 
@@ -1696,8 +1703,8 @@ const aggregate = (rows) => {
   //   ③ 글로벌 날짜 초기화 → refreshAll() → 모든 데이터 로드
   // =========================================================
   (async () => {
-    await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
-    updateSectionCounts();  // ETF 갯수 추가
+    const navMap = await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
+    updateSectionCounts(navMap || {});  // ETF 갯수, AUM 추가
     updateHlTabFlags();    // ← 대한민국 국기 이모지 추가
     renderInfo();
     initGlobalDates();
