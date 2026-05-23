@@ -1671,6 +1671,7 @@ const aggregate = (rows) => {
   // =========================================================
   (async () => {
     await sortEtfTabsByNav();   // ★ 탭을 nav_total 내림차순으로 재배치하고 첫 탭을 active로
+    updateSectionCounts();  // ETF 갯수 추가
     renderInfo();
     initGlobalDates();
     loadNotices();
