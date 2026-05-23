@@ -1315,15 +1315,20 @@ const aggregate = (rows) => {
       // ★ 18개 ETF 순자산총액 합 → 카드 제목에 (#,##조원)으로 표시
       try {
         const { data: navAll } = await db.from("etf_daily")
-          .select("nav_total").eq("date", baseDate);
+          .select("nav_total, etf_idx").eq("date", baseDate);   // ← etf_idx 추가
         const totalNav = (navAll || []).reduce((s, r) => s + (r.nav_total || 0), 0);
         const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
         if (holdTitleEl && totalNav > 0) {
-          const jo = totalNav / 1_000_000_000_000;  // 1조 = 10^12
+          const jo = totalNav / 1_000_000_000_000;
           const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           holdTitleEl.innerHTML =
             `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${joStr}조원)</span>`;
         }
+        // ★ 섹션별 nav 합산 → 라벨 업데이트
+        const liveNavMap = {};
+        (navAll || []).forEach(r => { liveNavMap[r.etf_idx] = r.nav_total || 0; });
+        updateSectionCounts(liveNavMap);   // ← 추가
+        
       } catch (e) { console.error("총 순자산 표시 실패:", e); }
 
       renderCard("Hold", holdAll,
