@@ -1123,7 +1123,7 @@
     ];
     const ths = headers.map(h => {
       const cls = sortKey === h.key ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
-      const align = h.align === "right" ? "text-align:right" : h.align === "center" ? "text-align:center" : "";
+      const align = h.align === "right" ? "text-align:right" : h.align === "center" ? "text-align:center" : "";
       const sticky = h.key === "rank" ? ";position:sticky;left:0;z-index:3;background:#111827" : "";
       return `<th class="${cls}" style="${align}${sticky}" onclick="setSort('${h.key}')">${escapeHtml(h.label)}</th>`;
     }).join("");
