@@ -631,6 +631,7 @@
     const c = String(code ?? "").trim();
     const n = String(name ?? "").trim();
     if (c && /^\d+$/.test(c)) return true;
+    if (c && /^\d{4}[A-Z]\d$/.test(c)) return true;  // KRX 특수코드 (예: 0043Y0)
     if (n && /^[가-힣\s]+$/.test(n)) return true;
     return false;
   }
