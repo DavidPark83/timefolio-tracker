@@ -138,7 +138,7 @@
 
     /* ===== 비중 바 / 점 ===== */
     .bar-wrap { display: flex; align-items: center; gap: 8px; }
-    .bar-bg   { width: 50px; height: 5px; background: #1e2433; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+    .bar-bg   { width: 80px; height: 5px; background: #1e2433; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
     .bar-fill { height: 100%; border-radius: 3px; }
     .dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
@@ -1098,7 +1098,7 @@
         </td>
         <td>
           <div class="bar-wrap">
-            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(r.weight*2,100)}%;background:${color}"></div></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(r.weight*1.5,100)}%;background:${color}"></div></div>
             <span style="font-family:monospace;font-size:13px;min-width:48px;text-align:right">${r.weight.toFixed(2)}%</span>
           </div>
         </td>
