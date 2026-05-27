@@ -1107,19 +1107,19 @@
         <td style="font-family:monospace;text-align:right;color:#e2e8f0">${fmt(r.qty)}</td>
         <td style="text-align:right">${diffSpan(r.qtyDiff)}</td>
         <td>${statusBadge(r.qtyStatus)}</td>
-        <td style="font-family:monospace;text-align:right;color:#94a3b8">${fmt(r.value)}</td>
+        <td style="font-family:monospace;text-align:center;color:#94a3b8">${fmt(r.value)}</td>
       </tr>`;
     });
     const headers = [
-      { key: "rank",       label: "#",        align: "left" },
-      { key: "name",       label: "종목명",    align: "left" },
-      { key: "weight",     label: "비중",     align: "left" },
-      { key: "weightDiff", label: "비중변화", align: "left" },
-      { key: "status",     label: "비중상태", align: "left" },
-      { key: "qty",        label: "수량",     align: "right" },
-      { key: "qtyDiff",    label: "수량변화", align: "right" },
-      { key: "qtyStatus",  label: "수량상태", align: "left" },
-      { key: "value",      label: "평가금액", align: "right" },
+      { key: "rank",       label: "#",        align: "center" },
+      { key: "name",       label: "종목명",   align: "center" },
+      { key: "weight",     label: "비중",     align: "center" },
+      { key: "weightDiff", label: "비중변화", align: "center" },
+      { key: "status",     label: "비중상태", align: "center" },
+      { key: "qty",        label: "수량",     align: "center" },
+      { key: "qtyDiff",    label: "수량변화", align: "center" },
+      { key: "qtyStatus",  label: "수량상태", align: "center" },
+      { key: "value",      label: "평가금액", align: "center" },
     ];
     const ths = headers.map(h => {
       const cls = sortKey === h.key ? (sortDir === "asc" ? "sort-asc" : "sort-desc") : "";
