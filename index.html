@@ -218,6 +218,8 @@
       .stats { grid-template-columns: repeat(2, 1fr); }
       .header-row { flex-direction: column; align-items: flex-start; }
       .search-wrap { max-width: 100%; }
+      .mode-tabs { overflow-x: auto; white-space: nowrap; }
+      .mode-tab { font-size: 11px; padding: 8px 12px; flex-shrink: 0; }
     }
 
     /* ===== 하이라이트 모드 스위처 ===== */
@@ -237,7 +239,7 @@
       .analysis-detail-grid { grid-template-columns: 1fr !important; }
     }
 
-    
+
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -362,9 +364,9 @@
 
   <!-- 모드 전환 -->
   <div class="mode-tabs">
-    <div class="mode-tab active" data-mode="single" onclick="switchMode('single')">📊 단일 ETF 보기</div>
-    <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div>
     <div class="mode-tab" data-mode="analysis" onclick="switchMode('analysis')">📋 ETF 분석</div>
+    <div class="mode-tab active" data-mode="single" onclick="switchMode('single')">📊 단일 ETF 보기</div>
+    <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div> 
   </div>
 
   <!-- ETF 탭 -->
@@ -1095,8 +1097,8 @@ function selectEtf(el) {
       const isNew = !prev && hasCompare;
       let status = "—";
       if (isNew) status = "신규";
-      else if (weightDiff !== null && weightDiff > 0.5)  status = "증가";
-      else if (weightDiff !== null && weightDiff < -0.5) status = "감소";
+      else if (weightDiff !== null && weightDiff > 0)  status = "증가";
+      else if (weightDiff !== null && weightDiff < 0) status = "감소";
       else if (weightDiff !== null) status = "유지";
 
       let qtyStatus = "—";
