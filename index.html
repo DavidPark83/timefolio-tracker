@@ -1869,17 +1869,17 @@ function selectEtf(el) {
     const links = [];
 
     if (isKoreanStock) {
-      links.push({ icon: '📰', title: `${stockName} 네이버 금융 뉴스`, url: `https://finance.naver.com/item/news.naver?code=${stockCode}`, color: '#00D4AA' });
-      links.push({ icon: '📊', title: `${stockName} 네이버 종목분석`, url: `https://finance.naver.com/item/coinfo.naver?code=${stockCode}`, color: '#3B82F6' });
-      links.push({ icon: '💬', title: `${stockName} 네이버 종목토론`, url: `https://finance.naver.com/item/board.naver?code=${stockCode}`, color: '#8B5CF6' });
-      links.push({ icon: '🔍', title: `${stockName} 네이버 뉴스 검색`, url: `https://search.naver.com/search.naver?where=news&query=${query}`, color: '#34d399' });
-      links.push({ icon: '🌐', title: `${stockName} Google 뉴스 검색`, url: `https://news.google.com/search?q=${query}&hl=ko`, color: '#F59E0B' });
+      links.push({ icon: '📰', (네이버)금융뉴스`, url: `https://finance.naver.com/item/news.naver?code=${stockCode}`, color: '#00D4AA' });
+      links.push({ icon: '📊', (네이버)종목분석`, url: `https://finance.naver.com/item/coinfo.naver?code=${stockCode}`, color: '#3B82F6' });
+      links.push({ icon: '💬', (네이버)종목토론`, url: `https://finance.naver.com/item/board.naver?code=${stockCode}`, color: '#8B5CF6' });
+      links.push({ icon: '🔍', (네이버)뉴스검색`, url: `https://search.naver.com/search.naver?where=news&query=${query}`, color: '#34d399' });
+      links.push({ icon: '🌐', (Google)뉴스검색`, url: `https://news.google.com/search?q=${query}&hl=ko`, color: '#F59E0B' });
     } else {
-      links.push({ icon: '🌐', title: `${stockName} Google News`, url: `https://news.google.com/search?q=${query}&hl=ko`, color: '#F59E0B' });
-      links.push({ icon: '📊', title: `${stockName} Google Finance`, url: `https://www.google.com/finance/quote/${query}`, color: '#3B82F6' });
-      links.push({ icon: '🔍', title: `${stockName} 네이버 뉴스 검색`, url: `https://search.naver.com/search.naver?where=news&query=${query}`, color: '#34d399' });
-      links.push({ icon: '📰', title: `${stockName} Yahoo Finance`, url: `https://finance.yahoo.com/quote/${query}/news`, color: '#8B5CF6' });
-      links.push({ icon: '🌍', title: `${stockName} Investing.com`, url: `https://www.investing.com/search/?q=${query}&tab=news`, color: '#00D4AA' });
+      links.push({ icon: '🌐', (Google)News`, url: `https://news.google.com/search?q=${query}&hl=ko`, color: '#F59E0B' });
+      links.push({ icon: '📊', (Google)Finance`, url: `https://www.google.com/search?q=${query}+stock+price`, color: '#3B82F6' });
+      links.push({ icon: '🔍', (네이버)뉴스검색`, url: `https://search.naver.com/search.naver?where=news&query=${query}`, color: '#34d399' });
+      links.push({ icon: '📰', (Yahoo)Finance`, url: `https://finance.yahoo.com/quote/${query}/news`, color: '#8B5CF6' });
+      links.push({ icon: '🌍', (Investing.com)News`, url: `https://www.investing.com/search/?q=${query}&tab=news`, color: '#00D4AA' });
     }
 
     el.innerHTML = links.map(l => 
