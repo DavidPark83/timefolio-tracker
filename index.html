@@ -1851,7 +1851,7 @@ function selectEtf(el) {
 
 
   // =========================================================
-  // 종목 뉴스 로드 (국내/해외 분리 방식:한국 종목이면 → 네이버 금융 뉴스 + 종목토론 + Google 뉴스 3개 버튼, 해외 종목이면 → Google 뉴스 버튼만)
+  // 종목 뉴스 로드 (국내/해외 구분하여 5개 아웃링크 제공)
   // =========================================================
   async function loadStockNews(stockName) {
     const el = document.getElementById('newsLinks');
@@ -1869,7 +1869,7 @@ function selectEtf(el) {
     const links = [];
 
     if (isKoreanStock) {
-      links.push({ icon: '📰', title: '(네이버) 금융뉴스', url: `https://finance.naver.com/item/news.naver?code=${stockCode}`, color: '#00D4AA' });
+      links.push({ icon: '📰', title: '(네이버) 뉴스/공시', url: `https://finance.naver.com/item/news.naver?code=${stockCode}`, color: '#00D4AA' });
       links.push({ icon: '📊', title: '(네이버) 종목분석', url: `https://finance.naver.com/item/coinfo.naver?code=${stockCode}`, color: '#3B82F6' });
       links.push({ icon: '💬', title: '(네이버) 종목토론', url: `https://finance.naver.com/item/board.naver?code=${stockCode}`, color: '#8B5CF6' });
       links.push({ icon: '🔍', title: '(네이버) 뉴스검색', url: `https://search.naver.com/search.naver?where=news&query=${query}`, color: '#34d399' });
