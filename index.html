@@ -1018,6 +1018,9 @@ function selectEtf(el) {
 
     loadHighlights(base, cmp);
     if (currentIdx) loadDataWithDates(base, cmp);
+    if (currentMode === "analysis" && currentIdx) {
+      loadAnalysisBrief(currentIdx, getEtfName(currentIdx));
+    }
   }
 
   // =========================================================
@@ -1853,13 +1856,15 @@ function selectEtf(el) {
     document.getElementById('analysisChanges').innerHTML = '';
 
     try {
-      // 가장 최신 브리핑 조회
-      const { data, error } = await db.from('etf_briefs')
-        .select('*')
-        .eq('etf_idx', idx)
-        .order('base_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // 글로벌 기준일 사용 (없으면 최신)
+      const globalDate = document.getElementById("globalDateSelect")?.value;
+      let query = db.from('etf_briefs').select('*').eq('etf_idx', idx);
+      if (globalDate) {
+        query = query.lte('base_date', globalDate).order('base_date', { ascending: false }).limit(1);
+      } else {
+        query = query.order('base_date', { ascending: false }).limit(1);
+      }
+      const { data, error } = await query.maybeSingle();
 
       if (error || !data) {
         document.getElementById('analysisBriefText').textContent = '해당 ETF의 분석 브리핑이 아직 없습니다.\n매일 오전 업데이트됩니다.';
