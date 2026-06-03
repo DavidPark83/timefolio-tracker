@@ -232,6 +232,12 @@
       transition: all 0.18s; background: transparent; border: none; font-family: inherit;
     }
     .hl-mode-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
+
+    @media (max-width: 700px) {
+      .analysis-detail-grid { grid-template-columns: 1fr !important; }
+    }
+
+
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -470,15 +476,15 @@
           </div>
 
           <!-- 보유종목 테이블 + 변화 -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="analysis-detail-grid">
 
-            <!-- Top 10 보유종목 -->
+          <!-- Top 10 보유종목 -->
             <div>
               <div style="font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">📊 Top 10 보유종목</div>
               <div id="analysisHoldingsTable"></div>
             </div>
 
-            <!-- 전일 대비 변화 -->
+          <!-- 전일 대비 변화 -->
             <div>
               <div style="font-size:11px;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">📈 전일 대비 변화</div>
               <div id="analysisChanges"></div>
@@ -1862,15 +1868,17 @@ function selectEtf(el) {
       // 날짜 표시
       document.getElementById('analysisBriefDate').textContent = `기준일: ${data.base_date}`;
 
-
-
       // 브리핑 텍스트 (마크다운 → HTML 변환)
       const briefHtml = (data.brief_text || '')
+        .replace(/\s*\(2026-\d{2}-\d{2}\)/g, '')
+        .replace(/\s*\(\d{4}년\s*\d{1,2}월\s*\d{1,2}일\)/g, '')
         .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#00D4AA">$1</strong>')
         .replace(/^\* /gm, '• ')
-        .replace(/^## (.+)$/gm, '<div style="font-size:13px;font-weight:700;color:#f1f5f9;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #1e2d4a">$1</div>')
-        .replace(/^### (.+)$/gm, '<div style="font-size:12px;font-weight:600;color:#94a3b8;margin:12px 0 6px">$1</div>')
-        .replace(/\n/g, '<br>');
+        .replace(/^## (.+)$/gm, '<div style="font-size:14px;font-weight:700;color:#f1f5f9;margin:14px 0 2px;padding-bottom:4px;border-bottom:1px solid #1e2d4a">$1</div>')
+        .replace(/^### (.+)$/gm, '<div style="font-size:13px;font-weight:600;color:#94a3b8;margin:10px 0 2px">$1</div>')
+        .replace(/\n/g, '<br>')
+        .replace(/<\/div>(<br>)+/g, '</div>')
+        .replace(/(<br>){3,}/g, '<br>');
       document.getElementById('analysisBriefText').innerHTML = briefHtml;
 
       // Top 10 보유종목 테이블
