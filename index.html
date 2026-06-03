@@ -1862,11 +1862,7 @@ function selectEtf(el) {
       // 날짜 표시
       document.getElementById('analysisBriefDate').textContent = `기준일: ${data.base_date}`;
 
-      // NAV 표시
-      document.getElementById('analysisNav').textContent =
-        data.nav_price ? Number(data.nav_price).toLocaleString('ko-KR') + '원' : '—';
-      document.getElementById('analysisNavTotal').textContent =
-        data.nav_total ? fmtNav(data.nav_total) : '—';
+
 
       // 브리핑 텍스트 (마크다운 → HTML 변환)
       const briefHtml = (data.brief_text || '')
