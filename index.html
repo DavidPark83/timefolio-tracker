@@ -450,43 +450,10 @@
   </div>
 
 
-<!-- ETF 분석 모드 -->
-  <div id="modeAnalysis" class="hidden">
+  <!-- ETF 분석 모드 -->
+    <div id="modeAnalysis" class="hidden">
 
-    <!-- ETF 선택 그리드 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
-      <div>
-        <div style="font-size:11px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">🌍 해외주식형 (11)</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px" id="analysisOverseas">
-          <div class="etf-tab" data-aidx="2"  onclick="selectAnalysisEtf(this)">미국나스닥100</div>
-          <div class="etf-tab" data-aidx="5"  onclick="selectAnalysisEtf(this)">미국S&P500</div>
-          <div class="etf-tab" data-aidx="6"  onclick="selectAnalysisEtf(this)">글로벌AI인공지능</div>
-          <div class="etf-tab" data-aidx="8"  onclick="selectAnalysisEtf(this)">글로벌소비트렌드</div>
-          <div class="etf-tab" data-aidx="9"  onclick="selectAnalysisEtf(this)">글로벌바이오</div>
-          <div class="etf-tab" data-aidx="10" onclick="selectAnalysisEtf(this)">미국나스닥100채권혼합50</div>
-          <div class="etf-tab" data-aidx="18" onclick="selectAnalysisEtf(this)">미국배당다우존스</div>
-          <div class="etf-tab" data-aidx="19" onclick="selectAnalysisEtf(this)">차이나AI테크</div>
-          <div class="etf-tab" data-aidx="20" onclick="selectAnalysisEtf(this)">글로벌우주테크&방산</div>
-          <div class="etf-tab" data-aidx="22" onclick="selectAnalysisEtf(this)">글로벌탑픽</div>
-          <div class="etf-tab" data-aidx="25" onclick="selectAnalysisEtf(this)">글로벌휴머노이드</div>
-        </div>
-      </div>
-      <div>
-        <div style="font-size:11px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">🇰🇷 국내주식형 (8)</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px" id="analysisDomestic">
-          <div class="etf-tab" data-aidx="1"  onclick="selectAnalysisEtf(this)">K컬처</div>
-          <div class="etf-tab" data-aidx="11" onclick="selectAnalysisEtf(this)">코스피</div>
-          <div class="etf-tab" data-aidx="12" onclick="selectAnalysisEtf(this)">Korea플러스배당</div>
-          <div class="etf-tab" data-aidx="13" onclick="selectAnalysisEtf(this)">K바이오</div>
-          <div class="etf-tab" data-aidx="15" onclick="selectAnalysisEtf(this)">코리아밸류업</div>
-          <div class="etf-tab" data-aidx="16" onclick="selectAnalysisEtf(this)">K신재생에너지</div>
-          <div class="etf-tab" data-aidx="17" onclick="selectAnalysisEtf(this)">K이노베이션</div>
-          <div class="etf-tab" data-aidx="24" onclick="selectAnalysisEtf(this)">코스닥</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 브리핑 패널 -->
+  <!-- 브리핑 패널 -->
     <div id="analysisBriefPanel" style="display:none">
       <div class="card">
         <div class="card-header">
@@ -870,6 +837,9 @@
     document.getElementById("modeSingle").classList.toggle("hidden", mode !== "single");
     document.getElementById("modeCompare").classList.toggle("hidden", mode !== "compare");
     document.getElementById("modeAnalysis").classList.toggle("hidden", mode !== "analysis");
+    if (mode === "analysis" && currentIdx) {
+      loadAnalysisBrief(currentIdx, getEtfName(currentIdx));
+    }
     if (mode === "compare") {
       if (!cmpEtfA) cmpEtfA = currentIdx;
       updateCompareTabsHighlight();
@@ -880,7 +850,7 @@
     trackEvent('mode_switch', { mode });
   }
 
-  function selectEtf(el) {
+function selectEtf(el) {
     const idx = parseInt(el.dataset.idx);
     if (currentMode === "compare") {
       if (!cmpEtfA) cmpEtfA = idx;
@@ -896,6 +866,13 @@
     el.classList.add('active');
     currentIdx = idx;
     sortKey = null;
+
+    if (currentMode === "analysis") {
+      loadAnalysisBrief(idx, getEtfName(idx));
+      trackEvent('etf_tab_click', { etf_idx: idx, etf_name: getEtfName(idx) });
+      return;
+    }
+
     renderInfo();
     const base = document.getElementById("globalDateSelect")?.value;
     const cmp  = document.getElementById("globalCompareSelect")?.value;
@@ -1870,15 +1847,7 @@
 // =========================================================
   // ETF 분석 탭
   // =========================================================
-  async function selectAnalysisEtf(el) {
-    // 탭 활성화
-    document.querySelectorAll('#analysisOverseas .etf-tab, #analysisDomestic .etf-tab')
-      .forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-
-    const idx = parseInt(el.dataset.aidx);
-    const name = el.textContent.trim();
-
+  async function loadAnalysisBrief(idx, name) {
     document.getElementById('analysisEmptyMsg').style.display = 'none';
     document.getElementById('analysisBriefPanel').style.display = 'block';
     document.getElementById('analysisBriefTitle').textContent = `TIMEFOLIO ${name} 분석 브리핑`;
