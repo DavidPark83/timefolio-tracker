@@ -462,17 +462,6 @@
         </div>
         <div style="padding:20px">
 
-          <!-- NAV 정보 -->
-          <div style="display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap">
-            <div style="background:#111827;border:1px solid #1e2d4a;border-radius:10px;padding:12px 20px">
-              <div style="font-size:11px;color:#64748b;margin-bottom:4px">NAV</div>
-              <div style="font-size:18px;font-weight:700;font-family:monospace;color:#f8fafc" id="analysisNav">—</div>
-            </div>
-            <div style="background:#111827;border:1px solid #1e2d4a;border-radius:10px;padding:12px 20px">
-              <div style="font-size:11px;color:#64748b;margin-bottom:4px">순자산총액</div>
-              <div style="font-size:18px;font-weight:700;font-family:monospace;color:#f8fafc" id="analysisNavTotal">—</div>
-            </div>
-          </div>
 
           <!-- AI 브리핑 텍스트 -->
           <div style="background:rgba(0,212,170,0.04);border:1px solid rgba(0,212,170,0.2);border-radius:12px;padding:20px;margin-bottom:24px">
@@ -1879,9 +1868,14 @@ function selectEtf(el) {
       document.getElementById('analysisNavTotal').textContent =
         data.nav_total ? fmtNav(data.nav_total) : '—';
 
-      // 브리핑 텍스트 (## 마크다운 제거)
-      const cleanText = (data.brief_text || '').replace(/##\s*/g, '').trim();
-      document.getElementById('analysisBriefText').textContent = cleanText;
+      // 브리핑 텍스트 (마크다운 → HTML 변환)
+      const briefHtml = (data.brief_text || '')
+        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#00D4AA">$1</strong>')
+        .replace(/^\* /gm, '• ')
+        .replace(/^## (.+)$/gm, '<div style="font-size:13px;font-weight:700;color:#f1f5f9;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #1e2d4a">$1</div>')
+        .replace(/^### (.+)$/gm, '<div style="font-size:12px;font-weight:600;color:#94a3b8;margin:12px 0 6px">$1</div>')
+        .replace(/\n/g, '<br>');
+      document.getElementById('analysisBriefText').innerHTML = briefHtml;
 
       // Top 10 보유종목 테이블
       const holdings = typeof data.top_holdings === 'string'
@@ -1918,16 +1912,16 @@ function selectEtf(el) {
           ${changes.removed.map(s => `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px">${escapeHtml(s)}</div>`).join('')}
         </div>`;
       }
-      if (changes.increased && Object.keys(changes.increased).length) {
+      if (changes.increased?.length) {
         changesHtml += `<div style="margin-bottom:12px">
           <div style="font-size:11px;color:#34d399;margin-bottom:6px">📈 비중 증가</div>
-          ${Object.entries(changes.increased).map(([s,d]) => `<div style="padding:6px 10px;background:rgba(52,211,153,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(s)}</span><span style="color:#34d399">+${d}%p</span></div>`).join('')}
+          ${changes.increased.map(item => `<div style="padding:6px 10px;background:rgba(52,211,153,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(item.name)}</span><span style="color:#34d399">+${item.diff}%p</span></div>`).join('')}
         </div>`;
       }
-      if (changes.decreased && Object.keys(changes.decreased).length) {
+      if (changes.decreased?.length) {
         changesHtml += `<div style="margin-bottom:12px">
           <div style="font-size:11px;color:#f87171;margin-bottom:6px">📉 비중 감소</div>
-          ${Object.entries(changes.decreased).map(([s,d]) => `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(s)}</span><span style="color:#f87171">${d}%p</span></div>`).join('')}
+          ${changes.decreased.map(item => `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(item.name)}</span><span style="color:#f87171">${item.diff}%p</span></div>`).join('')}
         </div>`;
       }
       if (!changesHtml) {
