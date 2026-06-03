@@ -1458,6 +1458,7 @@ function selectEtf(el) {
     if (cached && (Date.now() - cached.ts) < MODAL_CACHE_TTL) {
       renderModalHoldings(cached.holdings);
       drawTrendChart(cached.trend, name);
+      loadStockNews(name);
       return;
     }
 
