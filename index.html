@@ -1849,7 +1849,7 @@ function selectEtf(el) {
   });
 
 
-// =========================================================
+  // =========================================================
   // 종목 뉴스 로드 (Google News RSS)
   // =========================================================
   async function loadStockNews(stockName) {
@@ -1858,7 +1858,7 @@ function selectEtf(el) {
     el.innerHTML = '<div class="hl-empty">뉴스 로딩 중...</div>';
 
     try {
-      const query = encodeURIComponent(stockName + ' 주식');
+      const query = encodeURIComponent(stockName + ' 주식 분석 전망');
       const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=ko&gl=KR&ceid=KR:ko`;
       const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
@@ -1866,11 +1866,32 @@ function selectEtf(el) {
       const data = await resp.json();
 
       if (!data.items?.length) {
-        el.innerHTML = '<div class="hl-empty">관련 뉴스 없음</div>';
+        el.closest('.modal-section').style.display = 'none';
         return;
       }
 
-      const news = data.items.slice(0, 5);
+      // 7일 이내 기사만 필터
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      let recent = data.items.filter(item => new Date(item.pubDate) >= weekAgo);
+
+      // 중복 제목 제거 (앞 15글자 기준)
+      const seen = new Set();
+      recent = recent.filter(item => {
+        const key = (item.title || '').slice(0, 15);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      // 결과 없으면 섹션 숨김
+      if (!recent.length) {
+        el.closest('.modal-section').style.display = 'none';
+        return;
+      }
+
+      el.closest('.modal-section').style.display = 'block';
+      const news = recent.slice(0, 10);
       el.innerHTML = news.map(item => {
         const title = escapeHtml(item.title || '');
         const source = escapeHtml(item.author || '');
@@ -1888,7 +1909,7 @@ function selectEtf(el) {
 
     } catch(e) {
       console.error('뉴스 로딩 실패:', e);
-      el.innerHTML = `<div class="hl-empty">뉴스를 불러올 수 없습니다</div>`;
+      el.closest('.modal-section').style.display = 'none';
     }
   }
 
