@@ -1909,24 +1909,32 @@ function selectEtf(el) {
       if (changes.new?.length) {
         changesHtml += `<div style="margin-bottom:12px">
           <div style="font-size:11px;color:#00D4AA;margin-bottom:6px">✨ 신규 편입</div>
-          ${changes.new.map(s => `<div style="padding:6px 10px;background:rgba(0,212,170,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px">${escapeHtml(s)}</div>`).join('')}
+          ${changes.new.map(item => {
+            const n = typeof item === 'string' ? item : item.name;
+            const w = typeof item === 'object' && item.weight ? item.weight + '%' : '';
+            return `<div style="padding:6px 10px;background:rgba(0,212,170,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(n)}</span><span style="color:#00D4AA">${escapeHtml(w)}</span></div>`;
+          }).join('')}
         </div>`;
       }
       if (changes.removed?.length) {
         changesHtml += `<div style="margin-bottom:12px">
           <div style="font-size:11px;color:#f87171;margin-bottom:6px">🚪 제외 종목</div>
-          ${changes.removed.map(s => `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px">${escapeHtml(s)}</div>`).join('')}
+          ${changes.removed.map(item => {
+            const n = typeof item === 'string' ? item : item.name;
+            const w = typeof item === 'object' && item.weight ? '-' + item.weight + '%' : '';
+            return `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(n)}</span><span style="color:#f87171">${escapeHtml(w)}</span></div>`;
+          }).join('')}
         </div>`;
       }
       if (changes.increased?.length) {
         changesHtml += `<div style="margin-bottom:12px">
-          <div style="font-size:11px;color:#34d399;margin-bottom:6px">📈 비중 증가</div>
+          <div style="font-size:11px;color:#34d399;margin-bottom:6px">📈 비중 증가 <span style="color:#475569;font-weight:400">(0.05%p 이상 종목)</span></div>
           ${changes.increased.map(item => `<div style="padding:6px 10px;background:rgba(52,211,153,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(item.name)}</span><span style="color:#34d399">+${item.diff}%p</span></div>`).join('')}
         </div>`;
       }
       if (changes.decreased?.length) {
         changesHtml += `<div style="margin-bottom:12px">
-          <div style="font-size:11px;color:#f87171;margin-bottom:6px">📉 비중 감소</div>
+          <div style="font-size:11px;color:#f87171;margin-bottom:6px">📉 비중 감소 <span style="color:#475569;font-weight:400">(-0.05%p 이하 종목)</span></div>
           ${changes.decreased.map(item => `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(item.name)}</span><span style="color:#f87171">${item.diff}%p</span></div>`).join('')}
         </div>`;
       }
