@@ -1861,76 +1861,54 @@ function selectEtf(el) {
     if (section) section.style.display = 'block';
     el.innerHTML = '<div class="hl-empty">뉴스 로딩 중...</div>';
 
-    // 현재 모달의 종목코드 추출
     const modalTitle = document.getElementById('modalTitle').textContent;
     const codeMatch = modalTitle.match(/\((\d{6})\)/);
     const isKoreanStock = !!codeMatch;
     const stockCode = codeMatch ? codeMatch[1] : '';
 
     try {
-      // Google News RSS 기사 로드
-      const query = encodeURIComponent(stockName);
+      // 한국 종목: 종목코드로도 검색, 해외: 종목명으로 검색
+      const searchTerm = isKoreanStock ? stockName + ' ' + stockCode : stockName;
+      const query = encodeURIComponent(searchTerm);
       const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=ko&gl=KR&ceid=KR:ko`;
       const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
       const resp = await fetch(apiUrl);
       const data = await resp.json();
 
-      let newsHtml = '';
-
-      // 기사 표시
-      if (data.items?.length) {
-        const now = new Date();
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        let recent = data.items.filter(item => new Date(item.pubDate) >= monthAgo);
-        
-        const seen = new Set();
-        recent = recent.filter(item => {
-          const key = (item.title || '').slice(0, 15);
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-
-        if (!recent.length) recent = data.items.slice(0, 5);
-
-        newsHtml = recent.slice(0, 10).map(item => {
-          const title = escapeHtml(item.title || '');
-          const source = escapeHtml(item.author || '');
-          const date = new Date(item.pubDate).toLocaleDateString('ko-KR');
-          const link = escapeHtml(item.link || '#');
-          return `<a href="${link}" target="_blank" rel="noopener" style="
-            display:block;padding:10px 14px;background:#111827;border-radius:8px;
-            margin-bottom:6px;text-decoration:none;transition:background 0.15s;
-          " onmouseover="this.style.background='rgba(0,212,170,0.05)'"
-             onmouseout="this.style.background='#111827'">
-            <div style="font-size:13px;color:#f1f5f9;font-weight:500;line-height:1.4;white-space:normal">${title}</div>
-            <div style="font-size:11px;color:#475569;margin-top:4px">${source} · ${escapeHtml(date)}</div>
-          </a>`;
-        }).join('');
+      if (!data.items?.length) {
+        if (section) section.style.display = 'none';
+        return;
       }
 
-      // 하단 바로가기 링크
-      let linksHtml = '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">';
-      if (isKoreanStock) {
-        linksHtml += `<a href="https://finance.naver.com/item/news.naver?code=${stockCode}" target="_blank" rel="noopener" style="flex:1;padding:10px;background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.2);border-radius:8px;text-decoration:none;text-align:center;color:#00D4AA;font-size:12px;font-weight:600">📰 네이버 금융 뉴스</a>`;
-        linksHtml += `<a href="https://finance.naver.com/item/board.naver?code=${stockCode}" target="_blank" rel="noopener" style="flex:1;padding:10px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:8px;text-decoration:none;text-align:center;color:#60a5fa;font-size:12px;font-weight:600">💬 네이버 종목토론</a>`;
-      }
-      linksHtml += `<a href="https://news.google.com/search?q=${query}&hl=ko" target="_blank" rel="noopener" style="flex:1;padding:10px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;text-decoration:none;text-align:center;color:#F59E0B;font-size:12px;font-weight:600">🔍 Google 뉴스</a>`;
-      linksHtml += '</div>';
+      // 중복 제목 제거
+      const seen = new Set();
+      const unique = data.items.filter(item => {
+        const key = (item.title || '').slice(0, 20);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
 
-      el.innerHTML = (newsHtml || '<div class="hl-empty" style="margin-bottom:10px">최근 30일 내 관련 뉴스 없음</div>') + linksHtml;
+      const news = unique.slice(0, 10);
+      el.innerHTML = news.map(item => {
+        const title = escapeHtml(item.title || '');
+        const source = escapeHtml(item.author || '');
+        const date = new Date(item.pubDate).toLocaleDateString('ko-KR');
+        const link = escapeHtml(item.link || '#');
+        return `<a href="${link}" target="_blank" rel="noopener" style="
+          display:block;padding:10px 14px;background:#111827;border-radius:8px;
+          margin-bottom:6px;text-decoration:none;transition:background 0.15s;
+        " onmouseover="this.style.background='rgba(0,212,170,0.05)'"
+           onmouseout="this.style.background='#111827'">
+          <div style="font-size:13px;color:#f1f5f9;font-weight:500;line-height:1.4;white-space:normal">${title}</div>
+          <div style="font-size:11px;color:#475569;margin-top:4px">${source} · ${escapeHtml(date)}</div>
+        </a>`;
+      }).join('');
 
     } catch(e) {
       console.error('뉴스 로딩 실패:', e);
-      const query = encodeURIComponent(stockName);
-      let fallback = '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-      if (isKoreanStock) {
-        fallback += `<a href="https://finance.naver.com/item/news.naver?code=${stockCode}" target="_blank" rel="noopener" style="flex:1;padding:10px;background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.2);border-radius:8px;text-decoration:none;text-align:center;color:#00D4AA;font-size:12px;font-weight:600">📰 네이버 금융 뉴스</a>`;
-      }
-      fallback += `<a href="https://news.google.com/search?q=${query}&hl=ko" target="_blank" rel="noopener" style="flex:1;padding:10px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;text-decoration:none;text-align:center;color:#F59E0B;font-size:12px;font-weight:600">🔍 Google 뉴스</a>`;
-      fallback += '</div>';
-      el.innerHTML = fallback;
+      if (section) section.style.display = 'none';
     }
   }
 
