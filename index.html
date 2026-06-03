@@ -485,7 +485,7 @@
               <div style="font-size:11px;color:#3B82F6;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">📊 Top 10 보유종목</div>
               <div id="analysisHoldingsTable"></div>
             </div>
-
+ 
           <!-- 전일 대비 변화 -->
             <div style="background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px">
               <div style="font-size:11px;color:#F59E0B;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">📈 전일 대비 변화</div>
@@ -1866,14 +1866,14 @@ function selectEtf(el) {
       }
       const { data, error } = await query.maybeSingle();
 
+      // 날짜 표시 (데이터 유무와 관계없이 글로벌 기준일 표시)
+      document.getElementById('analysisBriefDate').textContent = `기준일: ${globalDate || '—'}`;
+
       if (error || !data) {
         document.getElementById('analysisBriefText').textContent = '해당 ETF의 분석 브리핑이 아직 없습니다.\n매일 오전 업데이트됩니다.';
         document.getElementById('analysisHoldingsTable').innerHTML = '';
         return;
       }
-
-      // 날짜 표시
-      document.getElementById('analysisBriefDate').textContent = `기준일: ${data.base_date}`;
 
       // 브리핑 텍스트 (마크다운 → HTML 변환)
       const briefHtml = (data.brief_text || '')
@@ -1895,10 +1895,10 @@ function selectEtf(el) {
       if (holdings.length) {
         document.getElementById('analysisHoldingsTable').innerHTML = holdings.map((h, i) => {
           const color = COLORS[i % COLORS.length];
-          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#111827;border-radius:8px;margin-bottom:6px;font-size:13px">
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#111827;border-radius:8px;margin-bottom:6px;font-size:13px;cursor:pointer" data-action="open-security" data-code="${escapeHtml(h.code||'')}" data-name="${escapeHtml(h.name)}">
             <span style="color:#475569;font-family:monospace;min-width:20px">${i+1}</span>
             <div class="dot" style="background:${color}"></div>
-            <span style="flex:1;color:#f1f5f9;font-weight:500">${escapeHtml(h.name)}</span>
+            <span class="clickable-name" style="flex:1;color:#f1f5f9;font-weight:500">${escapeHtml(h.name)}</span>
             <span style="font-family:monospace;color:#00D4AA">${Number(h.weight).toFixed(2)}%</span>
           </div>`;
         }).join('');
@@ -1916,8 +1916,9 @@ function selectEtf(el) {
           <div style="font-size:11px;color:#00D4AA;margin-bottom:6px">✨ 신규 편입</div>
           ${changes.new.map(item => {
             const n = typeof item === 'string' ? item : item.name;
+            const c = typeof item === 'object' ? (item.code||'') : '';
             const w = typeof item === 'object' && item.weight ? item.weight + '%' : '';
-            return `<div style="padding:6px 10px;background:rgba(0,212,170,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(n)}</span><span style="color:#00D4AA">${escapeHtml(w)}</span></div>`;
+            return `<div style="padding:6px 10px;background:rgba(0,212,170,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between;cursor:pointer" data-action="open-security" data-code="${escapeHtml(c)}" data-name="${escapeHtml(n)}"><span class="clickable-name">${escapeHtml(n)}</span><span style="color:#00D4AA">${escapeHtml(w)}</span></div>`;
           }).join('')}
         </div>`;
       }
@@ -1926,21 +1927,22 @@ function selectEtf(el) {
           <div style="font-size:11px;color:#f87171;margin-bottom:6px">🚪 제외 종목</div>
           ${changes.removed.map(item => {
             const n = typeof item === 'string' ? item : item.name;
+            const c = typeof item === 'object' ? (item.code||'') : '';
             const w = typeof item === 'object' && item.weight ? '-' + item.weight + '%' : '';
-            return `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(n)}</span><span style="color:#f87171">${escapeHtml(w)}</span></div>`;
+            return `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between;cursor:pointer" data-action="open-security" data-code="${escapeHtml(c)}" data-name="${escapeHtml(n)}"><span class="clickable-name">${escapeHtml(n)}</span><span style="color:#f87171">${escapeHtml(w)}</span></div>`;
           }).join('')}
         </div>`;
       }
       if (changes.increased?.length) {
         changesHtml += `<div style="margin-bottom:12px">
           <div style="font-size:11px;color:#34d399;margin-bottom:6px">📈 비중 증가 <span style="color:#475569;font-weight:400">(0.05%p 이상 종목)</span></div>
-          ${changes.increased.map(item => `<div style="padding:6px 10px;background:rgba(52,211,153,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(item.name)}</span><span style="color:#34d399">+${item.diff}%p</span></div>`).join('')}
+          ${changes.increased.map(item => `<div style="padding:6px 10px;background:rgba(52,211,153,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between;cursor:pointer" data-action="open-security" data-code="${escapeHtml(item.code||'')}" data-name="${escapeHtml(item.name)}"><span class="clickable-name">${escapeHtml(item.name)}</span><span style="color:#34d399">+${item.diff}%p</span></div>`).join('')}
         </div>`;
       }
       if (changes.decreased?.length) {
         changesHtml += `<div style="margin-bottom:12px">
           <div style="font-size:11px;color:#f87171;margin-bottom:6px">📉 비중 감소 <span style="color:#475569;font-weight:400">(-0.05%p 이하 종목)</span></div>
-          ${changes.decreased.map(item => `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between"><span>${escapeHtml(item.name)}</span><span style="color:#f87171">${item.diff}%p</span></div>`).join('')}
+          ${changes.decreased.map(item => `<div style="padding:6px 10px;background:rgba(248,113,113,0.05);border-radius:6px;font-size:12px;color:#e2e8f0;margin-bottom:4px;display:flex;justify-content:space-between;cursor:pointer" data-action="open-security" data-code="${escapeHtml(item.code||'')}" data-name="${escapeHtml(item.name)}"><span class="clickable-name">${escapeHtml(item.name)}</span><span style="color:#f87171">${item.diff}%p</span></div>`).join('')}
         </div>`;
       }
       if (!changesHtml) {
