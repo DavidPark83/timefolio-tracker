@@ -1858,7 +1858,7 @@ function selectEtf(el) {
     el.innerHTML = '<div class="hl-empty">뉴스 로딩 중...</div>';
 
     try {
-      const query = encodeURIComponent(stockName + ' 주식 분석 전망');
+      const query = encodeURIComponent(stockName);
       const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=ko&gl=KR&ceid=KR:ko`;
       const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
@@ -1872,7 +1872,7 @@ function selectEtf(el) {
 
       // 7일 이내 기사만 필터
       const now = new Date();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const weekAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       let recent = data.items.filter(item => new Date(item.pubDate) >= weekAgo);
 
       // 중복 제목 제거 (앞 15글자 기준)
