@@ -533,6 +533,10 @@
         <h3>📦 이 종목을 보유한 ETF (최신일 기준)</h3>
         <div class="holding-list" id="holdingList"><div class="hl-empty">로딩 중...</div></div>
       </div>
+      <div class="modal-section">
+        <h3>📰 최신 뉴스</h3>
+        <div id="newsLinks"><div class="hl-empty">뉴스 로딩 중...</div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1486,11 +1490,12 @@ function selectEtf(el) {
     const holdings = holdingsResp.data || [];
     const trend = trendResp.data || [];
 
-    // ★ 캐시 저장
+  // ★ 캐시 저장
     modalCache.set(normCode, { holdings, trend, ts: Date.now() });
 
     renderModalHoldings(holdings);
     drawTrendChart(trend, name);
+    loadStockNews(name);
   }
 
   // ★ Fix 1: 모달 holdings 렌더 (escapeHtml 적용)
@@ -1842,6 +1847,51 @@ function selectEtf(el) {
       closeModal();
     }
   });
+
+
+// =========================================================
+  // 종목 뉴스 로드 (Google News RSS)
+  // =========================================================
+  async function loadStockNews(stockName) {
+    const el = document.getElementById('newsLinks');
+    if (!el) return;
+    el.innerHTML = '<div class="hl-empty">뉴스 로딩 중...</div>';
+
+    try {
+      const query = encodeURIComponent(stockName + ' 주식');
+      const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=ko&gl=KR&ceid=KR:ko`;
+      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+      const resp = await fetch(apiUrl);
+      const data = await resp.json();
+
+      if (!data.items?.length) {
+        el.innerHTML = '<div class="hl-empty">관련 뉴스 없음</div>';
+        return;
+      }
+
+      const news = data.items.slice(0, 5);
+      el.innerHTML = news.map(item => {
+        const title = escapeHtml(item.title || '');
+        const source = escapeHtml(item.author || '');
+        const date = new Date(item.pubDate).toLocaleDateString('ko-KR');
+        const link = escapeHtml(item.link || '#');
+        return `<a href="${link}" target="_blank" rel="noopener" style="
+          display:block;padding:10px 14px;background:#111827;border-radius:8px;
+          margin-bottom:6px;text-decoration:none;transition:background 0.15s;
+        " onmouseover="this.style.background='rgba(0,212,170,0.05)'"
+           onmouseout="this.style.background='#111827'">
+          <div style="font-size:13px;color:#f1f5f9;font-weight:500;line-height:1.4;white-space:normal">${title}</div>
+          <div style="font-size:11px;color:#475569;margin-top:4px">${source} · ${escapeHtml(date)}</div>
+        </a>`;
+      }).join('');
+
+    } catch(e) {
+      console.error('뉴스 로딩 실패:', e);
+      el.innerHTML = `<div class="hl-empty">뉴스를 불러올 수 없습니다</div>`;
+    }
+  }
+
 
 
 // =========================================================
