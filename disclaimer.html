@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>투자 고지사항 | Timefolio ETF Tracker</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d2e;
+      --border: #2a2d3e;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #6366f1;
+      --warn: #f59e0b;
+      --warn-bg: rgba(245, 158, 11, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+      line-height: 1.8;
+      padding: 0 16px;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header a { color: var(--accent); text-decoration: none; font-size: 14px; }
+    header h1 { font-size: 18px; font-weight: 700; }
+    .container {
+      max-width: 800px;
+      margin: 48px auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 48px;
+    }
+    .warn-banner {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 40px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .warn-banner .icon { font-size: 24px; flex-shrink: 0; }
+    .warn-banner p { color: var(--warn); font-size: 15px; font-weight: 600; margin: 0; line-height: 1.6; }
+    h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .updated { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 32px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    p { color: var(--muted); margin-bottom: 12px; font-size: 15px; }
+    ul { color: var(--muted); font-size: 15px; padding-left: 20px; margin-bottom: 12px; }
+    ul li { margin-bottom: 6px; }
+    .highlight-box {
+      background: var(--bg);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+    .highlight-box p { margin: 0; }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 32px 0;
+    }
+    footer a { color: var(--accent); text-decoration: none; margin: 0 8px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/">← 메인으로</a>
+  <h1>📊 Timefolio ETF Tracker</h1>
+</header>
+
+<div class="container">
+  <h2>⚠️ 투자 고지사항 (Investment Disclaimer)</h2>
+  <p class="updated">최종 업데이트: 2025년 6월 6일</p>
+
+  <div class="warn-banner">
+    <div class="icon">⚠️</div>
+    <p>본 서비스에서 제공하는 모든 데이터와 분석 결과는 투자 권유가 아니며, 정보 제공만을 목적으로 합니다. 모든 투자 결정은 이용자 본인의 판단과 책임 하에 이루어져야 합니다.</p>
+  </div>
+
+  <h3>1. 서비스의 성격</h3>
+  <p>Timefolio ETF Tracker는 타임폴리오자산운용의 액티브 ETF 보유 종목 현황을 추적·시각화하는 정보 제공 서비스입니다. 본 서비스는 투자자문업 및 금융투자업 인가를 받지 않은 개인 운영 서비스입니다.</p>
+
+  <div class="highlight-box">
+    <p>본 서비스는 「자본시장과 금융투자업에 관한 법률」에 따른 투자자문업자가 아니며, 제공되는 모든 정보는 투자 조언이 아닌 참고 자료입니다.</p>
+  </div>
+
+  <h3>2. 데이터의 정확성</h3>
+  <p>본 서비스에서 제공하는 데이터는 공개된 정보를 기반으로 수집·가공됩니다. 다음 사항에 유의하시기 바랍니다.</p>
+  <ul>
+    <li>데이터 수집 과정에서 오류가 발생할 수 있으며, 실제 ETF 보유 종목과 차이가 있을 수 있습니다.</li>
+    <li>데이터는 실시간이 아닌 일정 주기로 업데이트됩니다.</li>
+    <li>AI 분석 결과는 알고리즘에 의한 자동 생성 내용으로, 전문 투자 분석가의 의견이 아닙니다.</li>
+    <li>과거 데이터는 미래 수익을 보장하지 않습니다.</li>
+  </ul>
+
+  <h3>3. 투자 위험 고지</h3>
+  <p>금융투자상품(ETF 포함)에 투자하는 것은 원금 손실의 위험이 있습니다.</p>
+  <ul>
+    <li>ETF의 가치는 시장 상황에 따라 투자 원금 이하로 하락할 수 있습니다.</li>
+    <li>과거의 운용 실적이 미래의 운용 실적을 보장하지 않습니다.</li>
+    <li>투자 전 해당 ETF의 투자설명서 및 간이투자설명서를 반드시 확인하시기 바랍니다.</li>
+  </ul>
+
+  <h3>4. AI 분석 기능 관련</h3>
+  <p>본 서비스의 AI 종목 분석 기능은 다음을 전제로 제공됩니다.</p>
+  <ul>
+    <li>AI 분석은 정보 제공 목적으로만 활용되어야 합니다.</li>
+    <li>AI 분석 결과를 단독 투자 근거로 사용하지 마십시오.</li>
+    <li>AI 모델의 특성상 부정확하거나 편향된 분석이 생성될 수 있습니다.</li>
+  </ul>
+
+  <h3>5. 책임의 한계</h3>
+  <p>본 서비스 운영자는 다음에 대해 책임을 지지 않습니다.</p>
+  <ul>
+    <li>본 서비스의 정보를 기반으로 한 투자 결정으로 인한 손익</li>
+    <li>데이터 오류 또는 지연으로 인한 직·간접적 손해</li>
+    <li>서비스 중단 또는 장애로 인한 손해</li>
+    <li>제3자 서비스(Supabase, Vercel 등) 장애로 인한 손해</li>
+  </ul>
+
+  <h3>6. 저작권</h3>
+  <p>본 서비스에서 제공하는 데이터, 분석 결과, 시각화 자료의 저작권은 본 서비스에 귀속됩니다. 무단 복제, 배포, 상업적 이용을 금합니다.</p>
+  <p>타임폴리오자산운용의 ETF 명칭 및 관련 상표권은 타임폴리오자산운용에 귀속됩니다. 본 서비스는 타임폴리오자산운용과 무관한 독립 서비스입니다.</p>
+</div>
+
+<footer>
+  <a href="/">홈</a>
+  <a href="/privacy.html">개인정보처리방침</a>
+  <a href="/about.html">서비스 소개</a>
+  <br/><br/>
+  © 2025 Timefolio ETF Tracker. All rights reserved.
+</footer>
+
+</body>
+</html>
