@@ -208,8 +208,6 @@ FOOT = """
   <a href="/guide.html">가이드</a>
   <a href="/glossary.html">용어사전</a>
   <a href="/etf/">ETF 목록</a>
-  <a href="/disclaimer.html">투자 고지사항</a>
-  <a href="/privacy.html">개인정보처리방침</a>
   <br/><br/>
   © 2026 Active ETF Tracker. All rights reserved.
 </footer>
