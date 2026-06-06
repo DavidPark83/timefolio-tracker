@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ETF 용어사전 — NAV·비중·리밸런싱부터 액티브 ETF까지 | Active ETF Tracker</title>
+  <meta name="description" content="ETF 투자에 꼭 필요한 핵심 용어 30개를 쉽게 정리한 사전. NAV, 비중, 리밸런싱, 추적오차, 괴리율, 액티브 ETF 등 초보자도 이해하기 쉬운 ETF 용어 모음.">
+  <link rel="canonical" href="https://etftracker.co.kr/glossary.html" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2JVGVXMPSB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-2JVGVXMPSB');
+  </script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9155147769106740"
+       crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #0d1526;
+      --surface2: #111827;
+      --border: #1e2d4a;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --dim: #64748b;
+      --accent: #00D4AA;
+      --blue: #3B82F6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.8;
+      padding: 0 16px;
+    }
+    header {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    header a.back { color: var(--accent); text-decoration: none; font-size: 14px; }
+    header h1.logo { font-size: 18px; font-weight: 700; }
+    .nav-links { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 13px; }
+    .nav-links a:hover { color: var(--accent); }
+
+    .container { max-width: 800px; margin: 40px auto; }
+    .breadcrumb { font-size: 12px; color: var(--dim); margin-bottom: 20px; }
+    .breadcrumb a { color: var(--muted); text-decoration: none; }
+
+    h1.title { font-size: 30px; font-weight: 800; margin-bottom: 12px; color: #f8fafc; }
+    .lead {
+      font-size: 16px; color: var(--muted);
+      padding: 18px 22px; background: var(--surface);
+      border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0;
+      margin-bottom: 32px;
+    }
+
+    /* 카테고리 빠른 이동 */
+    .toc {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px;
+    }
+    .toc a {
+      font-size: 12px; padding: 6px 14px; border-radius: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); text-decoration: none;
+    }
+    .toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+    .cat-title {
+      font-size: 18px; font-weight: 700; color: var(--accent);
+      margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .term {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 22px; margin-bottom: 12px;
+    }
+    .term dt {
+      font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;
+      display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    }
+    .term dt .en { font-size: 12px; color: var(--dim); font-weight: 500; }
+    .term dd { font-size: 14px; color: #cbd5e1; margin: 0; }
+    .term dd strong { color: var(--accent); }
+
+    .cta-box {
+      text-align: center; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 32px; margin: 44px 0;
+    }
+    .cta-box h3 { color: #f8fafc; margin-bottom: 8px; }
+    .cta-box p { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+    .cta-btn {
+      display: inline-block; background: var(--accent); color: #06231d;
+      padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 700;
+    }
+    .disclaimer-note {
+      margin-top: 40px; padding: 16px 20px; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 12px; color: var(--dim); line-height: 1.7;
+    }
+    footer {
+      max-width: 800px; margin: 40px auto 0; text-align: center;
+      color: var(--dim); font-size: 13px; padding: 32px 0;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--muted); text-decoration: none; margin: 0 8px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back">← 메인으로</a>
+  <h1 class="logo">📊 Active ETF Tracker</h1>
+  <nav class="nav-links">
+    <a href="/guide.html">가이드</a>
+    <a href="/glossary.html">용어사전</a>
+    <a href="/about.html">서비스 소개</a>
+    <a href="/disclaimer.html">투자 고지사항</a>
+  </nav>
+</header>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="/">홈</a> &nbsp;›&nbsp; <a href="/glossary.html">용어사전</a> &nbsp;›&nbsp; ETF 용어사전
+  </div>
+
+  <h1 class="title">ETF 용어사전</h1>
+  <p class="lead">
+    ETF 투자를 시작할 때 꼭 마주치는 핵심 용어 30개를 쉽게 풀어 정리했습니다. 처음 보는 단어가 나오면 이 페이지에서 빠르게 찾아보세요.
+  </p>
+
+  <div class="toc">
+    <a href="#basic">① 기본 개념</a>
+    <a href="#price">② 가격·평가</a>
+    <a href="#holding">③ 보유·구성</a>
+    <a href="#active">④ 액티브 ETF</a>
+    <a href="#trade">⑤ 거래·세금</a>
+  </div>
+
+  <!-- ① 기본 개념 -->
+  <h2 class="cat-title" id="basic">① 기본 개념</h2>
+
+  <dl class="term">
+    <dt>ETF <span class="en">Exchange Traded Fund · 상장지수펀드</span></dt>
+    <dd>주식처럼 거래소에 상장되어 실시간으로 사고팔 수 있는 펀드입니다. 하나의 ETF를 사면 그 안에 담긴 여러 종목에 <strong>분산 투자</strong>하는 효과가 있습니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>기초지수 <span class="en">Benchmark · 벤치마크</span></dt>
+    <dd>ETF가 추종하거나 비교 대상으로 삼는 지수입니다. 예를 들어 코스피200을 추종하는 ETF의 기초지수는 코스피200이며, 액티브 ETF는 이 지수보다 높은 성과를 목표로 합니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>운용사 <span class="en">Asset Management Company</span></dt>
+    <dd>ETF를 만들고 운용하는 자산운용회사입니다. 타임폴리오·삼성액티브·미래에셋 등이 대표적이며, 같은 테마라도 운용사에 따라 담는 종목이 다릅니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>운용보수 <span class="en">Expense Ratio</span></dt>
+    <dd>ETF를 운용하는 대가로 투자자가 부담하는 연간 수수료입니다. 보수는 매일 조금씩 자동 차감되며, <strong>장기 투자일수록 보수 차이가 수익률에 크게 영향</strong>을 줍니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>위험등급 <span class="en">Risk Grade</span></dt>
+    <dd>금융상품의 위험 수준을 1~6등급으로 표시한 것입니다. <strong>숫자가 낮을수록 위험이 큽니다</strong>(1등급=매우 높은 위험). 투자설명서에서 확인할 수 있습니다.</dd>
+  </dl>
+
+  <!-- ② 가격·평가 -->
+  <h2 class="cat-title" id="price">② 가격·평가</h2>
+
+  <dl class="term">
+    <dt>NAV <span class="en">Net Asset Value · 순자산가치</span></dt>
+    <dd>ETF가 보유한 자산의 실제 가치를 1주 기준으로 나타낸 값입니다. ETF의 <strong>"진짜 가격"</strong>이라 할 수 있으며, 시장 거래가격은 이 NAV 근처에서 형성됩니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>순자산총액 <span class="en">AUM · Assets Under Management</span></dt>
+    <dd>ETF가 굴리는 자산의 전체 규모입니다. 규모가 클수록 안정적이며, <strong>너무 작으면 상장폐지 위험이나 거래 유동성 문제</strong>가 생길 수 있습니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>괴리율 <span class="en">Premium / Discount</span></dt>
+    <dd>ETF의 시장 거래가격과 NAV(실제 가치)의 차이를 백분율로 나타낸 것입니다. 괴리율이 크면 비싸게 사거나 싸게 파는 셈이 되므로, <strong>거래 시 괴리율이 작은지 확인</strong>하는 것이 좋습니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>추적오차 <span class="en">Tracking Error</span></dt>
+    <dd>ETF의 실제 수익률이 기초지수 수익률과 얼마나 벌어지는지를 나타냅니다. 패시브 ETF는 작을수록 좋고, 액티브 ETF는 의도적으로 지수와 다르게 운용하므로 큰 것이 자연스럽습니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>iNAV <span class="en">indicative NAV · 실시간 추정 순자산가치</span></dt>
+    <dd>장중에 실시간으로 추정해 보여주는 NAV입니다. 투자자가 지금 거래하는 가격이 적정한지 판단하는 기준이 됩니다.</dd>
+  </dl>
+
+  <!-- ③ 보유·구성 -->
+  <h2 class="cat-title" id="holding">③ 보유·구성</h2>
+
+  <dl class="term">
+    <dt>보유종목 <span class="en">Holdings · 구성종목</span></dt>
+    <dd>ETF가 실제로 담고 있는 개별 종목들입니다. ETF를 산다는 것은 곧 이 보유종목들에 비중대로 투자하는 것이며, <strong>이름보다 실제 보유종목을 확인</strong>하는 것이 중요합니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>비중 <span class="en">Weight</span></dt>
+    <dd>ETF 전체에서 특정 종목이 차지하는 비율(%)입니다. 비중이 한두 종목에 지나치게 쏠려 있으면 분산 효과가 떨어지므로 주의가 필요합니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>리밸런싱 <span class="en">Rebalancing</span></dt>
+    <dd>ETF의 보유종목과 비중을 다시 조정하는 것입니다. 패시브 ETF는 정기적으로, <strong>액티브 ETF는 운용역 판단에 따라 수시로</strong> 리밸런싱이 일어납니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>편입 / 편출 <span class="en">신규 편입 · 제외</span></dt>
+    <dd>ETF에 새로운 종목이 추가되는 것을 <strong>편입(신규)</strong>, 기존 종목이 빠지는 것을 <strong>편출(제외)</strong>이라 합니다. 액티브 ETF에서는 이 변화가 운용역의 시장 판단을 보여주는 신호가 됩니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>CU <span class="en">Creation Unit · 설정단위</span></dt>
+    <dd>ETF를 만들거나 해지할 때 거래되는 최소 묶음 단위입니다. 일반 투자자가 직접 다룰 일은 거의 없지만, ETF의 유동성과 관련된 개념입니다.</dd>
+  </dl>
+
+  <!-- ④ 액티브 ETF -->
+  <h2 class="cat-title" id="active">④ 액티브 ETF</h2>
+
+  <dl class="term">
+    <dt>액티브 ETF <span class="en">Active ETF</span></dt>
+    <dd>운용역이 적극적으로 종목을 선별해 <strong>기초지수보다 높은 수익(초과수익)을 추구</strong>하는 ETF입니다. 보유종목이 자주 바뀌는 것이 특징입니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>패시브 ETF <span class="en">Passive ETF</span></dt>
+    <dd>기초지수를 그대로 따라가는 것을 목표로 하는 ETF입니다. 종목 변화가 거의 없고 보수가 낮습니다. 액티브 ETF와 대비되는 개념입니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>알파 <span class="en">Alpha · 초과수익</span></dt>
+    <dd>기초지수 대비 추가로 얻은 수익을 말합니다. 액티브 ETF가 추구하는 핵심 목표가 바로 이 <strong>플러스 알파</strong>이지만, 항상 달성되는 것은 아닙니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>운용역 <span class="en">Fund Manager · 펀드매니저</span></dt>
+    <dd>ETF의 종목 선정과 비중 조절을 담당하는 전문 인력입니다. 액티브 ETF의 성과는 운용역의 역량에 크게 좌우됩니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>테마 ETF <span class="en">Thematic ETF</span></dt>
+    <dd>AI·반도체·바이오·2차전지 등 특정 산업이나 트렌드에 집중 투자하는 ETF입니다. 액티브 ETF 중 상당수가 테마형으로 출시됩니다.</dd>
+  </dl>
+
+  <!-- ⑤ 거래·세금 -->
+  <h2 class="cat-title" id="trade">⑤ 거래·세금</h2>
+
+  <dl class="term">
+    <dt>분배금 <span class="en">Distribution · 배당</span></dt>
+    <dd>ETF가 보유 종목에서 받은 배당·이자 등을 투자자에게 나눠주는 돈입니다. 월배당·분기배당 등 ETF마다 지급 주기가 다릅니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>유동성 <span class="en">Liquidity</span></dt>
+    <dd>원할 때 ETF를 쉽게 사고팔 수 있는 정도입니다. 거래량이 많고 순자산총액이 클수록 유동성이 좋아 원하는 가격에 거래하기 쉽습니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>LP <span class="en">Liquidity Provider · 유동성공급자</span></dt>
+    <dd>ETF가 적정 가격에 거래되도록 매수·매도 호가를 제공하는 증권사입니다. LP 덕분에 거래량이 적은 ETF도 NAV 근처에서 거래될 수 있습니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>보유기간과세 <span class="en">국내 ETF 세금</span></dt>
+    <dd>국내 주식형 ETF와 기타 ETF(해외·채권 등)는 세금 체계가 다릅니다. 매매차익·분배금에 대한 과세 방식이 상품마다 다르므로 투자 전 확인이 필요합니다. <strong>세금은 개인 상황에 따라 다르므로 전문가 상담을 권장</strong>합니다.</dd>
+  </dl>
+
+  <dl class="term">
+    <dt>연금계좌 투자 <span class="en">연금저축 · IRP</span></dt>
+    <dd>연금저축펀드나 IRP 계좌에서 ETF를 매수하면 세제 혜택을 받을 수 있습니다. 단, 계좌 종류에 따라 투자 가능한 ETF와 위험자산 한도가 다릅니다.</dd>
+  </dl>
+
+  <div class="cta-box">
+    <h3>📊 용어를 실전으로</h3>
+    <p>방금 익힌 보유종목·비중·편입·편출을 실제 액티브 ETF에서 바로 확인해보세요.</p>
+    <a href="/" class="cta-btn">Active ETF Tracker 바로가기 →</a>
+  </div>
+
+  <div class="disclaimer-note">
+    ※ 본 용어사전은 ETF 투자에 대한 일반적인 이해를 돕기 위한 정보 제공용이며, 특정 상품의 투자 권유가 아닙니다. 세금·법률 관련 사항은 개인의 상황에 따라 다를 수 있으므로 전문가와 상담하시기 바랍니다. 자세한 내용은 <a href="/disclaimer.html" style="color:#00D4AA">투자 고지사항</a>을 참고하세요.
+  </div>
+</div>
+
+<footer>
+  <a href="/">홈</a>
+  <a href="/guide.html">가이드</a>
+  <a href="/glossary.html">용어사전</a>
+  <a href="/about.html">서비스 소개</a>
+  <a href="/disclaimer.html">투자 고지사항</a>
+  <a href="/privacy.html">개인정보처리방침</a>
+  <br/><br/>
+  © 2026 Active ETF Tracker. All rights reserved.
+</footer>
+
+</body>
+</html>
