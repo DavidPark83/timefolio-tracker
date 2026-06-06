@@ -252,6 +252,10 @@
   gtag('config', 'G-2JVGVXMPSB');
 </script>
 
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9155147769106740"
+     crossorigin="anonymous"></script>
+
 </head>
 <body>
 
@@ -1851,9 +1855,9 @@ function selectEtf(el) {
   });
 
 
-  // =========================================================
-  // 종목 뉴스 로드 (국내/해외 구분하여 5개 아웃링크 제공)
-  // =========================================================
+// =========================================================
+// 종목 뉴스 로드 (국내/해외 구분하여 5개 아웃링크 제공)
+// =========================================================
   async function loadStockNews(stockName) {
     const el = document.getElementById('newsLinks');
     if (!el) return;
@@ -1899,8 +1903,8 @@ function selectEtf(el) {
 
 
 // =========================================================
-  // ETF 분석 탭
-  // =========================================================
+// ETF 분석 탭
+// =========================================================
   async function loadAnalysisBrief(idx, name) {
     document.getElementById('analysisEmptyMsg').style.display = 'none';
     document.getElementById('analysisBriefPanel').style.display = 'block';
