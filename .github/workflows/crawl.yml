@@ -36,7 +36,8 @@ on:
         description: '[backfill] 종료일 (YYYY-MM-DD), 빈 칸이면 어제'
         required: false
         default: ''
-
+permissions:
+  contents: write
 jobs:
   crawl:
     runs-on: ubuntu-latest
@@ -85,4 +86,19 @@ jobs:
           else
             echo "📊 일일 크롤링"
             python crawler.py
+          fi
+      - name: Generate ETF pages
+        run: |
+          echo "📄 ETF 정적 페이지 생성"
+          python generate_etf_pages.py
+      - name: Commit and push generated pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add etf/ sitemap.xml
+          if git diff --staged --quiet; then
+            echo "변경사항 없음 - 커밋 스킵"
+          else
+            git commit -m "Auto-update ETF pages [skip ci]"
+            git push
           fi
