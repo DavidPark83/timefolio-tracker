@@ -39,7 +39,7 @@ HEADERS = {
     "Authorization": f"Bearer {SUPABASE_KEY}",
 }
 
-TOP_N = 20  # 페이지당 노출할 상위 보유종목 수
+TOP_N = 999  # 페이지당 노출할 상위 보유종목 수
 
 # ─────────────────────────────────────────────────────────────
 # ETF 메타데이터 (index.html의 ETF_META와 동일)
@@ -195,9 +195,10 @@ HEAD = """<!DOCTYPE html>
   <a href="/" class="back">← 메인으로</a>
   <h1 class="logo">📊 Active ETF Tracker</h1>
   <nav class="nav-links">
-    <a href="/etf/">ETF 목록</a>
     <a href="/guide.html">가이드</a>
     <a href="/glossary.html">용어사전</a>
+    <a href="/etf/">ETF 목록</a>
+    <a href="/about.html">서비스 소개</a>
     <a href="/disclaimer.html">투자 고지사항</a>
   </nav>
 </header>
