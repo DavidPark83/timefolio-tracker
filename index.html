@@ -1475,9 +1475,9 @@ function selectEtf(el) {
     }
 
     // ★ candidates 한 번만 선언 (기존 버그 수정)
-    const candidates = [normCode];
-    const stripped = normCode.replace(/^0+/, "");
-    if (stripped && stripped !== normCode) candidates.push(stripped);
+    // const candidates = [normCode];
+    // const stripped = normCode.replace(/^0+/, "");
+    // if (stripped && stripped !== normCode) candidates.push(stripped);
 
     // ★ Fix 5: globalAllDates에서 최신일 가져오기 (DB 1회 절약)
     const latest = globalAllDates[0];
