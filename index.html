@@ -653,7 +653,7 @@
     if (!s) return "";
     if (/^\d+\.\d+$/.test(s)) s = s.split(".")[0];
     if (/^\d{1,6}$/.test(s)) return s.padStart(6, "0");
-    return s;
+    return s.toUpperCase();
   }
 
   function normalizeRows(rows) {
@@ -1491,11 +1491,11 @@ function selectEtf(el) {
       db.from("holdings")
         .select("etf_idx, etf_name, weight, qty, value, code")
         .eq("date", latest)
-        .in("code", candidates)
+        .ilike("code", normCode)
         .order("weight", { ascending: false }),
       db.from("holdings")
         .select("date, etf_idx, etf_name, weight")
-        .in("code", candidates)
+        .ilike("code", normCode)
         .order("date", { ascending: true })
         .limit(2000)
     ]);
