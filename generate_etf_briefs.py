@@ -46,17 +46,17 @@ def build_prompt(etf_name, etf_type, today_holdings, yesterday_holdings, nav):
     """LLM 프롬프트 구성"""
     
     # 변화 종목 계산
-    today_map = {h["stock_name"]: h["weight"] for h in today_holdings}
-    yesterday_map = {h["stock_name"]: h["weight"] for h in yesterday_holdings}
+    today_map = {h["code"].upper(): h for h in today_holdings}
+    yesterday_map = {h["code"].upper(): h for h in yesterday_holdings}
     
-    new_stocks = [s for s in today_map if s not in yesterday_map]
-    removed = [s for s in yesterday_map if s not in today_map]
-    increased = [(s, today_map[s]-yesterday_map[s]) 
-                 for s in today_map if s in yesterday_map 
-                 and today_map[s] - yesterday_map[s] > 0.5]
-    decreased = [(s, today_map[s]-yesterday_map[s]) 
-                 for s in today_map if s in yesterday_map 
-                 and today_map[s] - yesterday_map[s] < -0.5]
+    new_stocks = [today_map[c]["stock_name"] for c in today_map if c not in yesterday_map]
+    removed = [yesterday_map[c]["stock_name"] for c in yesterday_map if c not in today_map]
+    increased = [(today_map[c]["stock_name"], today_map[c]["weight"]-yesterday_map[c]["weight"]) 
+                 for c in today_map if c in yesterday_map 
+                 and today_map[c]["weight"] - yesterday_map[c]["weight"] > 0.5]
+    decreased = [(today_map[c]["stock_name"], today_map[c]["weight"]-yesterday_map[c]["weight"]) 
+                 for c in today_map if c in yesterday_map 
+                 and today_map[c]["weight"] - yesterday_map[c]["weight"] < -0.5]
     
     top10 = today_holdings[:10]
     
@@ -116,17 +116,17 @@ def main():
             brief = call_ollama(prompt)
             
             # 변화 종목 JSON 저장용
-            today_map = {h["stock_name"]: h["weight"] for h in today_h}
-            yesterday_map = {h["stock_name"]: h["weight"] for h in yesterday_h}
+            today_map = {h["code"].upper(): h for h in today_h}
+            yesterday_map = {h["code"].upper(): h for h in yesterday_h}
             changes = {
-                "new": [s for s in today_map if s not in yesterday_map],
-                "removed": [s for s in yesterday_map if s not in today_map],
-                "increased": {s: round(today_map[s]-yesterday_map[s], 2) 
-                              for s in today_map if s in yesterday_map 
-                              and today_map[s]-yesterday_map[s] > 0.5},
-                "decreased": {s: round(today_map[s]-yesterday_map[s], 2) 
-                              for s in today_map if s in yesterday_map 
-                              and today_map[s]-yesterday_map[s] < -0.5}
+                "new": [today_map[c]["stock_name"] for c in today_map if c not in yesterday_map],
+                "removed": [yesterday_map[c]["stock_name"] for c in yesterday_map if c not in today_map],
+                "increased": {today_map[c]["stock_name"]: round(today_map[c]["weight"]-yesterday_map[c]["weight"], 2)
+                              for c in today_map if c in yesterday_map
+                              and today_map[c]["weight"]-yesterday_map[c]["weight"] > 0.5},
+                "decreased": {today_map[c]["stock_name"]: round(today_map[c]["weight"]-yesterday_map[c]["weight"], 2)
+                              for c in today_map if c in yesterday_map
+                              and today_map[c]["weight"]-yesterday_map[c]["weight"] < -0.5}
             }
             
             supabase.table("etf_briefs").upsert({
