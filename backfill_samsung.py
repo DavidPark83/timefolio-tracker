@@ -29,20 +29,24 @@ timeetf 의 과거 etf_daily 를 보면, 백필 구간의 nav_total/nav_price �
 삼성이 실패해도 워크플로우 전체에 영향 주지 않도록 최상위에서 예외 흡수 후 exit 0.
 """
 
-import os
+import io
 import sys
 import time
 from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List
+
+import requests
+import pandas as pd
 
 # crawler_samsung.py 의 검증된 함수/상수를 그대로 재사용 (로직 동일성 보장)
 from crawler_samsung import (
     ETF_LIST,
     BASE,
+    HEADERS,
+    REQUEST_TIMEOUT,
     DELAY_BETWEEN_REQUESTS,
     MAX_CONSECUTIVE_429,
     RateLimited,
-    supabase,
     to_float,
     fetch_json,
     ymd_to_date,
@@ -51,7 +55,6 @@ from crawler_samsung import (
     enrich_holdings,
     save_holdings,
     save_nav,
-    update_standard_price,
 )
 
 # 기본 시작일 (인자 없이 실행할 때). timeetf 와 동일하게 연초 기준.
@@ -114,22 +117,51 @@ def fetch_current_nav_map() -> Dict[int, Dict]:
 
 # ============================================================
 # 확정 기준가(standard_price) 백필 헬퍼
-#   상세 API의 suik.standardList 전체를 긁어 날짜→F_P 매핑 반환
+#   ★ excel_standar.do 엑셀(.xls)에서 '최근 3개월' 전체 기준가를 가져온다.
+#     (suik.standardList 는 최근 6영업일치만 주므로 과거 백필에 부족.
+#      timeetf 가 nav_xls.php 엑셀로 전체 기준가를 백필한 것과 동일 구조.)
+#   엑셀 구조 (헤더 2줄 후 데이터):
+#     col0=일자(YYYYMMDD), col1=종가, ..., col5=기준가격(F_P), col8=과표기준가
 # ============================================================
 def fetch_standard_price_series(etf: Dict) -> Dict[str, float]:
-    """반환: { 'YYYY-MM-DD': F_P }  (API에 남아있는 최근 며칠치)"""
-    url = f"{BASE}/api/v1/product/etf/{etf['fId']}.do"
-    data = fetch_json(url)  # 429면 RateLimited 발생 → 호출 측에서 처리
+    """
+    반환: { 'YYYY-MM-DD': 기준가격 }  (엑셀이 제공하는 최근 ~3개월 전체)
+    엑셀 다운로드 실패 시 fallback 으로 상세 API의 standardList(6일치) 사용.
+    """
     series = {}
-    if not data:
-        return series
-    slist = (data.get("suik") or {}).get("standardList") or []
-    for row in slist:
-        ed = ymd_to_date(str(row.get("EVAL_D") or ""))
-        fp = to_float(row.get("F_P"))
-        if ed and fp > 0:
-            series[ed] = fp
+
+    # ── 1차: excel_standar.do (.xls, 최근 3개월 전체) ──────────
+    url_xls = f"{BASE}/excel_standar.do?fId={etf['fId']}&gijunYMD={date.today().strftime('%Y%m%d')}"
+    try:
+        res = requests.get(url_xls, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        if res.status_code == 200 and res.content:
+            # 구형 .xls(BIFF, 시그니처 d0cf11e0) → xlrd 엔진 필요.
+            # 헤더가 불규칙(제목 2줄)하므로 header 없이 전체 로드 후 일자행만 추출.
+            df = pd.read_excel(io.BytesIO(res.content), header=None,
+                               dtype=str, engine="xlrd")
+            for _, row in df.iterrows():
+                ymd = str(row.iloc[0] or "").strip()
+                # 일자 셀이 YYYYMMDD(8자리 숫자)인 행만 데이터로 인정
+                if len(ymd) == 8 and ymd.isdigit():
+                    fp = to_float(row.iloc[5]) if len(row) > 5 else 0
+                    if fp > 0:
+                        series[ymd_to_date(ymd)] = fp
+            if series:
+                return series
+    except Exception as e:
+        print(f"      ⚠️ 기준가 엑셀 파싱 실패({etf['fId']}): {e} → standardList fallback")
+
+    # ── 2차: 상세 API standardList (최근 6영업일) fallback ──────
+    data = fetch_json(f"{BASE}/api/v1/product/etf/{etf['fId']}.do")
+    if data:
+        slist = (data.get("suik") or {}).get("standardList") or []
+        for row in slist:
+            ed = ymd_to_date(str(row.get("EVAL_D") or ""))
+            fp = to_float(row.get("F_P"))
+            if ed and fp > 0:
+                series[ed] = fp
     return series
+
 
 
 # ============================================================
