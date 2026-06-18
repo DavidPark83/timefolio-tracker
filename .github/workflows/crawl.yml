@@ -6,13 +6,13 @@ on:
   schedule:
     - cron: '0 22 * * 0-4'
     - cron: '0 23 * * 0-4'
-# 30 23 * * 0-4
-# │  │  │ │ └── 요일: 0(일)~4(목) UTC = 월~금 KST
-# │  │  │ └──── 월: 매월
-# │  │  └────── 일: 매일
-# │  └───────── 시: 23시 UTC
-# └──────────── 분: 30분
-    
+    # 30 23 * * 0-4
+    # │ │ │ │ └── 요일: 0(일)~4(목) UTC = 월~금 KST
+    # │ │ │ └──── 월: 매월
+    # │ │ └────── 일: 매일
+    # │ └───────── 시: 23시 UTC
+    # └──────────── 분: 30분
+
   # 수동 실행 (기간 지정 백필 가능)
   workflow_dispatch:
     inputs:
@@ -22,8 +22,8 @@ on:
         default: 'daily'
         type: choice
         options:
-          - daily      # crawler.py 실행 (오늘 또는 target_date)
-          - backfill   # backfill.py 실행 (start_date ~ end_date)
+          - daily       # crawler.py 실행 (오늘 또는 target_date)
+          - backfill    # backfill.py 실행 (start_date ~ end_date)
       target_date:
         description: '[daily] 수집할 날짜 (YYYY-MM-DD), 빈 칸이면 오늘'
         required: false
@@ -36,15 +36,16 @@ on:
         description: '[backfill] 종료일 (YYYY-MM-DD), 빈 칸이면 어제'
         required: false
         default: ''
+
 permissions:
   contents: write
+
 jobs:
   crawl:
     runs-on: ubuntu-latest
     # 백필도 충분히 끝낼 수 있게 5시간으로 확대
     # (GitHub Actions 무료 플랜은 작업당 최대 6시간 허용)
     timeout-minutes: 300
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,16 +61,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # ============================================================
+      # 1) 기존 timeetf 크롤링 (변경 없음) — 반드시 먼저 완료
+      # ============================================================
       - name: Run crawler
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          TARGET_DATE:  ${{ github.event.inputs.target_date }}
+          TARGET_DATE: ${{ github.event.inputs.target_date }}
         run: |
           MODE="${{ github.event.inputs.mode }}"
           START="${{ github.event.inputs.start_date }}"
           END="${{ github.event.inputs.end_date }}"
-
           if [ "$MODE" = "backfill" ]; then
             if [ -n "$START" ] && [ -n "$END" ]; then
               echo "🔄 청크 백필: $START ~ $END"
@@ -87,10 +90,34 @@ jobs:
             echo "📊 일일 크롤링"
             python crawler.py
           fi
+
+      # ============================================================
+      # 2) 삼성액티브(KoAct) 크롤링 — timeetf 완료 '후' 실행
+      #    - continue-on-error: 삼성이 실패/차단되어도 이후 step과
+      #      워크플로우 전체는 정상(초록) 유지 → timeetf 결과 보존
+      #    - crawler_samsung.py 자체도 최상위에서 exit 0 처리하지만,
+      #      이중 안전장치로 여기서도 실패를 흡수한다.
+      #    - backfill 모드일 때는 삼성 일일 크롤링을 건너뛴다.
+      # ============================================================
+      - name: Run Samsung Active crawler
+        if: ${{ github.event.inputs.mode != 'backfill' }}
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TARGET_DATE: ${{ github.event.inputs.target_date }}
+        run: |
+          echo "📊 삼성액티브 일일 크롤링 (timeetf 완료 후 실행)"
+          python crawler_samsung.py
+
+      # ============================================================
+      # 3) ETF 정적 페이지 생성 (기존과 동일)
+      # ============================================================
       - name: Generate ETF pages
         run: |
           echo "📄 ETF 정적 페이지 생성"
           python generate_etf_pages.py
+
       - name: Commit and push generated pages
         run: |
           git config user.name "github-actions[bot]"
