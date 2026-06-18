@@ -860,7 +860,7 @@
       const latest = latestRows[0].date;
 
       const { data: navRows, error: e2 } = await db.from("etf_daily")
-        .select("etf_idx, nav_total").eq("date", latest);
+        .select("etf_idx, nav_total").eq("date", latest).eq("provider", currentProvider);
       if (e2) { console.error("sortEtfTabsByNav nav 조회 실패:", e2); return; }
       if (!navRows?.length) return;
 
@@ -1053,7 +1053,8 @@ function selectEtf(el) {
     const box = document.getElementById("infoBox");
     if (!meta) { box.style.display = "none"; return; }
     box.style.display = "block";
-    document.getElementById("infoName").textContent = "TIME " + getEtfName(currentIdx);
+    const prefix = (PROVIDERS[currentProvider] && PROVIDERS[currentProvider].prefix) || "";
+    document.getElementById("infoName").textContent = (prefix ? prefix + " " : "") + getEtfName(currentIdx);
     document.getElementById("infoListDate").textContent = meta.listDate || "—";
     document.getElementById("infoRisk").textContent = meta.risk || "—";
     document.getElementById("infoBench").textContent = meta.bench || "—";
@@ -1187,10 +1188,10 @@ function selectEtf(el) {
     document.getElementById("tableArea").innerHTML = '<div class="loading">불러오는 중...</div>';
 
     const [r1, r2, n1, n2] = await Promise.all([
-      db.from("holdings").select(HOLDINGS_COLS_BASIC).eq("etf_idx", currentIdx).eq("date", currentDate).order("weight", { ascending: false }),
-      compareDate ? db.from("holdings").select(HOLDINGS_COLS_BASIC).eq("etf_idx", currentIdx).eq("date", compareDate) : Promise.resolve({ data: [] }),
-      db.from("etf_daily").select(DAILY_COLS).eq("etf_idx", currentIdx).eq("date", currentDate).maybeSingle(),
-      compareDate ? db.from("etf_daily").select(DAILY_COLS).eq("etf_idx", currentIdx).eq("date", compareDate).maybeSingle() : Promise.resolve({ data: null }),
+      db.from("holdings").select(HOLDINGS_COLS_BASIC).eq("etf_idx", currentIdx).eq("date", currentDate).eq("provider", currentProvider).order("weight", { ascending: false }),
+      compareDate ? db.from("holdings").select(HOLDINGS_COLS_BASIC).eq("etf_idx", currentIdx).eq("date", compareDate).eq("provider", currentProvider) : Promise.resolve({ data: [] }),
+      db.from("etf_daily").select(DAILY_COLS).eq("etf_idx", currentIdx).eq("date", currentDate).eq("provider", currentProvider).maybeSingle(),
+      compareDate ? db.from("etf_daily").select(DAILY_COLS).eq("etf_idx", currentIdx).eq("date", compareDate).eq("provider", currentProvider).maybeSingle() : Promise.resolve({ data: null }),
     ]);
 
     const cur = normalizeRows(r1.data || []);
@@ -1204,7 +1205,8 @@ function selectEtf(el) {
       return;
     }
 
-    document.getElementById("cardTitle").textContent = `TIME ${getEtfName(currentIdx)} 구성종목`;
+    const _prefix = (PROVIDERS[currentProvider] && PROVIDERS[currentProvider].prefix) || "";
+    document.getElementById("cardTitle").textContent = `${_prefix ? _prefix + " " : ""}${getEtfName(currentIdx)} 구성종목`;
     document.getElementById("cardDate").textContent = currentDate + (compareDate ? ` (비교: ${compareDate})` : "");
     renderStats(cur, cmp, n1.data, n2.data);
     buildRows(cur, cmp);
@@ -1381,16 +1383,18 @@ function selectEtf(el) {
         prev = cmpDateParam || null;
       }
 
-      const fetchAll = async (date) => {
+        const fetchAll = async (date) => {
         const [holdingsAll, dailyResp] = await Promise.all([
           fetchAllPages(() =>
             db.from("holdings")
               .select("etf_idx, code, name, weight, value, holding_amount, qty, holdings_qty")
               .eq("date", date)
+              .eq("provider", currentProvider)
           ),
           db.from("etf_daily")
             .select("etf_idx, nav_total, nav_price, standard_price")
             .eq("date", date)
+            .eq("provider", currentProvider)
         ]);
 
         const normalized = normalizeRows(holdingsAll);
@@ -1462,7 +1466,7 @@ function selectEtf(el) {
       // 총 순자산 표시
       try {
         const { data: navAll } = await db.from("etf_daily")
-          .select("nav_total, etf_idx").eq("date", baseDate);
+          .select("nav_total, etf_idx").eq("date", baseDate).eq("provider", currentProvider);
         const totalNav = (navAll || []).reduce((s, r) => s + (r.nav_total || 0), 0);
         const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
         if (holdTitleEl && totalNav > 0) {
@@ -1627,10 +1631,12 @@ function selectEtf(el) {
       db.from("holdings")
         .select("etf_idx, etf_name, weight, qty, value, code")
         .eq("date", latest)
+        .eq("provider", currentProvider)
         .ilike("code", normCode)
         .order("weight", { ascending: false }),
       db.from("holdings")
         .select("date, etf_idx, etf_name, weight")
+        .eq("provider", currentProvider)
         .ilike("code", normCode)
         .order("date", { ascending: true })
         .limit(2000)
@@ -1654,9 +1660,10 @@ function selectEtf(el) {
       el.innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
       return;
     }
+    const _prefix = (PROVIDERS[currentProvider] && PROVIDERS[currentProvider].prefix) || "";
     el.innerHTML = holdings.map(h => `
       <div class="holding-row">
-        <span class="hr-etf">TIME ${escapeHtml(h.etf_name)}</span>
+        <span class="hr-etf">${_prefix ? _prefix + " " : ""}${escapeHtml(h.etf_name)}</span>
         <span class="hr-q">수량 ${fmt(h.qty)}</span>
         <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
       </div>`).join("");
@@ -1743,8 +1750,8 @@ function selectEtf(el) {
     const date = cmpDateSel.value || cmpDateSel.options[0]?.value;
     if (!date) return;
     const [rA, rB] = await Promise.all([
-      db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfA).eq("date", date),
-      db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfB).eq("date", date),
+      db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfA).eq("date", date).eq("provider", currentProvider),
+      db.from("holdings").select("code, name, weight").eq("etf_idx", cmpEtfB).eq("date", date).eq("provider", currentProvider),
     ]);
     const a = normalizeRows(rA.data || []);
     const b = normalizeRows(rB.data || []);
@@ -1794,6 +1801,7 @@ function selectEtf(el) {
       const { data } = await db.from("holdings")
         .select("code, name, etf_idx, etf_name, weight")
         .eq("date", latest)
+        .eq("provider", currentProvider)
         .ilike("name", `%${q.trim()}%`)
         .order("weight", { ascending: false })
         .limit(50);
@@ -2051,7 +2059,8 @@ function selectEtf(el) {
   async function loadAnalysisBrief(idx, name) {
     document.getElementById('analysisEmptyMsg').style.display = 'none';
     document.getElementById('analysisBriefPanel').style.display = 'block';
-    document.getElementById('analysisBriefTitle').textContent = `TIMEFOLIO ${name} 분석 브리핑`;
+  const _prefix2 = (PROVIDERS[currentProvider] && PROVIDERS[currentProvider].prefix) || "";
+    document.getElementById('analysisBriefTitle').textContent = `${_prefix2 ? _prefix2 + " " : ""}${name} 분석 브리핑`;
     document.getElementById('analysisBriefText').textContent = '브리핑 불러오는 중...';
     document.getElementById('analysisHoldingsTable').innerHTML = '<div class="loading">로딩 중...</div>';
     document.getElementById('analysisChanges').innerHTML = '';
@@ -2059,7 +2068,7 @@ function selectEtf(el) {
     try {
       // 글로벌 기준일 사용 (없으면 최신)
       const globalDate = document.getElementById("globalDateSelect")?.value;
-      let query = db.from('etf_briefs').select('*').eq('etf_idx', idx);
+      let query = db.from('etf_briefs').select('*').eq('etf_idx', idx).eq('provider', currentProvider);
       if (globalDate) {
         query = query.lte('base_date', globalDate).order('base_date', { ascending: false }).limit(1);
       } else {
@@ -2165,6 +2174,7 @@ function selectEtf(el) {
   // 시작
   // =========================================================
   (async () => {
+    renderEtfTabs();                       // ★ TIME 19종 탭 먼저 그리기
     const navMap = await sortEtfTabsByNav();
     updateSectionCounts(navMap || {});
     updateHlTabFlags();
