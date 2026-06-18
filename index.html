@@ -1426,7 +1426,7 @@ function selectEtf(el) {
         const map = {};
         for (const r of rows) {
           const nm = (r.name || "").trim();
-          if (/^(현금|원화예금|예금|기타|미수금|미지급금)/.test(nm)) continue;
+          if (/^(현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) continue;
 
           const code = (r.code || "").trim();
           const key = code || r.name;
@@ -1662,12 +1662,16 @@ function selectEtf(el) {
       return;
     }
     const _prefix = (PROVIDERS[currentProvider] && PROVIDERS[currentProvider].prefix) || "";
-    el.innerHTML = holdings.map(h => `
+    el.innerHTML = holdings.map(h => {
+      const name = h.etf_name || '';
+      const display = (_prefix && !name.startsWith(_prefix)) ? _prefix + " " + name : name;
+      return `
       <div class="holding-row">
-        <span class="hr-etf">${_prefix ? _prefix + " " : ""}${escapeHtml(h.etf_name)}</span>
+        <span class="hr-etf">${escapeHtml(display)}</span>
         <span class="hr-q">수량 ${fmt(h.qty)}</span>
         <span class="hr-w">${(h.weight || 0).toFixed(2)}%</span>
-      </div>`).join("");
+      </div>`;
+    }).join("");
   }
 
   // ★ Fix 6: drawTrendChart — innerHTML 갈아끼우기 제거, placeholder 토글 방식
