@@ -244,6 +244,21 @@
       .analysis-detail-grid { grid-template-columns: 1fr !important; }
     }
 
+/* ===== 운용사 토글 (최상위) ===== */
+    .provider-switch {
+      display: flex; gap: 0; margin-bottom: 20px;
+      background: #0d1526; border: 1px solid #1e2d4a; border-radius: 12px; padding: 5px;
+      max-width: 360px;
+    }
+    .provider-btn {
+      flex: 1; padding: 10px 18px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px;
+      cursor: pointer; border-radius: 8px; color: #64748b;
+      transition: all 0.2s; background: transparent; border: none; font-family: inherit;
+    }
+    .provider-btn:hover { color: #94a3b8; }
+    .provider-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
+
+  
 
   </style>
 
@@ -381,31 +396,14 @@
     <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div> 
   </div>
 
-  <!-- ETF 탭 -->
-  <div class="etf-tabs" id="etfTabs">
-    <div class="tab-section-label">해외투자</div>
-    <div class="etf-tab active" data-idx="22" onclick="selectEtf(this)">글로벌탑픽</div>
-    <div class="etf-tab" data-idx="2"  onclick="selectEtf(this)">미국나스닥100</div>
-    <div class="etf-tab" data-idx="5"  onclick="selectEtf(this)">미국S&P500</div>
-    <div class="etf-tab" data-idx="6"  onclick="selectEtf(this)">글로벌AI인공지능</div>
-    <div class="etf-tab" data-idx="9"  onclick="selectEtf(this)">글로벌바이오</div>
-    <div class="etf-tab" data-idx="20" onclick="selectEtf(this)">글로벌우주테크&방산</div>
-    <div class="etf-tab" data-idx="19" onclick="selectEtf(this)">차이나AI테크</div>
-    <div class="etf-tab" data-idx="18" onclick="selectEtf(this)">미국배당다우존스</div>
-    <div class="etf-tab" data-idx="10" onclick="selectEtf(this)">미국나스닥100채권혼합50</div>
-    <div class="etf-tab" data-idx="8"  onclick="selectEtf(this)">글로벌소비트렌드</div>
-    <div class="etf-tab" data-idx="25" onclick="selectEtf(this)">글로벌휴머노이드</div>
-
-    <div class="tab-section-label" style="margin-top:8px">국내투자</div>
-    <div class="etf-tab" data-idx="12" onclick="selectEtf(this)">Korea플러스배당</div>
-    <div class="etf-tab" data-idx="11" onclick="selectEtf(this)">코스피</div>
-    <div class="etf-tab" data-idx="15" onclick="selectEtf(this)">코리아밸류업</div>
-    <div class="etf-tab" data-idx="24" onclick="selectEtf(this)">코스닥</div>
-    <div class="etf-tab" data-idx="16" onclick="selectEtf(this)">K신재생에너지</div>
-    <div class="etf-tab" data-idx="13" onclick="selectEtf(this)">K바이오</div>
-    <div class="etf-tab" data-idx="17" onclick="selectEtf(this)">K이노베이션</div>
-    <div class="etf-tab" data-idx="1"  onclick="selectEtf(this)">K컬처</div>
+<!-- 운용사 토글 (최상위) -->
+  <div class="provider-switch">
+    <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME</button>
+    <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct</button>
   </div>
+
+  <!-- ETF 탭 (운용사 선택에 따라 JS가 동적으로 채움) -->
+  <div class="etf-tabs" id="etfTabs"></div>
 
   <!-- 단일 ETF 모드 -->
   <div id="modeSingle">
@@ -568,7 +566,10 @@
   const SUPABASE_URL = "https://lqpqummcoujmymydftlg.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxcHF1bW1jb3VqbXlteWRmdGxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NDQxMDAsImV4cCI6MjA5MzMyMDEwMH0.n6iaxMNx0pDR5vp3ed1Cat8kHqM5PVwxyFNMh9sWIw0";
 
+// ===== 운용사별 ETF 메타데이터 =====
+  // TIME (timefolio) 19종 + KoAct (samsungactive) 23종
   const ETF_META = {
+    // ===== TIME (timefolio) =====
     22: { listDate: "2025.10.28", risk: "2등급(높은 위험)", bench: "Bloomberg World Large, Mid & Small Cap Index(KRW)", desc: "전 세계 핵심 ETF만 선별하여 투자하는 초분산 액티브 포트폴리오 ETF" },
     2:  { listDate: "2022.05.11", risk: "1등급(매우 높은 위험)", bench: "NASDAQ 100 Index(KRW)", desc: "메가트렌드를 주도하는 글로벌 대표 테크 기업에 투자하는 액티브 ETF" },
     5:  { listDate: "2022.05.11", risk: "2등급(높은 위험)", bench: "S&P500 Index(KRW)", desc: "글로벌 경제 성장을 이끄는 대형주가 편입된 S&P500지수를 더 액티브하게 운용하는 ETF" },
@@ -588,6 +589,94 @@
     17: { listDate: "2021.05.25", risk: "1등급(매우 높은 위험)", bench: "KRX BBIG", desc: "미래 성장성 높은 테마에 투자하면서, 신성장 기업들을 적극적으로 발굴 및 투자하는 액티브 ETF" },
     1:  { listDate: "2021.12.15", risk: "1등급(매우 높은 위험)", bench: "FnGuide K-컬쳐 지수", desc: "K-Pop, 영화, 드라마 등 글로벌 트렌드를 주도하는 한국의 문화경쟁력에 투자하는 액티브 ETF" },
     25: { listDate: "2026.05.19", risk: "2등급(높은 위험)", bench: "Solactive Global AI Humanoid Robotics Index(KRW)", desc: "글로벌 휴머노이드 로봇 기업에 투자하는 액티브 ETF" },
+
+    // ===== KoAct (samsungactive) =====  메타정보는 추후 보강
+    201: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    202: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    203: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    204: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    205: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    206: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    207: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    208: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    209: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    210: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    211: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    212: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    213: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    214: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    215: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    216: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    217: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    218: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    219: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    220: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    221: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    222: { listDate: "—", risk: "—", bench: "—", desc: "" },
+    223: { listDate: "—", risk: "—", bench: "—", desc: "" },
+  };
+
+  // ===== 운용사별 ETF 탭 정의 (해외/국내 섹션 + 표시명 + 상품명 prefix) =====
+  // 표시명은 탭 버튼 라벨, fullName은 단일 ETF 모드 상단 "상품명" 표시용.
+  const PROVIDERS = {
+    timefolio: {
+      label: "TIME",
+      prefix: "TIME",       // 단일 ETF 보기 상단 "상품명" 접두어
+      overseas: [
+        { idx: 22, name: "글로벌탑픽" },
+        { idx: 2,  name: "미국나스닥100" },
+        { idx: 5,  name: "미국S&P500" },
+        { idx: 6,  name: "글로벌AI인공지능" },
+        { idx: 9,  name: "글로벌바이오" },
+        { idx: 20, name: "글로벌우주테크&방산" },
+        { idx: 19, name: "차이나AI테크" },
+        { idx: 18, name: "미국배당다우존스" },
+        { idx: 10, name: "미국나스닥100채권혼합50" },
+        { idx: 8,  name: "글로벌소비트렌드" },
+        { idx: 25, name: "글로벌휴머노이드" },
+      ],
+      domestic: [
+        { idx: 12, name: "Korea플러스배당" },
+        { idx: 11, name: "코스피" },
+        { idx: 15, name: "코리아밸류업" },
+        { idx: 24, name: "코스닥" },
+        { idx: 16, name: "K신재생에너지" },
+        { idx: 13, name: "K바이오" },
+        { idx: 17, name: "K이노베이션" },
+        { idx: 1,  name: "K컬처" },
+      ],
+    },
+    samsungactive: {
+      label: "KoAct",
+      prefix: "KoAct",
+      overseas: [
+        { idx: 206, name: "미국나스닥성장" },
+        { idx: 203, name: "글로벌AI&로봇" },
+        { idx: 201, name: "글로벌AI메모리반도체" },
+        { idx: 213, name: "AI인프라" },
+        { idx: 207, name: "팔란티어밸류체인" },
+        { idx: 212, name: "브로드컴밸류체인" },
+        { idx: 214, name: "글로벌양자컴퓨팅" },
+        { idx: 209, name: "미국로봇피지컬AI" },
+        { idx: 215, name: "글로벌친환경전력인프라" },
+        { idx: 220, name: "미국나스닥채권혼합50" },
+        { idx: 221, name: "미국바이오헬스케어" },
+        { idx: 219, name: "미국치매&뇌질환치료제" },
+        { idx: 223, name: "미국천연가스인프라" },
+        { idx: 222, name: "차이나바이오헬스케어" },
+        { idx: 218, name: "글로벌K컬처밸류체인" },
+      ],
+      domestic: [
+        { idx: 208, name: "코리아밸류업" },
+        { idx: 204, name: "K수출핵심기업TOP30" },
+        { idx: 205, name: "코스피" },
+        { idx: 217, name: "코스닥" },
+        { idx: 216, name: "바이오헬스케어" },
+        { idx: 211, name: "배당성장" },
+        { idx: 202, name: "반도체&2차전지핵심소재" },
+        { idx: 210, name: "수소전력ESS인프라" },
+      ],
+    },
   };
 
   const { createClient } = supabase;
@@ -611,6 +700,7 @@
   // =========================================================
   // 전역 상태
   // =========================================================
+  let currentProvider = "timefolio";   // ★ 현재 선택된 운용사 (timefolio / samsungactive)
   let currentMode = "single";
   let currentIdx = 22;
   let currentData = [];
@@ -623,6 +713,52 @@
   let cmpEtfB = null;
   let trendChartInstance = null;
   let hlMode = 'amount';
+
+  // ===== 운용사 전환 =====
+  // 운용사 바꿀 때마다 ETF 탭 새로 그리고, 첫 ETF 선택, 전체 화면 새로고침.
+  function switchProvider(provider, btn) {
+    if (currentProvider === provider) return;
+    currentProvider = provider;
+    document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    // 비교 모드 상태 초기화 (운용사가 다르면 의미 없음)
+    cmpEtfA = null;
+    cmpEtfB = null;
+    sortKey = null;
+    lastHighlightsData = null;  // 캐시 무효화
+
+    renderEtfTabs();             // 탭 새로 그리기 (첫 ETF 자동 선택)
+    sortEtfTabsByNav();          // NAV 순 정렬 + 첫 탭 active
+    renderInfo();
+    refreshAll();                // 하이라이트 + 단일 ETF 다시 로드
+    trackEvent('provider_switch', { provider });
+  }
+
+  // ===== ETF 탭 동적 렌더 =====
+  // PROVIDERS[currentProvider] 기준으로 해외/국내 섹션과 탭을 그린다.
+  // 기존 정적 HTML을 대체. data-idx / onclick=selectEtf(this) 패턴은 그대로 유지.
+  function renderEtfTabs() {
+    const cfg = PROVIDERS[currentProvider];
+    const container = document.getElementById("etfTabs");
+    if (!container || !cfg) return;
+
+    const build = (sectionLabel, items) => {
+      const label = `<div class="tab-section-label">${sectionLabel}</div>`;
+      const tabs = items.map(it =>
+        `<div class="etf-tab" data-idx="${it.idx}" onclick="selectEtf(this)">${escapeHtml(it.name)}</div>`
+      ).join("");
+      return label + tabs;
+    };
+    container.innerHTML = build("해외투자", cfg.overseas) + build("국내투자", cfg.domestic);
+
+    // 첫 ETF 자동 활성화
+    const firstTab = container.querySelector(".etf-tab");
+    if (firstTab) {
+      firstTab.classList.add("active");
+      currentIdx = parseInt(firstTab.dataset.idx);
+    }
+  }
 
   // ★ Fix 2: 모달 캐시
   const modalCache = new Map();
