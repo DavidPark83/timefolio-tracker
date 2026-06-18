@@ -13,6 +13,13 @@ TIMEFOLIO ETF Backfill (과거 데이터 수집)
 2. 시작 시 이미 저장된 (date, etf_idx) 조합을 한 번에 미리 조회 → DB 왕복 절감
 3. 진행률 실시간 출력 + 예상 종료시각 표시
 4. 중단되어도 다시 실행하면 이어서 진행 가능
+
+변경 이력:
+  - recalc_holding_amounts(파이썬 함수) import 제거.
+    crawler.py가 holding_amount 재계산을 DB RPC(recalc_holdings_for_date)로
+    처리하도록 바뀌어, 더 이상 존재하지 않는 함수였음(ImportError 원인).
+    → 백필 종료 후 재계산도 동일하게 supabase.rpc("recalc_holdings_for_date")
+      를 직접 호출하도록 변경.
 """
 
 import os
@@ -24,10 +31,11 @@ from typing import Set, Tuple
 from supabase import create_client
 
 # crawler.py에서 함수와 상수를 가져온다
+# (recalc_holding_amounts 는 crawler.py에 없는 함수라 import에서 제거함.
+#  재계산은 아래에서 DB RPC recalc_holdings_for_date 로 직접 수행한다.)
 from crawler import (
     ETF_LIST,
     process_one,
-    recalc_holding_amounts,
     SUPABASE_URL,
     SUPABASE_KEY,
 )
@@ -83,6 +91,22 @@ def load_already_saved(start: date, end: date) -> Set[Tuple[str, int]]:
 
     print(f"   이미 저장된 조합: {len(saved)}건")
     return saved
+
+
+def recalc_holding_amounts_for_date(target_date: str) -> None:
+    """
+    특정 날짜의 holding_amount/holdings_qty를 DB에서 재계산.
+    crawler.py의 process_one()이 사용하는 것과 동일한 RPC를 호출한다.
+    (기존 backfill.py가 부르던 파이썬 함수 recalc_holding_amounts를 대체)
+    """
+    try:
+        supabase.rpc(
+            "recalc_holdings_for_date",
+            {"target_date": target_date}
+        ).execute()
+        print(f"   ✅ {target_date} holding_amount 재계산")
+    except Exception as e:
+        print(f"   ⚠️ {target_date} 재계산 실패: {e}")
 
 
 def main():
@@ -151,10 +175,11 @@ def main():
 
     print("\n" + "=" * 60)
     # 신규 데이터가 들어간 날짜에 대해 보유금액 일괄 산출
+    # (process_one 안에서도 날짜별로 재계산하지만, 누락 대비 한 번 더 안전하게 수행)
     if processed_dates:
         print(f"💰 보유금액 산출: {len(processed_dates)}개 날짜")
         for d in sorted(processed_dates):
-            recalc_holding_amounts(d)
+            recalc_holding_amounts_for_date(d)
         print("=" * 60)
     print(f"✅ Backfill 완료")
     print(f"   처리한 영업일: {len(biz_days)}일")
