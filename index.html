@@ -331,6 +331,13 @@
     </div>
   </div>
 
+<!-- 운용사 토글 (최상위) -->
+  <div class="provider-switch">
+    <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME</button>
+    <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct</button>
+  </div>
+
+  
   <!-- ① 오늘의 변화 하이라이트 -->
   <div class="hl-mode-switch">
     <button class="hl-mode-btn active" onclick="switchHlMode('amount', this)">💰 보유평가금액</button>
@@ -394,12 +401,6 @@
     <div class="mode-tab" data-mode="analysis" onclick="switchMode('analysis')">📋 ETF 분석</div>
     <div class="mode-tab active" data-mode="single" onclick="switchMode('single')">📊 단일 ETF 보기</div>
     <div class="mode-tab" data-mode="compare" onclick="switchMode('compare')">🔀 ETF 차별점 비교</div> 
-  </div>
-
-<!-- 운용사 토글 (최상위) -->
-  <div class="provider-switch">
-    <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME</button>
-    <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct</button>
   </div>
 
   <!-- ETF 탭 (운용사 선택에 따라 JS가 동적으로 채움) -->
