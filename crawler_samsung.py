@@ -306,6 +306,9 @@ def crawl_daily(etf: Dict, today_date: str) -> Dict:
     # 실시간 기준가(iNAV) → nav_price
     nav_price = _extract_realtime_nav(data)
 
+    # 설정단위(qPerCu) → holdings.creation_unit (예: 50000)
+    creation_unit = to_int(product.get("qPerCu")) or None
+
     # (A) 오늘 행
     today_row = None
     if nav_total is not None or nav_price is not None:
@@ -331,12 +334,46 @@ def crawl_daily(etf: Dict, today_date: str) -> Dict:
             "provider": "samsungactive",
         }
 
-    return {"today_row": today_row, "confirmed_row": confirmed_row}
+    return {
+        "today_row": today_row,
+        "confirmed_row": confirmed_row,
+        "nav_total": nav_total,          # holdings enrich용
+        "creation_unit": creation_unit,  # holdings enrich용
+    }
 
 
 # ============================================================
 # 저장
 # ============================================================
+def enrich_holdings(holdings: List[Dict], nav_total: Optional[int],
+                    creation_unit: Optional[int]) -> List[Dict]:
+    """
+    timeetf와 동일하게 holding_amount / holdings_qty / creation_unit 파생값을 채운다.
+
+    배율(ratio) = nav_total / Σvalue
+      → "전체 펀드가 1 설정단위(CU)의 몇 배인가"를 의미.
+      (etf-pdf의 value/qty는 1CU 기준이므로, 전체 펀드 기준으로 환산)
+
+    - holding_amount = value × ratio   (종목의 전체펀드 기준 평가금액, 합 = 순자산총액)
+    - holdings_qty   = qty   × ratio   (종목의 전체펀드 기준 보유주식수, 소수)
+    - creation_unit  = 설정단위(qPerCu)
+
+    nav_total 또는 Σvalue 가 없으면 파생값은 None으로 둔다(프론트가 weight×nav_total로 폴백).
+    """
+    value_sum = sum((h.get("value") or 0) for h in holdings)
+    ratio = (nav_total / value_sum) if (nav_total and value_sum) else None
+
+    for h in holdings:
+        h["creation_unit"] = creation_unit
+        if ratio is not None:
+            h["holding_amount"] = round((h.get("value") or 0) * ratio)
+            h["holdings_qty"] = round((h.get("qty") or 0) * ratio, 10)
+        else:
+            h["holding_amount"] = None
+            h["holdings_qty"] = None
+    return holdings
+
+
 def save_holdings(holdings: List[Dict]) -> int:
     if not holdings:
         return 0
@@ -402,6 +439,7 @@ def main():
     for etf in ETF_LIST:
         print(f"   📊 [{etf['etf_name']}] ({etf['fId']})")
         try:
+            # 1) 구성종목 수집 (저장은 NAV로 파생값 채운 뒤로 미룸)
             holdings = crawl_holdings(etf, target_date)
             consecutive_429 = 0  # 정상 응답 받으면 연속 카운트 리셋
             time.sleep(DELAY_BETWEEN_REQUESTS)
@@ -412,24 +450,33 @@ def main():
 
             db_date = holdings[0]["date"]
 
+            # 2) NAV / 기준가 수집 (nav_total·creation_unit 이 holdings enrich에 필요)
+            #    NAV 단계가 429로 막혀도 holdings 자체는 잃지 않도록 예외를 따로 흡수.
+            try:
+                daily = crawl_daily(etf, db_date)
+                time.sleep(DELAY_BETWEEN_REQUESTS)
+            except RateLimited:
+                # NAV는 다음 실행에서 보강. holdings는 파생값 없이라도 저장.
+                daily = {"today_row": None, "confirmed_row": None,
+                         "nav_total": None, "creation_unit": None}
+                print("      🚦 NAV 단계 429 → holdings만 저장하고 NAV는 다음 실행에서 보강")
+
+            # 3) holdings 파생값(holding_amount·holdings_qty·creation_unit) 채워서 저장
+            enrich_holdings(holdings, daily.get("nav_total"), daily.get("creation_unit"))
             n = save_holdings(holdings)
             if n > 0:
                 success_etfs += 1
                 total_holdings += n
                 print(f"      ✅ holdings: {n}개 저장 (기준일 {db_date})")
 
-            # NAV / 기준가 (구성종목에서 확정된 db_date 기준)
-            daily = crawl_daily(etf, db_date)
-            time.sleep(DELAY_BETWEEN_REQUESTS)
-
-            # (A) 오늘 행: nav_total + 실시간 기준가(nav_price)
+            # 4-A) 오늘 행: nav_total + 실시간 기준가(nav_price)
             today_row = daily.get("today_row")
             if today_row and save_nav(today_row):
                 print(f"      ✅ NAV 저장 (순자산: {today_row['nav_total']}, "
                       f"실시간기준가: {today_row['nav_price']})")
 
-            # (B) 확정 기준가 백필: F_P 의 EVAL_D 날짜 행의 standard_price만 갱신
-            #     (보통 전 영업일 → 어제 행 갱신. upsert가 아닌 update라 nav 값 보존)
+            # 4-B) 확정 기준가 백필: F_P 의 EVAL_D 날짜 행의 standard_price만 갱신
+            #      (보통 전 영업일 → 어제 행 갱신. upsert가 아닌 update라 nav 값 보존)
             conf_row = daily.get("confirmed_row")
             if conf_row and conf_row["date"] != db_date:
                 st = update_standard_price(
