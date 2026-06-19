@@ -43,9 +43,9 @@ TOP_N = 999  # 페이지당 노출할 상위 보유종목 수
 
 # ─────────────────────────────────────────────────────────────
 # ETF 메타데이터 (index.html의 ETF_META와 동일)
-#   manager 필드는 향후 삼성액티브(KoAct) 등 확장 대비
 # ─────────────────────────────────────────────────────────────
 ETFS = {
+    # ── TIMEFOLIO 해외투자 (11종) ─────────────────────────
     22: {"slug": "global-top-pick",        "name": "TIMEFOLIO 글로벌탑픽액티브",        "manager": "TIMEFOLIO", "region": "해외", "listDate": "2025.10.28", "risk": "2등급(높은 위험)",     "bench": "Bloomberg World Large, Mid & Small Cap Index(KRW)",     "desc": "전 세계 핵심 ETF만 선별하여 투자하는 초분산 액티브 포트폴리오 ETF"},
     2:  {"slug": "us-nasdaq100",           "name": "TIMEFOLIO 미국나스닥100액티브",      "manager": "TIMEFOLIO", "region": "해외", "listDate": "2022.05.11", "risk": "1등급(매우 높은 위험)", "bench": "NASDAQ 100 Index(KRW)",                                  "desc": "메가트렌드를 주도하는 글로벌 대표 테크 기업에 투자하는 액티브 ETF"},
     5:  {"slug": "us-sp500",               "name": "TIMEFOLIO 미국S&P500액티브",         "manager": "TIMEFOLIO", "region": "해외", "listDate": "2022.05.11", "risk": "2등급(높은 위험)",     "bench": "S&P500 Index(KRW)",                                      "desc": "글로벌 경제 성장을 이끄는 대형주가 편입된 S&P500지수를 더 액티브하게 운용하는 ETF"},
@@ -57,6 +57,7 @@ ETFS = {
     10: {"slug": "us-nasdaq100-bond50",    "name": "TIMEFOLIO 미국나스닥100채권혼합50액티브","manager":"TIMEFOLIO","region": "해외","listDate": "2025.03.25", "risk": "4등급(보통 위험)",     "bench": "FnGuide 미국 나스닥100 단기채권혼합 지수",                "desc": "글로벌 테크 주도주와 국내 단기채 조합으로 연금계좌(DC/IRP)에서 100% 투자 가능한 액티브 ETF"},
     8:  {"slug": "global-consumer",        "name": "TIMEFOLIO 글로벌소비트렌드액티브",   "manager": "TIMEFOLIO", "region": "해외", "listDate": "2024.10.29", "risk": "2등급(높은 위험)",     "bench": "Solactive New Age Consumer USD Index(KRW)",              "desc": "빠르게 변하는 소비트렌드를 주도하는 기업을 더 빠르게 투자하는 액티브 ETF"},
     25: {"slug": "global-humanoid",        "name": "TIMEFOLIO 글로벌휴머노이드액티브",   "manager": "TIMEFOLIO", "region": "해외", "listDate": "2026.05.19", "risk": "2등급(높은 위험)",     "bench": "Solactive Global AI Humanoid Robotics Index(KRW)",       "desc": "글로벌 휴머노이드 로봇 기업에 투자하는 액티브 ETF"},
+    # ── TIMEFOLIO 국내투자 (8종) ──────────────────────────
     12: {"slug": "korea-plus-dividend",    "name": "TIMEFOLIO Korea플러스배당액티브",    "manager": "TIMEFOLIO", "region": "국내", "listDate": "2022.09.27", "risk": "2등급(높은 위험)",     "bench": "KOSPI200",                                               "desc": "월배당과 자본이익을 동시에 추구하는 액티브 ETF"},
     11: {"slug": "kospi",                  "name": "TIMEFOLIO 코스피액티브",             "manager": "TIMEFOLIO", "region": "국내", "listDate": "2021.05.25", "risk": "2등급(높은 위험)",     "bench": "KOSPI",                                                  "desc": "주도 섹터와 종목을 시의 적절하게 발굴하여 코스피 대비 나은 성과를 추구하는 액티브 ETF"},
     15: {"slug": "korea-value-up",         "name": "TIMEFOLIO 코리아밸류업액티브",       "manager": "TIMEFOLIO", "region": "국내", "listDate": "2024.11.04", "risk": "2등급(높은 위험)",     "bench": "코리아 밸류업 지수",                                      "desc": "대한민국 주식시장의 가치를 올리는 코리아밸류업 주식에 투자하는 액티브 ETF"},
@@ -65,9 +66,43 @@ ETFS = {
     13: {"slug": "k-bio",                  "name": "TIMEFOLIO K바이오액티브",            "manager": "TIMEFOLIO", "region": "국내", "listDate": "2023.08.17", "risk": "2등급(높은 위험)",     "bench": "KRX 헬스케어 지수",                                       "desc": "신약/바이오베터, 의료기기, 디지털 헬스케어 등 국내 바이오 핵심기업을 엄선하여 투자하는 액티브 ETF"},
     17: {"slug": "k-innovation",           "name": "TIMEFOLIO K이노베이션액티브",        "manager": "TIMEFOLIO", "region": "국내", "listDate": "2021.05.25", "risk": "1등급(매우 높은 위험)", "bench": "KRX BBIG",                                                "desc": "미래 성장성 높은 테마에 투자하면서 신성장 기업들을 적극적으로 발굴 및 투자하는 액티브 ETF"},
     1:  {"slug": "k-culture",              "name": "TIMEFOLIO K컬처액티브",              "manager": "TIMEFOLIO", "region": "국내", "listDate": "2021.12.15", "risk": "1등급(매우 높은 위험)", "bench": "FnGuide K-컬쳐 지수",                                     "desc": "K-Pop, 영화, 드라마 등 글로벌 트렌드를 주도하는 한국의 문화경쟁력에 투자하는 액티브 ETF"},
+    # ── KoAct 해외투자 (14종) ─────────────────────────────
+    201: {"slug": "koact-global-ai-memory-semi",  "name": "KoAct 글로벌AI메모리반도체액티브",      "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "AI 시대 핵심인 메모리반도체의 글로벌 밸류체인에 집중 투자하는 액티브 ETF"},
+    203: {"slug": "koact-global-ai-robot",        "name": "KoAct 글로벌AI&로봇액티브",             "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "AI와 로봇 산업의 글로벌 리더 기업에 투자하는 액티브 ETF"},
+    206: {"slug": "koact-us-nasdaq-growth",       "name": "KoAct 미국나스닥성장기업액티브",        "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "미국 나스닥 시장의 고성장 기업을 엄선하여 투자하는 액티브 ETF"},
+    207: {"slug": "koact-palantir-value-chain",   "name": "KoAct 팔란티어밸류체인액티브",          "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "팔란티어를 중심으로 AI 데이터 분석 밸류체인 기업에 투자하는 액티브 ETF"},
+    209: {"slug": "koact-us-robot-physical-ai",   "name": "KoAct 미국로봇피지컬AI액티브",          "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "미국의 피지컬 AI·로봇 혁신 기업에 투자하는 액티브 ETF"},
+    212: {"slug": "koact-broadcom-value-chain",   "name": "KoAct 브로드컴밸류체인액티브",          "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "브로드컴을 중심으로 AI 반도체·네트워크 밸류체인에 투자하는 액티브 ETF"},
+    214: {"slug": "koact-global-quantum-computing","name": "KoAct 글로벌양자컴퓨팅액티브",         "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "차세대 컴퓨팅 패러다임인 양자컴퓨팅 글로벌 기업에 투자하는 액티브 ETF"},
+    215: {"slug": "koact-global-green-power",     "name": "KoAct 글로벌친환경전력인프라액티브",    "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "친환경 전력 인프라 구축을 주도하는 글로벌 기업에 투자하는 액티브 ETF"},
+    218: {"slug": "koact-global-k-culture",       "name": "KoAct 글로벌K컬처밸류체인액티브",       "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "K-컬처 글로벌 확산의 수혜를 받는 밸류체인 기업에 투자하는 액티브 ETF"},
+    219: {"slug": "koact-us-brain-disease",       "name": "KoAct 미국치매&뇌질환치료제액티브",     "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "치매·뇌질환 치료제를 개발하는 미국 바이오 기업에 투자하는 액티브 ETF"},
+    220: {"slug": "koact-us-nasdaq-bond50",       "name": "KoAct 미국나스닥채권혼합50액티브",      "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "미국 나스닥 성장주와 국내 단기채를 혼합하여 연금계좌 100% 투자 가능한 액티브 ETF"},
+    221: {"slug": "koact-us-bio-healthcare",      "name": "KoAct 미국바이오헬스케어액티브",        "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "미국 바이오·헬스케어 혁신 기업에 투자하는 액티브 ETF"},
+    222: {"slug": "koact-china-bio-healthcare",   "name": "KoAct 차이나바이오헬스케어액티브",      "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "중국 바이오·헬스케어 성장 기업에 투자하는 액티브 ETF"},
+    223: {"slug": "koact-us-natural-gas",         "name": "KoAct 미국천연가스인프라액티브",        "manager": "KoAct", "region": "해외", "listDate": "", "risk": "", "bench": "", "desc": "미국 천연가스 인프라 구축·운영 기업에 투자하는 액티브 ETF"},
+    # ── KoAct 국내투자 (9종) ──────────────────────────────
+    202: {"slug": "koact-semi-battery-materials",  "name": "KoAct 반도체&2차전지핵심소재액티브",   "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "반도체와 2차전지 핵심소재를 생산하는 국내 기업에 투자하는 액티브 ETF"},
+    204: {"slug": "koact-k-export-top30",          "name": "KoAct K수출핵심기업TOP30액티브",       "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "한국 수출을 이끄는 핵심 기업 TOP 30에 집중 투자하는 액티브 ETF"},
+    205: {"slug": "koact-kospi",                   "name": "KoAct 코스피액티브",                   "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "코스피 시장의 주도 섹터와 종목을 선별하여 초과 수익을 추구하는 액티브 ETF"},
+    208: {"slug": "koact-korea-value-up",          "name": "KoAct 코리아밸류업액티브",             "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "기업가치 제고에 적극적인 코리아밸류업 종목에 투자하는 액티브 ETF"},
+    210: {"slug": "koact-hydrogen-power-ess",      "name": "KoAct 수소전력ESS인프라액티브",        "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "수소·전력·ESS 등 에너지 인프라 국내 기업에 투자하는 액티브 ETF"},
+    211: {"slug": "koact-dividend-growth",         "name": "KoAct 배당성장액티브",                 "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "배당 성장이 기대되는 국내 우량 기업에 투자하는 액티브 ETF"},
+    213: {"slug": "koact-ai-infra",                "name": "KoAct AI인프라액티브",                 "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "AI 인프라 구축에 핵심적인 국내 기업에 투자하는 액티브 ETF"},
+    216: {"slug": "koact-bio-healthcare",          "name": "KoAct 바이오헬스케어액티브",           "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "국내 바이오·헬스케어 핵심 기업에 투자하는 액티브 ETF"},
+    217: {"slug": "koact-kosdaq",                  "name": "KoAct 코스닥액티브",                   "manager": "KoAct", "region": "국내", "listDate": "", "risk": "", "bench": "", "desc": "코스닥 시장의 유망 성장주를 선별하여 초과 수익을 추구하는 액티브 ETF"},
 }
 
 CASH_PATTERN = ("현금", "원화예금", "예금", "기타", "미수금", "미지급금")
+
+# ─────────────────────────────────────────────────────────────
+# provider 매핑 (etf_idx → provider)
+# etf_daily 테이블에서 provider별 최신 날짜를 구할 때 사용
+# ─────────────────────────────────────────────────────────────
+PROVIDER_MAP = {
+    "TIMEFOLIO": "timeetf",
+    "KoAct":     "samsungactive",
+}
 
 
 # ─────────────────────────────────────────────────────────────
@@ -80,9 +115,33 @@ def sb_get(table, params):
     return r.json()
 
 
-def get_latest_date():
-    rows = sb_get("etf_daily", {"select": "date", "order": "date.desc", "limit": "1"})
-    return rows[0]["date"] if rows else None
+def get_latest_dates():
+    """provider별 최신 날짜를 딕셔너리로 반환.
+
+    Returns:
+        {"timeetf": "2026-06-19", "samsungactive": "2026-06-18", ...}
+    """
+    dates = {}
+    for manager, provider in PROVIDER_MAP.items():
+        rows = sb_get("etf_daily", {
+            "select": "date",
+            "provider": f"eq.{provider}",
+            "order": "date.desc",
+            "limit": "1",
+        })
+        if rows:
+            dates[provider] = rows[0]["date"]
+            print(f"  {provider} 최신 날짜: {dates[provider]}")
+        else:
+            print(f"  ⚠ {provider} 데이터 없음")
+    return dates
+
+
+def get_date_for_etf(idx, dates):
+    """ETF의 manager에 맞는 최신 날짜를 반환."""
+    meta = ETFS[idx]
+    provider = PROVIDER_MAP.get(meta["manager"])
+    return dates.get(provider)
 
 
 def get_holdings(idx, date):
@@ -242,11 +301,11 @@ def render_etf_page(idx, meta, date, holdings, nav):
     if not rows_html:
         rows_html = "<tr><td colspan='3' style='text-align:center;color:#475569;padding:24px'>해당 일자 데이터가 없습니다</td></tr>"
 
-    # 관련 ETF (같은 region 3개)
+    # 관련 ETF: 같은 manager + 같은 region 우선, 최대 5개
     related = [m for j, m in ETFS.items()
-               if j != idx and m["region"] == meta["region"]][:5]
+               if j != idx and m["manager"] == meta["manager"] and m["region"] == meta["region"]][:5]
     related_html = "".join(
-        f"<a href='/etf/{m['slug']}.html'>{esc(m['name'].replace('TIMEFOLIO ',''))}</a>"
+        f"<a href='/etf/{m['slug']}.html'>{esc(m['name'].replace('TIMEFOLIO ','').replace('KoAct ',''))}</a>"
         for m in related
     )
 
@@ -264,8 +323,8 @@ def render_etf_page(idx, meta, date, holdings, nav):
   <div class="info-grid">
     <div class="info-cell"><div class="l">순자산총액</div><div class="v">{fmt_money(nav)}</div></div>
     <div class="info-cell"><div class="l">보유 종목 수</div><div class="v">{len(holdings)}개</div></div>
-    <div class="info-cell"><div class="l">상장일</div><div class="v">{esc(meta['listDate'])}</div></div>
-    <div class="info-cell"><div class="l">위험등급</div><div class="v" style="font-size:13px">{esc(meta['risk'])}</div></div>
+    <div class="info-cell"><div class="l">상장일</div><div class="v">{esc(meta['listDate']) or '—'}</div></div>
+    <div class="info-cell"><div class="l">위험등급</div><div class="v" style="font-size:13px">{esc(meta['risk']) or '—'}</div></div>
   </div>
 
   <h2 class="sec">📊 보유종목 TOP {min(TOP_N, len(holdings))}</h2>
@@ -273,7 +332,7 @@ def render_etf_page(idx, meta, date, holdings, nav):
     <thead><tr><th>#</th><th>종목명</th><th style="text-align:right">비중</th></tr></thead>
     <tbody>{rows_html}</tbody>
   </table>
-  <p style="font-size:12px;color:#475569;margin-top:10px">비교지수(벤치마크): {esc(meta['bench'])}</p>
+  <p style="font-size:12px;color:#475569;margin-top:10px">비교지수(벤치마크): {esc(meta['bench']) or '—'}</p>
 
   <div class="cta-box">
     <h3>📈 전체 보유종목과 매일의 변화 보기</h3>
@@ -301,9 +360,22 @@ def render_etf_page(idx, meta, date, holdings, nav):
     return page
 
 
-def render_hub_page(date, generated):
-    overseas = [(i, m) for i, m in ETFS.items() if m["region"] == "해외" and i in generated]
-    domestic = [(i, m) for i, m in ETFS.items() if m["region"] == "국내" and i in generated]
+def render_hub_page(dates, generated):
+    """운용사별 · 지역별로 분류된 허브 페이지 생성"""
+
+    def group(manager_name, items):
+        """한 운용사의 해외/국내 카드 HTML"""
+        overseas = [(i, m) for i, m in items if m["region"] == "해외"]
+        domestic = [(i, m) for i, m in items if m["region"] == "국내"]
+
+        out = ""
+        if overseas:
+            out += "<h3 style='color:#34d399;margin:24px 0 12px;font-size:16px'>🌍 해외투자</h3>\n"
+            out += cards(overseas)
+        if domestic:
+            out += "<h3 style='color:#60a5fa;margin:24px 0 12px;font-size:16px'>🇰🇷 국내투자</h3>\n"
+            out += cards(domestic)
+        return out
 
     def cards(items):
         out = ""
@@ -317,36 +389,67 @@ def render_hub_page(date, generated):
             )
         return out
 
+    # 운용사별 분류
+    time_items = [(i, m) for i, m in ETFS.items() if m["manager"] == "TIMEFOLIO" and i in generated]
+    koact_items = [(i, m) for i, m in ETFS.items() if m["manager"] == "KoAct" and i in generated]
+
+    time_count = len(time_items)
+    koact_count = len(koact_items)
+
+    # 허브 표시용 날짜: 가장 최근 날짜
+    display_date = max(dates.values()) if dates else "—"
+
     title = "ETF 목록 — 국내 액티브 ETF 보유종목 한눈에 | Active ETF Tracker"
-    desc = "타임폴리오 등 국내 액티브 ETF의 보유종목·구성종목 현황을 ETF별로 정리한 목록 페이지. 매일 자동 업데이트."
+    desc = "타임폴리오·삼성액티브(KoAct) 등 국내 액티브 ETF의 보유종목·구성종목 현황을 ETF별로 정리한 목록 페이지. 매일 자동 업데이트."
     canonical = f"{SITE}/etf/"
-    jsonld = '{"@context":"https://schema.org","@type":"CollectionPage","name":"ETF 목록","url":"' + canonical + '"}'
 
     body = f"""
-<div class="container">
-  <div class="breadcrumb"><a href="/">홈</a> &nbsp;›&nbsp; ETF 목록</div>
-  <h1 class="title">ETF 목록</h1>
-  <p class="subtitle">국내 액티브 ETF의 보유종목·구성종목 현황 · 기준일 {esc(date)} · 매일 자동 업데이트</p>
+<div class="container" style="max-width:720px;margin:0 auto;padding:20px 16px">
+  <nav style="font-size:13px;color:#64748b;margin-bottom:8px">
+    <a href="/" style="color:#60a5fa;text-decoration:none">홈</a> › ETF 목록
+  </nav>
+  <h1 style="font-size:26px;margin:0 0 6px">ETF 목록</h1>
+  <p style="color:#94a3b8;font-size:13px;margin:0 0 24px">
+    국내 액티브 ETF의 보유종목·구성종목 현황 · 기준일 {display_date} · 매일 자동 업데이트
+  </p>
+"""
 
-  <h2 class="sec">🌍 해외투자</h2>
-  {cards(overseas)}
+    # TIMEFOLIO 섹션
+    if time_items:
+        body += f"""
+  <h2 style="font-size:20px;color:#f1f5f9;margin:32px 0 4px;border-bottom:2px solid #334155;padding-bottom:8px">
+    📊 TIMEFOLIO <span style="font-size:14px;color:#64748b;font-weight:400">({time_count}종)</span>
+  </h2>
+"""
+        body += group("TIMEFOLIO", time_items)
 
-  <h2 class="sec">🇰🇷 국내투자</h2>
-  {cards(domestic)}
+    # KoAct 섹션
+    if koact_items:
+        body += f"""
+  <h2 style="font-size:20px;color:#f1f5f9;margin:40px 0 4px;border-bottom:2px solid #334155;padding-bottom:8px">
+    🔷 KoAct <span style="font-size:14px;color:#64748b;font-weight:400">({koact_count}종)</span>
+  </h2>
+"""
+        body += group("KoAct", koact_items)
 
-  <div class="cta-box">
-    <h3>📈 전체 ETF를 한 화면에서 비교</h3>
-    <p>여러 ETF의 공통 보유 종목과 차이를 인터랙티브하게 비교해보세요.</p>
-    <a href="/" class="cta-btn">Active ETF Tracker 바로가기 →</a>
+    body += """
+  <div style="margin-top:40px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;text-align:center">
+    <h3 style="font-size:16px;margin:0 0 6px;color:#f1f5f9">📈 전체 ETF를 한 화면에서 비교</h3>
+    <p style="font-size:13px;color:#94a3b8;margin:0 0 12px">여러 ETF의 공통 보유 종목과 차이를 인터랙티브하게 비교해보세요.</p>
+    <a href="/" style="display:inline-block;padding:10px 24px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">Active ETF Tracker 바로가기 →</a>
+  </div>
+  <div style="margin-top:16px;padding:12px 16px;background:#1e293b;border-radius:8px;font-size:11px;color:#64748b;line-height:1.6">
+    본 페이지는 정보 제공 목적이며 투자 권유가 아닙니다. 투자 결정은 본인 책임 하에 이루어져야 하며 투자 전 투자설명서를 확인하세요. 자세한 내용은 <a href="/disclaimer.html">투자 고지사항</a> 참고.
   </div>
 </div>
 """
+
     page = HEAD + body + FOOT
     page = (page
             .replace("__TITLE__", esc(title))
             .replace("__DESC__", esc(desc))
             .replace("__CANONICAL__", canonical)
-            .replace("__JSONLD__", jsonld)
+            .replace("__JSONLD__", "")
             .replace("__GTAG__", GTAG_ID)
             .replace("__ADS__", ADSENSE_CLIENT))
     return page
@@ -375,16 +478,21 @@ def write_sitemap(generated):
 # ─────────────────────────────────────────────────────────────
 def main():
     print("=== ETF 페이지 생성 시작 ===")
-    date = get_latest_date()
-    if not date:
+
+    # Step 3: provider별 최신 날짜 조회
+    dates = get_latest_dates()
+    if not dates:
         print("✗ 최신 날짜를 찾을 수 없습니다. 종료.")
         sys.exit(1)
-    print(f"기준일: {date}")
 
     os.makedirs("etf", exist_ok=True)
     generated = []
 
     for idx, meta in ETFS.items():
+        date = get_date_for_etf(idx, dates)
+        if not date:
+            print(f"  ⚠ {meta['slug']} 스킵 (provider 데이터 없음)")
+            continue
         try:
             holdings = get_holdings(idx, date)
             nav = get_nav(idx, date)
@@ -393,13 +501,13 @@ def main():
             with open(path, "w", encoding="utf-8") as f:
                 f.write(page)
             generated.append(idx)
-            print(f"  ✓ {meta['slug']}.html ({len(holdings)}종목)")
+            print(f"  ✓ {meta['slug']}.html ({len(holdings)}종목, {date})")
         except Exception as e:
             print(f"  ✗ {meta['slug']} 실패: {e}")
 
     # 허브 페이지
     with open(os.path.join("etf", "index.html"), "w", encoding="utf-8") as f:
-        f.write(render_hub_page(date, generated))
+        f.write(render_hub_page(dates, generated))
     print(f"  ✓ etf/index.html (허브)")
 
     # 사이트맵
