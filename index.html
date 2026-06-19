@@ -257,9 +257,12 @@
     }
     .provider-btn:hover { color: #94a3b8; }
     .provider-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
-
+    .provider-btn[data-provider="active"].active {
+      background: rgba(249,115,22,0.15);
+      border-color: #f97316;
+      color: #f97316;
+    }    
   
-
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -333,6 +336,7 @@
 
 <!-- 운용사 토글 (최상위) -->
   <div class="provider-switch">
+    <button class="provider-btn" data-provider="active" onclick="switchProvider('active', this)">🔥 Active(계)</button>
     <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME</button>
     <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct</button>
   </div>
@@ -717,22 +721,42 @@
 
   // ===== 운용사 전환 =====
   // 운용사 바꿀 때마다 ETF 탭 새로 그리고, 첫 ETF 선택, 전체 화면 새로고침.
-  function switchProvider(provider, btn) {
+    function switchProvider(provider, btn) {
     if (currentProvider === provider) return;
     currentProvider = provider;
     document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    // 비교 모드 상태 초기화 (운용사가 다르면 의미 없음)
     cmpEtfA = null;
     cmpEtfB = null;
     sortKey = null;
-    lastHighlightsData = null;  // 캐시 무효화
+    lastHighlightsData = null;
 
-    renderEtfTabs();             // 탭 새로 그리기 (첫 ETF 자동 선택)
-    sortEtfTabsByNav();          // NAV 순 정렬 + 첫 탭 active
-    renderInfo();
-    refreshAll();                // 하이라이트 + 단일 ETF 다시 로드
+    // ★ Active 합산 모드: 하이라이트만 표시, 개별 ETF 섹션 숨김
+    const isActive = (provider === 'active');
+    const elemIds = ['etfTabs', 'modeSingle', 'modeAnalysis'];
+    elemIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = isActive ? 'none' : '';
+    });
+    const modeTabs = document.querySelector('.mode-tabs');
+    if (modeTabs) modeTabs.style.display = isActive ? 'none' : '';
+    // modeCompare는 hidden 클래스로 관리
+    const modeCompare = document.getElementById('modeCompare');
+    if (modeCompare && isActive) modeCompare.classList.add('hidden');
+
+    if (!isActive) {
+      // TIME/KoAct: 기존 동작 그대로
+      renderEtfTabs();
+      sortEtfTabsByNav();
+      renderInfo();
+      refreshAll();
+    } else {
+      // Active: 하이라이트만 새로고침
+      const base = document.getElementById("globalDateSelect")?.value;
+      const cmp  = document.getElementById("globalCompareSelect")?.value;
+      if (base) loadHighlights(base, cmp);
+    }
     trackEvent('provider_switch', { provider });
   }
 
@@ -1385,17 +1409,21 @@ function selectEtf(el) {
       }
 
         const fetchAll = async (date) => {
+        const holdingsQuery = () => {
+          let q = db.from("holdings")
+            .select("etf_idx, code, name, weight, value, holding_amount, qty, holdings_qty")
+            .eq("date", date);
+          if (currentProvider !== 'active') q = q.eq("provider", currentProvider);
+          return q;
+        };
+        let dailyQ = db.from("etf_daily")
+          .select("etf_idx, nav_total, nav_price, standard_price")
+          .eq("date", date);
+        if (currentProvider !== 'active') dailyQ = dailyQ.eq("provider", currentProvider);
+
         const [holdingsAll, dailyResp] = await Promise.all([
-          fetchAllPages(() =>
-            db.from("holdings")
-              .select("etf_idx, code, name, weight, value, holding_amount, qty, holdings_qty")
-              .eq("date", date)
-              .eq("provider", currentProvider)
-          ),
-          db.from("etf_daily")
-            .select("etf_idx, nav_total, nav_price, standard_price")
-            .eq("date", date)
-            .eq("provider", currentProvider)
+          fetchAllPages(holdingsQuery),
+          dailyQ
         ]);
 
         const normalized = normalizeRows(holdingsAll);
@@ -1424,19 +1452,23 @@ function selectEtf(el) {
 
       const aggregate = (rows) => {
         const map = {};
+        const isActive = (currentProvider === 'active');
         for (const r of rows) {
           const nm = (r.name || "").trim();
+          if (/^(현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) continue;
+
           const code = (r.code || "").trim();
-          if (/^(현금|원화현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) continue;
-          if (/^CASH/i.test(code)) continue;
-          
-          const key = code || r.name;
+          // ★ Active 합산: 대소문자 통합 (EQUITY vs Equity)
+          const key = isActive
+            ? (code || nm).toUpperCase()
+            : (code || r.name);
           if (!map[key]) map[key] = {
             code, name: r.name,
             weight: 0, value: 0,
             holdingAccounts: 0,
             qty: 0, holdings_qty: 0,
-            etfCount: 0
+            etfCount: 0,
+            _bestValue: 0
           };
           map[key].weight += (r.weight || 0);
           map[key].value += (r.value || 0);
@@ -1444,6 +1476,15 @@ function selectEtf(el) {
           map[key].qty          += (r.qty          || 0);
           map[key].holdings_qty  += (r.holdings_qty || 0);
           map[key].etfCount += 1;
+          // ★ Active: value가 가장 큰 행의 name/code를 대표명으로
+          if (isActive) {
+            const rv = Number(r.value) || 0;
+            if (rv > map[key]._bestValue) {
+              map[key]._bestValue = rv;
+              map[key].name = r.name;
+              map[key].code = code;
+            }
+          }
         }
         return map;
       };
@@ -1467,15 +1508,18 @@ function selectEtf(el) {
 
       // 총 순자산 표시
       try {
-        const { data: navAll } = await db.from("etf_daily")
-          .select("nav_total, etf_idx").eq("date", baseDate).eq("provider", currentProvider);
+        let navQ = db.from("etf_daily")
+          .select("nav_total, etf_idx").eq("date", baseDate);
+        if (currentProvider !== 'active') navQ = navQ.eq("provider", currentProvider);
+        const { data: navAll } = await navQ;
         const totalNav = (navAll || []).reduce((s, r) => s + (r.nav_total || 0), 0);
         const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
         if (holdTitleEl && totalNav > 0) {
           const jo = totalNav / 1_000_000_000_000;
           const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const label = currentProvider === 'active' ? ' · TIME+KoAct' : '';
           holdTitleEl.innerHTML =
-            `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조원)</span>`;
+            `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조원${label})</span>`;
         }
         const liveNavMap = {};
         (navAll || []).forEach(r => { liveNavMap[r.etf_idx] = r.nav_total || 0; });
@@ -1629,19 +1673,22 @@ function selectEtf(el) {
     }
 
     // ★ Fix 2: holdings + trend 병렬 조회
+    let holdQ = db.from("holdings")
+      .select("etf_idx, etf_name, weight, qty, value, code")
+      .eq("date", latest)
+      .ilike("code", normCode);
+    let trendQ = db.from("holdings")
+      .select("date, etf_idx, etf_name, weight")
+      .ilike("code", normCode)
+      .order("date", { ascending: true })
+      .limit(2000);
+    if (currentProvider !== 'active') {
+      holdQ = holdQ.eq("provider", currentProvider);
+      trendQ = trendQ.eq("provider", currentProvider);
+    }
     const [holdingsResp, trendResp] = await Promise.all([
-      db.from("holdings")
-        .select("etf_idx, etf_name, weight, qty, value, code")
-        .eq("date", latest)
-        .eq("provider", currentProvider)
-        .ilike("code", normCode)
-        .order("weight", { ascending: false }),
-      db.from("holdings")
-        .select("date, etf_idx, etf_name, weight")
-        .eq("provider", currentProvider)
-        .ilike("code", normCode)
-        .order("date", { ascending: true })
-        .limit(2000)
+      holdQ.order("weight", { ascending: false }),
+      trendQ
     ]);
 
     const holdings = holdingsResp.data || [];
@@ -1804,13 +1851,16 @@ function selectEtf(el) {
       const latest = globalAllDates[0];
       if (!latest) return;
 
-      const { data } = await db.from("holdings")
+      let searchQ = db.from("holdings")
         .select("code, name, etf_idx, etf_name, weight")
         .eq("date", latest)
-        .eq("provider", currentProvider)
         .ilike("name", `%${q.trim()}%`)
         .order("weight", { ascending: false })
         .limit(50);
+      if (currentProvider !== 'active') {
+        searchQ = searchQ.eq("provider", currentProvider);
+      }
+      const { data } = await searchQ;
       if (!data?.length) {
         resBox.innerHTML = '<div class="search-empty">검색 결과 없음</div>';
         resBox.classList.add("show");
