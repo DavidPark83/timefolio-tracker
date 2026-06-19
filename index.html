@@ -336,7 +336,7 @@
 
 <!-- 운용사 토글 (최상위) -->
   <div class="provider-switch">
-    <button class="provider-btn" data-provider="active" onclick="switchProvider('active', this)">🔥 Active(계)</button>
+    <button class="provider-btn" data-provider="active" onclick="switchProvider('active', this)">Active ETF</button>
     <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME</button>
     <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct</button>
   </div>
@@ -1455,7 +1455,7 @@ function selectEtf(el) {
         const isActive = (currentProvider === 'active');
         for (const r of rows) {
           const nm = (r.name || "").trim();
-          if (/^(현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) continue;
+          if (/^(현금|원화현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) continue;
 
           const code = (r.code || "").trim();
           // ★ Active 합산: 대소문자 통합 (EQUITY vs Equity)
@@ -1709,9 +1709,12 @@ function selectEtf(el) {
       el.innerHTML = '<div class="hl-empty">최신일 기준 보유 ETF 없음</div>';
       return;
     }
-    const _prefix = (PROVIDERS[currentProvider] && PROVIDERS[currentProvider].prefix) || "";
     el.innerHTML = holdings.map(h => {
       const name = h.etf_name || '';
+      // ★ Active 모드: etf_idx로 운용사 판별 (200 이상 = KoAct)
+      const _prefix = currentProvider === 'active'
+        ? (h.etf_idx >= 200 ? 'KoAct' : 'TIME')
+        : ((PROVIDERS[currentProvider] && PROVIDERS[currentProvider].prefix) || "");
       const display = (_prefix && !name.startsWith(_prefix)) ? _prefix + " " + name : name;
       return `
       <div class="holding-row">
