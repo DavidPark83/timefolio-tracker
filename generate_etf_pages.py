@@ -100,7 +100,7 @@ CASH_PATTERN = ("현금", "원화예금", "예금", "기타", "미수금", "미�
 # etf_daily 테이블에서 provider별 최신 날짜를 구할 때 사용
 # ─────────────────────────────────────────────────────────────
 PROVIDER_MAP = {
-    "TIMEFOLIO": "timeetf",
+    "TIMEFOLIO": "timefolio",       # ← timeetf → timefolio
     "KoAct":     "samsungactive",
 }
 
