@@ -1426,9 +1426,10 @@ function selectEtf(el) {
         const map = {};
         for (const r of rows) {
           const nm = (r.name || "").trim();
-          if (/^(현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) continue;
-
           const code = (r.code || "").trim();
+          if (/^(현금|원화현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) continue;
+          if (/^CASH/i.test(code)) continue;
+          
           const key = code || r.name;
           if (!map[key]) map[key] = {
             code, name: r.name,
