@@ -1,0 +1,79 @@
+name: Daily Samsung Active (KoAct) Crawler
+
+on:
+  schedule:
+    - cron: '0 0 * * 1-5'
+    - cron: '0 1 * * 1-5'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '실행 모드'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - backfill
+      target_date:
+        description: '[daily] 수집할 날짜 (YYYY-MM-DD), 빈 칸이면 오늘'
+        required: false
+        default: ''
+      start_date:
+        description: '[backfill] 시작일 (YYYY-MM-DD)'
+        required: false
+        default: ''
+      end_date:
+        description: '[backfill] 종료일 (YYYY-MM-DD), 빈 칸이면 어제'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  crawl-samsung:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Samsung Active crawler
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TARGET_DATE: ${{ github.event.inputs.target_date }}
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          START="${{ github.event.inputs.start_date }}"
+          END="${{ github.event.inputs.end_date }}"
+
+          if [ "$MODE" = "backfill" ]; then
+            if [ -n "$START" ] && [ -n "$END" ]; then
+              echo "🔄 삼성 청크 백필: $START ~ $END"
+              python backfill_samsung.py "$START" "$END"
+            elif [ -n "$START" ]; then
+              YESTERDAY=$(date -u -d 'yesterday' '+%Y-%m-%d')
+              echo "🔄 삼성 백필: $START ~ $YESTERDAY"
+              python backfill_samsung.py "$START" "$YESTERDAY"
+            else
+              echo "🔄 삼성 전체 백필"
+              python backfill_samsung.py
+            fi
+          else
+            echo "📊 삼성액티브(KoAct) 일일 크롤링"
+            python crawler_samsung.py
+          fi
