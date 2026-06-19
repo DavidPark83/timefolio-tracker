@@ -418,7 +418,7 @@ def render_hub_page(dates, generated):
     if time_items:
         body += f"""
   <h2 style="font-size:20px;color:#f1f5f9;margin:32px 0 4px;border-bottom:2px solid #334155;padding-bottom:8px">
-    📊 타임폴리오자산운용-TIME 액티브 ETF <span style="font-size:14px;color:#64748b;font-weight:400">({time_count}종)</span>
+    📊 타임폴리오자산운용-TIME ETF <span style="font-size:14px;color:#64748b;font-weight:400">({time_count}종)</span>
   </h2>
 """
         body += group("TIMEFOLIO", time_items)
@@ -427,7 +427,7 @@ def render_hub_page(dates, generated):
     if koact_items:
         body += f"""
   <h2 style="font-size:20px;color:#f1f5f9;margin:40px 0 4px;border-bottom:2px solid #334155;padding-bottom:8px">
-    🔷 삼성액티브자산운용-KoAct 액티브 ETF <span style="font-size:14px;color:#64748b;font-weight:400">({koact_count}종)</span>
+    🔷 삼성액티브자산운용-KoAct ETF <span style="font-size:14px;color:#64748b;font-weight:400">({koact_count}종)</span>
   </h2>
 """
         body += group("KoAct", koact_items)
