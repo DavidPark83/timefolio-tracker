@@ -237,7 +237,7 @@ def crawl_holdings(etf: Dict, target_date: str) -> List[Dict]:
             "etf_name": etf["etf_name"],
             "code": normalize_stock_code_samsung(row.get("itmNo"), sec_nm),
             "name": sec_nm,
-            "qty": to_float(row.get("applyQ")),    # 소수 가능
+            "qty": round(to_float(row.get("applyQ"))),  # 홈페이지와 동일하게 정수 반올림
             "value": to_int(row.get("evalA")),     # 평가금액(원)
             "weight": to_float(row.get("ratio")),  # 비중(%)
             "provider": "samsungactive",
