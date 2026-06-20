@@ -466,15 +466,22 @@
     </div>
   </div>
 
-<!-- ② Active Analytics (Active 모드에서만 표시) -->
+  <!-- ② Active Analytics (Active 모드에서만 표시) -->
   <div id="activeAnalytics" class="active-analytics" style="display:none">
     <div class="aa-grid">
-      <!-- 스마트머니 스코어 (전체 너비) -->
-      <div class="aa-card aa-full">
-        <div class="aa-card-header" style="color:#f97316">
-          🏅 스마트머니 스코어 <span class="aa-subtitle">5가지 팩터 종합 (매수 5.0 ← → 1.0 매도)</span>
+       <!-- 스마트머니 스코어 — 매수 -->
+      <div class="aa-card">
+        <div class="aa-card-header" style="color:#34d399">
+          🏅 스마트머니 스코어 <span class="aa-subtitle">매수 시그널</span>
         </div>
-        <div class="aa-card-body" id="aaScores" style="padding:0"><div class="aa-empty">데이터 계산 중...</div></div>
+        <div class="aa-card-body" id="aaScoresBuy"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
+      <!-- 스마트머니 스코어 — 매도 -->
+      <div class="aa-card">
+        <div class="aa-card-header" style="color:#f87171">
+          🏅 스마트머니 스코어 <span class="aa-subtitle">매도 시그널</span>
+        </div>
+        <div class="aa-card-body" id="aaScoresSell"><div class="aa-empty">데이터 계산 중...</div></div>
       </div>
       <!-- 운용사 의견 충돌 -->
       <div class="aa-card">
@@ -1936,49 +1943,47 @@ function selectEtf(el) {
       return '🧊';
     }
 
-// ── 1. 스마트머니 스코어 (좌: 매수, 우: 매도) ──
-    const scoresEl = document.getElementById('aaScores');
-    if (scoresEl) {
-      const buyAll = scores.filter(x => x.score >= 3.5);
-      const sellAll = scores.filter(x => x.score <= 2.5).sort((a, b) => a.score - b.score);
+// ── 1. 스마트머니 스코어 (매수/매도 별도 카드) ──
+    const buyEl = document.getElementById('aaScoresBuy');
+    const sellEl = document.getElementById('aaScoresSell');
 
-      const renderScoreList = (items) => {
-        if (!items.length) return '<div class="aa-empty">해당 종목 없음</div>';
-        return items.map(x => {
-          const pct = ((x.score - 1) / 4) * 100;
-          const col = scoreColor(x.score);
-          const factors = [];
-          if (x.f.isNew) factors.push('신규');
-          if (x.f.con >= 0.5) factors.push('양쪽매수');
-          else if (x.f.con <= -0.5) factors.push('양쪽매도');
-          if (x.f.spr >= 0.5) factors.push('확산↑');
-          else if (x.f.spr <= -0.25) factors.push('이탈↓');
-          if (x.f.stl > 0) factors.push('역발상');
-          if (x.f.mag <= -0.5 && x.score <= 2.5) factors.push('대량감소');
-          const fStr = factors.length ? factors.join(' · ') : '';
-          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
-            <span style="font-size:13px;flex-shrink:0">${scoreEmoji(x.score)}</span>
-            <span class="aa-name">${escapeHtml(x.name)}</span>
-            ${fStr ? `<span style="font-size:9px;color:#475569">${escapeHtml(fStr)}</span>` : ''}
-            <span style="font-size:10px;color:#475569">${x.cnt}개</span>
-            <div class="aa-score-bar"><div class="aa-score-fill" style="width:${pct}%;background:${col}"></div></div>
-            <span style="font-family:monospace;font-weight:700;min-width:28px;text-align:right;color:${col}">${x.score}</span>
-          </div>`;
-        }).join('');
-      };
+    const buyAll = scores.filter(x => x.score >= 3.5);
+    const sellAll = scores.filter(x => x.score <= 2.5).sort((a, b) => a.score - b.score);
 
-      scoresEl.innerHTML = `
-        <div class="aa-score-grid">
-          <div class="aa-score-panel aa-score-panel-buy">
-            <div class="aa-panel-header aa-panel-header-buy">📈 매수 시그널 (${buyAll.length}종목)</div>
-            ${renderScoreList(buyAll)}
-          </div>
-          <div class="aa-score-panel aa-score-panel-sell">
-            <div class="aa-panel-header aa-panel-header-sell">📉 매도 시그널 (${sellAll.length}종목)</div>
-            ${renderScoreList(sellAll)}
-          </div>
-        </div>
-      `;
+    const renderScoreList = (items) => {
+      if (!items.length) return '<div class="aa-empty">해당 종목 없음</div>';
+      return items.map(x => {
+        const pct = ((x.score - 1) / 4) * 100;
+        const col = scoreColor(x.score);
+        const factors = [];
+        if (x.f.isNew) factors.push('신규');
+        if (x.f.con >= 0.5) factors.push('양쪽매수');
+        else if (x.f.con <= -0.5) factors.push('양쪽매도');
+        if (x.f.spr >= 0.5) factors.push('확산↑');
+        else if (x.f.spr <= -0.25) factors.push('이탈↓');
+        if (x.f.stl > 0) factors.push('역발상');
+        if (x.f.mag <= -0.5 && x.score <= 2.5) factors.push('대량감소');
+        const fStr = factors.length ? factors.join(' · ') : '';
+        return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
+          <span style="font-size:13px;flex-shrink:0">${scoreEmoji(x.score)}</span>
+          <span class="aa-name">${escapeHtml(x.name)}</span>
+          ${fStr ? `<span style="font-size:9px;color:#475569">${escapeHtml(fStr)}</span>` : ''}
+          <span style="font-size:10px;color:#475569">${x.cnt}개</span>
+          <div class="aa-score-bar"><div class="aa-score-fill" style="width:${pct}%;background:${col}"></div></div>
+          <span style="font-family:monospace;font-weight:700;min-width:28px;text-align:right;color:${col}">${x.score}</span>
+        </div>`;
+      }).join('');
+    };
+
+    if (buyEl) {
+      const hdr = buyEl.closest('.aa-card').querySelector('.aa-card-header .aa-subtitle');
+      if (hdr) hdr.textContent = `매수 시그널 (${buyAll.length}종목)`;
+      buyEl.innerHTML = renderScoreList(buyAll);
+    }
+    if (sellEl) {
+      const hdr = sellEl.closest('.aa-card').querySelector('.aa-card-header .aa-subtitle');
+      if (hdr) hdr.textContent = `매도 시그널 (${sellAll.length}종목)`;
+      sellEl.innerHTML = renderScoreList(sellAll);
     }
 
     // ── 2. 의견 충돌 ──
