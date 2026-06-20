@@ -276,7 +276,7 @@
     }
     .aa-card-body { padding: 12px 16px; max-height: 360px; overflow-y: auto; }
     .aa-card-body::-webkit-scrollbar { width: 4px; }
-    .aa-card-body::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
+    .aa-card-body::-webkit-scrollbar-thumb { background: #00D4AA; border-radius: 2px; }
     .aa-row {
       display: flex; align-items: center; gap: 8px; padding: 8px 10px;
       border-radius: 8px; font-size: 12px; cursor: pointer; transition: background 0.15s;
@@ -288,8 +288,34 @@
     .aa-score-bar { width: 60px; height: 6px; background: #1e2433; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
     .aa-score-fill { height: 100%; border-radius: 3px; }
     .aa-divider { height: 1px; background: #1e2d4a; margin: 4px 0; }
-    .aa-empty { color: #475569; font-size: 11px; text-align: center; padding: 20px 0; }
+    .aa-empty { color: #475569; font-size: 11px; text-align: center; padding: 20px 0; }  
     .aa-subtitle { font-size: 10px; color: #475569; font-weight: 400; margin-left: 4px; }
+
+    /* 스마트머니 스코어 좌우 패널 */
+    .aa-score-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    }
+    .aa-score-panel {
+      max-height: 400px; overflow-y: auto;
+    }
+    .aa-score-panel::-webkit-scrollbar { width: 4px; }
+    .aa-score-panel::-webkit-scrollbar-track { background: transparent; }
+    .aa-score-panel-buy::-webkit-scrollbar-thumb { background: #34d399; border-radius: 2px; }
+    .aa-score-panel-sell::-webkit-scrollbar-thumb { background: #f87171; border-radius: 2px; }
+    .aa-score-panel-buy { border-right: 1px solid #1e2d4a; background: rgba(52,211,153,0.02); }
+    .aa-score-panel-sell { background: rgba(248,113,113,0.02); }
+    .aa-panel-header {
+      font-size: 11px; font-weight: 600; padding: 10px 12px;
+      border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 1;
+    }
+    .aa-panel-header-buy { color: #34d399; background: rgba(52,211,153,0.06); }
+    .aa-panel-header-sell { color: #f87171; background: rgba(248,113,113,0.06); }
+
+    @media (max-width: 900px) {
+      .aa-score-grid { grid-template-columns: 1fr; }
+      .aa-score-panel-buy { border-right: none; border-bottom: 2px solid #1e2d4a; }
+    }
+
 
     /* 스코어 색상 */
     .score-5 { color: #00D4AA; } .score-5-bg { background: #00D4AA; }
@@ -450,7 +476,7 @@
         <div class="aa-card-header" style="color:#f97316">
           🏅 스마트머니 스코어 <span class="aa-subtitle">5가지 팩터 종합 (매수 5.0 ← → 1.0 매도)</span>
         </div>
-        <div class="aa-card-body" id="aaScores"><div class="aa-empty">데이터 계산 중...</div></div>
+        <div class="aa-card-body" id="aaScores" style="padding:0"><div class="aa-empty">데이터 계산 중...</div></div>
       </div>
       <!-- 운용사 의견 충돌 -->
       <div class="aa-card">
@@ -1944,14 +1970,14 @@ function selectEtf(el) {
       };
 
       scoresEl.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
-          <div style="border-right:1px solid #1e2d4a">
-            <div style="font-size:11px;color:#34d399;padding:8px 10px;font-weight:600;border-bottom:1px solid #1e2d4a">📈 매수 시그널 (${buyAll.length})</div>
-            <div style="max-height:360px;overflow-y:auto">${renderScoreList(buyAll)}</div>
+        <div class="aa-score-grid">
+          <div class="aa-score-panel aa-score-panel-buy">
+            <div class="aa-panel-header aa-panel-header-buy">📈 매수 시그널 (${buyAll.length}종목)</div>
+            ${renderScoreList(buyAll)}
           </div>
-          <div>
-            <div style="font-size:11px;color:#f87171;padding:8px 10px;font-weight:600;border-bottom:1px solid #1e2d4a">📉 매도 시그널 (${sellAll.length})</div>
-            <div style="max-height:360px;overflow-y:auto">${renderScoreList(sellAll)}</div>
+          <div class="aa-score-panel aa-score-panel-sell">
+            <div class="aa-panel-header aa-panel-header-sell">📉 매도 시그널 (${sellAll.length}종목)</div>
+            ${renderScoreList(sellAll)}
           </div>
         </div>
       `;
