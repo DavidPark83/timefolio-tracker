@@ -263,6 +263,48 @@
       color: #f97316;
     }    
   
+/* ===== Active Analytics ===== */
+    .active-analytics { margin-bottom: 24px; }
+    .aa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .aa-card {
+      background: #0d1526; border: 1px solid #1e2d4a; border-radius: 12px; overflow: hidden;
+    }
+    .aa-card-header {
+      padding: 12px 16px; border-bottom: 1px solid #1e2d4a;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .aa-card-body { padding: 12px 16px; max-height: 420px; overflow-y: auto; }
+    .aa-card-body::-webkit-scrollbar { width: 4px; }
+    .aa-card-body::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
+    .aa-row {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: 8px; font-size: 12px; cursor: pointer; transition: background 0.15s;
+    }
+    .aa-row:hover { background: rgba(255,255,255,0.03); }
+    .aa-row .aa-name { flex: 1; color: #e2e8f0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .aa-row .aa-name:hover { color: #00D4AA; }
+    .aa-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .aa-score-bar { width: 60px; height: 6px; background: #1e2433; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+    .aa-score-fill { height: 100%; border-radius: 3px; }
+    .aa-divider { height: 1px; background: #1e2d4a; margin: 4px 0; }
+    .aa-empty { color: #475569; font-size: 11px; text-align: center; padding: 20px 0; }
+    .aa-subtitle { font-size: 10px; color: #475569; font-weight: 400; margin-left: 4px; }
+
+    /* 스코어 색상 */
+    .score-5 { color: #00D4AA; } .score-5-bg { background: #00D4AA; }
+    .score-4 { color: #34d399; } .score-4-bg { background: #34d399; }
+    .score-3 { color: #94a3b8; } .score-3-bg { background: #94a3b8; }
+    .score-2 { color: #f97316; } .score-2-bg { background: #f97316; }
+    .score-1 { color: #ef4444; } .score-1-bg { background: #ef4444; }
+
+    .aa-full { grid-column: 1 / -1; }
+
+    @media (max-width: 900px) {
+      .aa-grid { grid-template-columns: 1fr; }
+    }
+
+
   </style>
 
 <!-- Google tag (gtag.js) -->
@@ -397,6 +439,40 @@
       </div>
       <div class="hl-pane active" id="hlGone-kr"></div>
       <div class="hl-pane"        id="hlGone-gl"></div>
+    </div>
+  </div>
+
+<!-- ② Active Analytics (Active 모드에서만 표시) -->
+  <div id="activeAnalytics" class="active-analytics" style="display:none">
+    <div class="aa-grid">
+      <!-- 스마트머니 스코어 (전체 너비) -->
+      <div class="aa-card aa-full">
+        <div class="aa-card-header" style="color:#f97316">
+          🏅 스마트머니 스코어 <span class="aa-subtitle">5가지 팩터 종합 (매수 5.0 ← → 1.0 매도)</span>
+        </div>
+        <div class="aa-card-body" id="aaScores"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
+      <!-- 운용사 의견 충돌 -->
+      <div class="aa-card">
+        <div class="aa-card-header" style="color:#f59e0b">
+          🔀 운용사 의견 충돌 <span class="aa-subtitle">TIME↑ KoAct↓ 또는 반대</span>
+        </div>
+        <div class="aa-card-body" id="aaDivergence"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
+      <!-- 편입 ETF 수 급증 -->
+      <div class="aa-card">
+        <div class="aa-card-header" style="color:#3b82f6">
+          🎯 편입 확산 시그널 <span class="aa-subtitle">ETF 편입 수 변동</span>
+        </div>
+        <div class="aa-card-body" id="aaSpread"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
+      <!-- 역발상 매수 -->
+      <div class="aa-card aa-full">
+        <div class="aa-card-header" style="color:#8b5cf6">
+          🕵️ 역발상 매수 <span class="aa-subtitle">보유금액↓ but 보유수량↑ = 저가매수 시그널</span>
+        </div>
+        <div class="aa-card-body" id="aaStealth"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
     </div>
   </div>
 
@@ -735,6 +811,10 @@
 
     // ★ Active 합산 모드: 하이라이트만 표시, 개별 ETF 섹션 숨김
     const isActive = (provider === 'active');
+    // Active Analytics 표시/숨김
+    const aaEl = document.getElementById('activeAnalytics');
+    if (aaEl) aaEl.style.display = isActive ? '' : 'none';
+
     const elemIds = ['etfTabs', 'modeSingle', 'modeAnalysis'];
     elemIds.forEach(id => {
       const el = document.getElementById(id);
@@ -1529,6 +1609,12 @@ function selectEtf(el) {
 
       renderHighlightsFromCache(lastHighlightsData);
 
+      // ★ Active 모드: edge analytics 계산 + 렌더
+      if (currentProvider === 'active' && prevAll) {
+        const analytics = computeActiveAnalytics(curAll, prevAll);
+        renderActiveAnalytics(analytics);
+      }
+
     } catch (e) {
       console.error("Highlights 로딩 실패:", e);
     }
@@ -1634,6 +1720,319 @@ function selectEtf(el) {
     renderCard("Down", downItems, fmtChange, emptyMsg);
     renderCard("Gone", goneItems, fmtChange, emptyMsg);
   }
+
+// =========================================================
+  // ② Active Analytics — Phase 1
+  //   스마트머니 스코어 / 의견충돌 / 편입확산 / 역발상매수
+  //   Active 모드에서만 동작. 기존 fetchAll 데이터 재활용.
+  // =========================================================
+
+  function getProviderLabel(etfIdx) {
+    return etfIdx >= 200 ? 'KoAct' : 'TIME';
+  }
+
+  function computeActiveAnalytics(curAll, prevAll) {
+    const SKIP = /^(현금|원화현금|원화예금|예금|기타|미수금|미지급금|설정현금)/;
+
+    function aggByProvider(rows) {
+      const map = {};
+      for (const r of rows) {
+        const nm = (r.name || '').trim();
+        if (SKIP.test(nm)) continue;
+        const code = (r.code || '').trim();
+        const key = (code || nm).toUpperCase();
+        const prov = r.etf_idx >= 200 ? 'koact' : 'time';
+
+        if (!map[key]) {
+          map[key] = {
+            code, name: nm, key,
+            time:  { val: 0, qty: 0, amt: 0, cnt: 0 },
+            koact: { val: 0, qty: 0, amt: 0, cnt: 0 },
+            total: { val: 0, qty: 0, amt: 0, cnt: 0 },
+            _bv: 0
+          };
+        }
+        const m = map[key];
+        const amt = r._amount || 0;
+        const val = Number(r.value) || 0;
+        const qty = Number(r.qty) || 0;
+
+        m[prov].val += val; m[prov].qty += qty; m[prov].amt += amt; m[prov].cnt += 1;
+        m.total.val += val; m.total.qty += qty; m.total.amt += amt; m.total.cnt += 1;
+
+        if (val > m._bv) { m._bv = val; m.name = nm; m.code = code; }
+      }
+      return map;
+    }
+
+    const cur = aggByProvider(curAll);
+    const prev = prevAll ? aggByProvider(prevAll) : null;
+
+    if (!prev) return { divergence: [], etfSpread: [], stealth: [], scores: [] };
+
+    const T = 100_000_000; // 1억 threshold
+
+    // ── 1. 의견 충돌 ──
+    const divergence = [];
+    for (const key of Object.keys(cur)) {
+      const c = cur[key], p = prev[key];
+      if (!p) continue;
+      const td = c.time.amt - p.time.amt;
+      const kd = c.koact.amt - p.koact.amt;
+      if ((td > T && kd < -T) || (td < -T && kd > T)) {
+        divergence.push({
+          code: c.code, name: c.name,
+          timeDiff: td, koactDiff: kd, totalDiff: td + kd
+        });
+      }
+    }
+    divergence.sort((a, b) => Math.abs(b.timeDiff - b.koactDiff) - Math.abs(a.timeDiff - a.koactDiff));
+
+    // ── 2. 편입 확산 ──
+    const etfSpread = [];
+    for (const key of Object.keys(cur)) {
+      const c = cur[key], p = prev[key];
+      const cc = c.total.cnt, pc = p ? p.total.cnt : 0;
+      const diff = cc - pc;
+      if (Math.abs(diff) >= 2) {
+        etfSpread.push({ code: c.code, name: c.name, curCnt: cc, prevCnt: pc, diff, amt: c.total.amt });
+      }
+    }
+    for (const key of Object.keys(prev)) {
+      if (!cur[key] && prev[key].total.cnt >= 2) {
+        const p = prev[key];
+        etfSpread.push({ code: p.code, name: p.name, curCnt: 0, prevCnt: p.total.cnt, diff: -p.total.cnt, amt: 0 });
+      }
+    }
+    etfSpread.sort((a, b) => b.diff - a.diff);
+
+    // ── 3. 역발상 매수 ──
+    const stealth = [];
+    for (const key of Object.keys(cur)) {
+      const c = cur[key], p = prev[key];
+      if (!p) continue;
+      const vd = c.total.amt - p.total.amt;
+      const qd = c.total.qty - p.total.qty;
+      if (vd < -50_000_000 && qd > 0) {
+        stealth.push({ code: c.code, name: c.name, valueDiff: vd, qtyDiff: qd });
+      }
+    }
+    stealth.sort((a, b) => b.qtyDiff - a.qtyDiff);
+
+    // ── 4. 스마트머니 스코어 ──
+    // 분포 계산 (percentile용)
+    const allDiffs = [];
+    for (const key of Object.keys(cur)) {
+      const p = prev[key];
+      if (p) allDiffs.push(cur[key].total.amt - p.total.amt);
+    }
+    allDiffs.sort((a, b) => a - b);
+    const p20 = allDiffs[Math.floor(allDiffs.length * 0.2)] || 0;
+    const p80 = allDiffs[Math.floor(allDiffs.length * 0.8)] || 0;
+
+    const scores = [];
+    for (const key of Object.keys(cur)) {
+      const c = cur[key], p = prev[key];
+      let s = 3.0;
+      let f = {};
+
+      if (p) {
+        const td = c.time.amt - p.time.amt;
+        const kd = c.koact.amt - p.koact.amt;
+        const totalD = c.total.amt - p.total.amt;
+        const qd = c.total.qty - p.total.qty;
+        const ed = c.total.cnt - p.total.cnt;
+
+        // F1: 운용사 합의 (-1 ~ +1)
+        const tDir = td > T ? 1 : td < -T ? -1 : 0;
+        const kDir = kd > T ? 1 : kd < -T ? -1 : 0;
+        let con = 0;
+        if (tDir === 1 && kDir === 1) con = 1;
+        else if (tDir === -1 && kDir === -1) con = -1;
+        else if (tDir * kDir === -1) con = 0;
+        else con = (tDir + kDir) * 0.5;
+        f.con = con;
+
+        // F2: 편입 확산 (-0.5 ~ +1)
+        f.spr = ed >= 3 ? 1 : ed >= 1 ? 0.5 : ed <= -3 ? -0.5 : ed <= -1 ? -0.25 : 0;
+
+        // F3: 금액 변동 규모 (-1 ~ +1)
+        f.mag = totalD >= p80 ? 1 : totalD > 0 ? 0.5 : totalD <= p20 ? -1 : totalD < 0 ? -0.5 : 0;
+
+        // F4: 신규 편입 보너스
+        f.isNew = false;
+
+        // F5: 역발상 매수 (+0.5)
+        f.stl = (totalD < -50_000_000 && qd > 0) ? 0.5 : 0;
+
+        s = 3.0 + con + f.spr * 0.5 + f.mag * 0.5 + f.stl;
+      } else {
+        // 신규 편입
+        s = 3.8;
+        f = { con: 0.5, spr: 0.5, mag: 0.5, stl: 0, isNew: true };
+      }
+
+      s = Math.max(1, Math.min(5, Math.round(s * 10) / 10));
+
+      scores.push({
+        code: c.code, name: c.name,
+        score: s, f,
+        amt: c.total.amt, cnt: c.total.cnt,
+        timeCnt: c.time.cnt, koactCnt: c.koact.cnt
+      });
+    }
+    scores.sort((a, b) => b.score - a.score);
+
+    return { divergence, etfSpread, stealth, scores };
+  }
+
+  function renderActiveAnalytics(analytics) {
+    const { divergence, etfSpread, stealth, scores } = analytics;
+
+    // ── 스코어 색상 헬퍼 ──
+    function scoreColor(s) {
+      if (s >= 4.5) return '#00D4AA';
+      if (s >= 3.5) return '#34d399';
+      if (s >= 2.5) return '#94a3b8';
+      if (s >= 1.5) return '#f97316';
+      return '#ef4444';
+    }
+    function scoreLabel(s) {
+      if (s >= 4.5) return '강력 매수';
+      if (s >= 3.5) return '매수';
+      if (s >= 2.5) return '중립';
+      if (s >= 1.5) return '매도';
+      return '강력 매도';
+    }
+    function scoreEmoji(s) {
+      if (s >= 4.5) return '🔥';
+      if (s >= 3.5) return '📈';
+      if (s >= 2.5) return '➖';
+      if (s >= 1.5) return '📉';
+      return '🧊';
+    }
+
+    // ── 1. 스마트머니 스코어 ──
+    const scoresEl = document.getElementById('aaScores');
+    if (scoresEl) {
+      // TOP 매수 10 + BOTTOM 매도 10
+      const top10 = scores.filter(x => x.score >= 3.5).slice(0, 10);
+      const bot10 = scores.filter(x => x.score <= 2.5).sort((a, b) => a.score - b.score).slice(0, 10);
+
+      let html = '';
+      if (top10.length) {
+        html += `<div style="font-size:11px;color:#34d399;padding:4px 10px;font-weight:600">📈 매수 시그널 TOP</div>`;
+        html += top10.map(x => {
+          const pct = ((x.score - 1) / 4) * 100;
+          const col = scoreColor(x.score);
+          const factors = [];
+          if (x.f.isNew) factors.push('신규');
+          if (x.f.con >= 0.5) factors.push('양쪽매수');
+          if (x.f.spr >= 0.5) factors.push('확산↑');
+          if (x.f.stl > 0) factors.push('역발상');
+          const fStr = factors.length ? factors.join(' · ') : '';
+          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
+            <span style="font-size:13px;flex-shrink:0">${scoreEmoji(x.score)}</span>
+            <span class="aa-name">${escapeHtml(x.name)}</span>
+            ${fStr ? `<span style="font-size:9px;color:#475569">${escapeHtml(fStr)}</span>` : ''}
+            <span style="font-size:10px;color:#475569">${x.cnt}개 ETF</span>
+            <div class="aa-score-bar"><div class="aa-score-fill" style="width:${pct}%;background:${col}"></div></div>
+            <span style="font-family:monospace;font-weight:700;min-width:28px;text-align:right;color:${col}">${x.score}</span>
+          </div>`;
+        }).join('');
+      }
+
+      if (top10.length && bot10.length) html += '<div class="aa-divider" style="margin:8px 0"></div>';
+
+      if (bot10.length) {
+        html += `<div style="font-size:11px;color:#f87171;padding:4px 10px;font-weight:600">📉 매도 시그널 TOP</div>`;
+        html += bot10.map(x => {
+          const pct = ((x.score - 1) / 4) * 100;
+          const col = scoreColor(x.score);
+          const factors = [];
+          if (x.f.con <= -0.5) factors.push('양쪽매도');
+          if (x.f.spr <= -0.25) factors.push('이탈↓');
+          if (x.f.mag <= -0.5) factors.push('대량감소');
+          const fStr = factors.length ? factors.join(' · ') : '';
+          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
+            <span style="font-size:13px;flex-shrink:0">${scoreEmoji(x.score)}</span>
+            <span class="aa-name">${escapeHtml(x.name)}</span>
+            ${fStr ? `<span style="font-size:9px;color:#475569">${escapeHtml(fStr)}</span>` : ''}
+            <span style="font-size:10px;color:#475569">${x.cnt}개 ETF</span>
+            <div class="aa-score-bar"><div class="aa-score-fill" style="width:${pct}%;background:${col}"></div></div>
+            <span style="font-family:monospace;font-weight:700;min-width:28px;text-align:right;color:${col}">${x.score}</span>
+          </div>`;
+        }).join('');
+      }
+
+      scoresEl.innerHTML = html || '<div class="aa-empty">비교 데이터 없음</div>';
+    }
+
+    // ── 2. 의견 충돌 ──
+    const divEl = document.getElementById('aaDivergence');
+    if (divEl) {
+      if (!divergence.length) {
+        divEl.innerHTML = '<div class="aa-empty">운용사 간 의견 충돌 종목 없음</div>';
+      } else {
+        divEl.innerHTML = divergence.slice(0, 15).map(x => {
+          const tCls = x.timeDiff > 0 ? 'pos' : 'neg';
+          const kCls = x.koactDiff > 0 ? 'pos' : 'neg';
+          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
+            <span class="aa-name">${escapeHtml(x.name)}</span>
+            <span class="aa-badge" style="background:rgba(59,130,246,0.1);color:#60a5fa">T</span>
+            <span class="${tCls}" style="font-family:monospace;font-size:11px;min-width:55px;text-align:right">${fmtMoney(x.timeDiff, {signed:true})}</span>
+            <span class="aa-badge" style="background:rgba(34,197,94,0.1);color:#22c55e">K</span>
+            <span class="${kCls}" style="font-family:monospace;font-size:11px;min-width:55px;text-align:right">${fmtMoney(x.koactDiff, {signed:true})}</span>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    // ── 3. 편입 확산 ──
+    const sprEl = document.getElementById('aaSpread');
+    if (sprEl) {
+      const ups = etfSpread.filter(x => x.diff > 0).slice(0, 8);
+      const downs = etfSpread.filter(x => x.diff < 0).slice(0, 5);
+      let html = '';
+      if (ups.length) {
+        html += ups.map(x => {
+          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
+            <span class="aa-name">${escapeHtml(x.name)}</span>
+            <span style="font-size:11px;color:#475569">${x.prevCnt}→${x.curCnt}개</span>
+            <span class="pos" style="font-family:monospace;font-size:12px;font-weight:700">+${x.diff}</span>
+          </div>`;
+        }).join('');
+      }
+      if (ups.length && downs.length) html += '<div class="aa-divider"></div>';
+      if (downs.length) {
+        html += downs.map(x => {
+          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
+            <span class="aa-name">${escapeHtml(x.name)}</span>
+            <span style="font-size:11px;color:#475569">${x.prevCnt}→${x.curCnt}개</span>
+            <span class="neg" style="font-family:monospace;font-size:12px;font-weight:700">${x.diff}</span>
+          </div>`;
+        }).join('');
+      }
+      sprEl.innerHTML = html || '<div class="aa-empty">편입 수 변동 종목 없음 (±2개 이상)</div>';
+    }
+
+    // ── 4. 역발상 매수 ──
+    const stlEl = document.getElementById('aaStealth');
+    if (stlEl) {
+      if (!stealth.length) {
+        stlEl.innerHTML = '<div class="aa-empty">역발상 매수 종목 없음 (금액↓ 수량↑)</div>';
+      } else {
+        stlEl.innerHTML = stealth.slice(0, 15).map(x => {
+          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
+            <span class="aa-name">${escapeHtml(x.name)}</span>
+            <span class="neg" style="font-family:monospace;font-size:11px;min-width:60px;text-align:right">${fmtMoney(x.valueDiff, {signed:true})}</span>
+            <span class="pos" style="font-family:monospace;font-size:11px;min-width:55px;text-align:right">+${Number(Math.round(x.qtyDiff)).toLocaleString('ko-KR')}주</span>
+          </div>`;
+        }).join('');
+      }
+    }
+  }
+
 
   // =========================================================
   // ② 종목 모달 + ④ 추이 차트
