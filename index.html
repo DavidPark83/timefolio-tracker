@@ -731,6 +731,7 @@
     cmpEtfB = null;
     sortKey = null;
     lastHighlightsData = null;
+    modalCache.clear();          // ★ 모달 캐시도 초기화
 
     // ★ Active 합산 모드: 하이라이트만 표시, 개별 ETF 섹션 숨김
     const isActive = (provider === 'active');
@@ -1652,7 +1653,8 @@ function selectEtf(el) {
     if (!db || !normCode) return;
 
     // ★ Fix 2: 캐시 확인
-    const cached = modalCache.get(normCode);
+    const cacheKey = `${currentProvider}::${normCode}`;
+    const cached = modalCache.get(cacheKey);
     if (cached && (Date.now() - cached.ts) < MODAL_CACHE_TTL) {
       renderModalHoldings(cached.holdings);
       drawTrendChart(cached.trend, name);
@@ -1695,7 +1697,7 @@ function selectEtf(el) {
     const trend = trendResp.data || [];
 
   // ★ 캐시 저장
-    modalCache.set(normCode, { holdings, trend, ts: Date.now() });
+    modalCache.set(cacheKey, { holdings, trend, ts: Date.now() });
 
     renderModalHoldings(holdings);
     drawTrendChart(trend, name);
