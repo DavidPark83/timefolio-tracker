@@ -255,7 +255,7 @@
     .hl-region-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
 
     /* ===== Provider 탭 AUM 표시 ===== */
-    .provider-aum { font-size: 11px; color: #475569; margin-left: 2px; font-weight: 500; }
+    .provider-aum { display: block; font-size: 11px; color: #475569; font-weight: 500; white-space: pre; line-height: 1; margin-top: 2px; }
     .provider-btn.active .provider-aum { color: inherit; opacity: 0.7; }
 
     @media (max-width: 700px) {
@@ -420,7 +420,7 @@
 
 <!-- 운용사 토글 (최상위) -->
   <div class="provider-switch">
-    <button class="provider-btn" data-provider="active" onclick="switchProvider('active', this)">Active ETF</button>
+    <button class="provider-btn" data-provider="active" onclick="switchProvider('active', this)">Active ETF<span class="provider-aum" id="aumActive"></span></button>
     <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME<span class="provider-aum" id="aumTimefolio"></span></button>
     <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct<span class="provider-aum" id="aumSamsungactive"></span></button>
   </div>
@@ -1617,39 +1617,31 @@ function selectEtf(el) {
         hasPrev: !!prev
       };
 
-      // 총 순자산 표시
+      // 총 순자산 표시 + AUM 항상 전체 표시
       try {
-        let navQ = db.from("etf_daily")
+        // ★ 항상 전체 provider nav 가져오기 (AUM 3개 탭 모두 표시)
+        const { data: navAll } = await db.from("etf_daily")
           .select("nav_total, etf_idx").eq("date", baseDate);
-        if (currentProvider !== 'active') navQ = navQ.eq("provider", currentProvider);
-        const { data: navAll } = await navQ;
-        const totalNav = (navAll || []).reduce((s, r) => s + (r.nav_total || 0), 0);
-        const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
-        if (holdTitleEl && totalNav > 0) {
-          const jo = totalNav / 1_000_000_000_000;
-          const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          const label = currentProvider === 'active' ? ' · TIME+KoAct' : '';
-          holdTitleEl.innerHTML =
-            `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조원${label})</span>`;
-        }
-        // ★ Provider 탭에 AUM 표시
-        if (currentProvider !== 'active') {
-          const aumEl = document.getElementById(`aum${currentProvider === 'timefolio' ? 'Timefolio' : 'Samsungactive'}`);
-          if (aumEl && totalNav > 0) {
-            const jo = totalNav / 1_000_000_000_000;
-            aumEl.textContent = ` ${jo.toFixed(2)}조`;
-          }
-        } else {
-          // Active 모드: 양쪽 AUM 각각 계산
-          const timeNav = (navAll || []).filter(r => r.etf_idx < 200).reduce((s, r) => s + (r.nav_total || 0), 0);
-          const koactNav = (navAll || []).filter(r => r.etf_idx >= 200).reduce((s, r) => s + (r.nav_total || 0), 0);
-          const aumT = document.getElementById('aumTimefolio');
-          const aumK = document.getElementById('aumSamsungactive');
-          if (aumT && timeNav > 0) aumT.textContent = ` ${(timeNav / 1_000_000_000_000).toFixed(2)}조`;
-          if (aumK && koactNav > 0) aumK.textContent = ` ${(koactNav / 1_000_000_000_000).toFixed(2)}조`;
-        }
+
+        const timeNav  = (navAll || []).filter(r => r.etf_idx < 200).reduce((s, r) => s + (r.nav_total || 0), 0);
+        const koactNav = (navAll || []).filter(r => r.etf_idx >= 200).reduce((s, r) => s + (r.nav_total || 0), 0);
+        const allNav   = timeNav + koactNav;
+
+        // ★ Provider 탭 AUM — 항상 3개 모두 괄호 형식으로 표시
+        const aumA = document.getElementById('aumActive');
+        const aumT = document.getElementById('aumTimefolio');
+        const aumK = document.getElementById('aumSamsungactive');
+        if (aumA) aumA.textContent = allNav > 0 ? `\n(${(allNav / 1_000_000_000_000).toFixed(2)}조)` : '';
+        if (aumT) aumT.textContent = timeNav > 0 ? `\n(${(timeNav / 1_000_000_000_000).toFixed(2)}조)` : '';
+        if (aumK) aumK.textContent = koactNav > 0 ? `\n(${(koactNav / 1_000_000_000_000).toFixed(2)}조)` : '';
+
+        // ★ holdTitle은 renderHighlightsFromCache에서 region별로 처리
+        // updateSectionCounts는 현재 provider 기준
+        const currentNavAll = currentProvider === 'active'
+          ? (navAll || [])
+          : (navAll || []).filter(r => currentProvider === 'timefolio' ? r.etf_idx < 200 : r.etf_idx >= 200);
         const liveNavMap = {};
-        (navAll || []).forEach(r => { liveNavMap[r.etf_idx] = r.nav_total || 0; });
+        currentNavAll.forEach(r => { liveNavMap[r.etf_idx] = r.nav_total || 0; });
         updateSectionCounts(liveNavMap);
       } catch (e) { console.error("총 순자산 표시 실패:", e); }
 
@@ -1669,6 +1661,24 @@ function selectEtf(el) {
   // ★ Fix 3: 캐시된 데이터로 하이라이트 카드들을 렌더 (DB 호출 없음)
   function renderHighlightsFromCache(data) {
     const { curMap, prevMap, hasPrev } = data;
+
+    // ★ 보유 현황 TOP 타이틀: 선택된 region의 합계만 표시
+    const regionFilterFn = hlRegion === 'kr'
+      ? (x => isKorean(x.code, x.name))
+      : (x => !isKorean(x.code, x.name));
+    const regionTotal = Object.values(curMap)
+      .filter(x => x.holdingAccounts > 0)
+      .filter(regionFilterFn)
+      .reduce((s, x) => s + x.holdingAccounts, 0);
+    const holdTitleEl = document.querySelector('#highlights .hl-card:first-child .hl-title');
+    if (holdTitleEl) {
+      const regionLabel = hlRegion === 'kr' ? '국내' : '해외';
+      const jo = regionTotal / 1_000_000_000_000;
+      const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const provLabel = currentProvider === 'active' ? ' · TIME+KoAct' : '';
+      holdTitleEl.innerHTML =
+        `<span class="hl-icon">🏆</span>보유 현황 TOP ${regionLabel} <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조원${provLabel})</span>`;
+    }
 
     let newItems = [], upItems = [], downItems = [], goneItems = [];
 
@@ -2658,10 +2668,6 @@ function selectEtf(el) {
       document.getElementById('analysisBriefText').textContent = '브리핑 로딩 중 오류가 발생했습니다.';
     }
   }
-
-
-
-
 
   // =========================================================
   // 시작
