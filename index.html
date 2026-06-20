@@ -240,6 +240,24 @@
     }
     .hl-mode-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
 
+    /* ===== 글로벌 국내/해외 스위처 ===== */
+    .hl-region-switch {
+      display: flex; gap: 0; margin-bottom: 12px;
+      background: #0d1526; border: 1px solid #1e2d4a; border-radius: 10px; padding: 4px;
+      width: fit-content;
+    }
+    .hl-region-btn {
+      padding: 6px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+      cursor: pointer; border-radius: 7px; color: #475569;
+      transition: all 0.18s; background: transparent; border: none; font-family: inherit;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .hl-region-btn.active { background: rgba(0,212,170,0.15); color: #00D4AA; }
+
+    /* ===== Provider 탭 AUM 표시 ===== */
+    .provider-aum { font-size: 11px; color: #475569; margin-left: 2px; font-weight: 500; }
+    .provider-btn.active .provider-aum { color: inherit; opacity: 0.7; }
+
     @media (max-width: 700px) {
       .analysis-detail-grid { grid-template-columns: 1fr !important; }
     }
@@ -403,12 +421,16 @@
 <!-- 운용사 토글 (최상위) -->
   <div class="provider-switch">
     <button class="provider-btn" data-provider="active" onclick="switchProvider('active', this)">Active ETF</button>
-    <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME</button>
-    <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct</button>
+    <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME<span class="provider-aum" id="aumTimefolio"></span></button>
+    <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct<span class="provider-aum" id="aumSamsungactive"></span></button>
+  </div>
+  
+<!-- ① 오늘의 변화 하이라이트 -->
+  <div class="hl-region-switch">
+    <button class="hl-region-btn active" onclick="switchHlRegion('kr', this)"><img src="https://flagcdn.com/16x12/kr.png" style="vertical-align:middle" alt="KR"> 국내</button>
+    <button class="hl-region-btn" onclick="switchHlRegion('gl', this)">🌍 해외</button>
   </div>
 
-  
-  <!-- ① 오늘의 변화 하이라이트 -->
   <div class="hl-mode-switch">
     <button class="hl-mode-btn active" onclick="switchHlMode('amount', this)">💰 보유평가금액</button>
     <button class="hl-mode-btn" onclick="switchHlMode('qty', this)">📦 보유주식수</button>
@@ -417,52 +439,27 @@
   <div class="highlights" id="highlights">
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">🏆</span>보유 현황 TOP</div>
-      <div class="hl-tabs">
-        <div class="hl-tab active" onclick="switchHlTab('Hold','kr',this)">🇰🇷 국내</div>
-        <div class="hl-tab"        onclick="switchHlTab('Hold','gl',this)">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlHold-kr"></div>
-      <div class="hl-pane"        id="hlHold-gl"></div>
+      <div class="hl-pane active" id="hlHold"></div>
     </div>
 
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">✨</span>신규 편입 TOP</div>
-      <div class="hl-tabs">
-        <div class="hl-tab active" onclick="switchHlTab('New','kr',this)">🇰🇷 국내</div>
-        <div class="hl-tab"        onclick="switchHlTab('New','gl',this)">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlNew-kr"></div>
-      <div class="hl-pane"        id="hlNew-gl"></div>
+      <div class="hl-pane active" id="hlNew"></div>
     </div>
 
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">📈</span>비중 증가 TOP</div>
-      <div class="hl-tabs">
-        <div class="hl-tab active" onclick="switchHlTab('Up','kr',this)">🇰🇷 국내</div>
-        <div class="hl-tab"        onclick="switchHlTab('Up','gl',this)">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlUp-kr"></div>
-      <div class="hl-pane"        id="hlUp-gl"></div>
+      <div class="hl-pane active" id="hlUp"></div>
     </div>
 
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">📉</span>비중 감소 TOP</div>
-      <div class="hl-tabs">
-        <div class="hl-tab active" onclick="switchHlTab('Down','kr',this)">🇰🇷 국내</div>
-        <div class="hl-tab"        onclick="switchHlTab('Down','gl',this)">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlDown-kr"></div>
-      <div class="hl-pane"        id="hlDown-gl"></div>
+      <div class="hl-pane active" id="hlDown"></div>
     </div>
 
     <div class="hl-card">
       <div class="hl-title"><span class="hl-icon">🚪</span>제외 종목 TOP</div>
-      <div class="hl-tabs">
-        <div class="hl-tab active" onclick="switchHlTab('Gone','kr',this)">🇰🇷 국내</div>
-        <div class="hl-tab"        onclick="switchHlTab('Gone','gl',this)">🌍 해외</div>
-      </div>
-      <div class="hl-pane active" id="hlGone-kr"></div>
-      <div class="hl-pane"        id="hlGone-gl"></div>
+      <div class="hl-pane active" id="hlGone"></div>
     </div>
   </div>
 
@@ -825,6 +822,7 @@
   let cmpEtfB = null;
   let trendChartInstance = null;
   let hlMode = 'amount';
+  let hlRegion = 'kr';   // ★ 글로벌 국내/해외 선택
 
   // ===== 운용사 전환 =====
   // 운용사 바꿀 때마다 ETF 탭 새로 그리고, 첫 ETF 선택, 전체 화면 새로고침.
@@ -1076,23 +1074,24 @@
     });
   }
 
-  function updateHlTabFlags() {
-    document.querySelectorAll('.hl-tab').forEach(t => {
-      if (t.textContent.includes('국내')) {
-        t.innerHTML = '<img src="https://flagcdn.com/16x12/kr.png" style="vertical-align:middle;margin-right:3px" alt="KR"> 국내';
-      }
-    });
-  }
 
   // =========================================================
   // 하이라이트 탭 전환
   // =========================================================
-  function switchHlTab(card, region, el) {
-    const cardEl = el.closest('.hl-card');
-    cardEl.querySelectorAll('.hl-tab').forEach(t => t.classList.remove('active'));
-    cardEl.querySelectorAll('.hl-pane').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById(`hl${card}-${region}`)?.classList.add('active');
+  function switchHlRegion(region, btn) {
+    hlRegion = region;
+    document.querySelectorAll('.hl-region-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const base = document.getElementById("globalDateSelect")?.value;
+    const cmp  = document.getElementById("globalCompareSelect")?.value;
+    if (!base) return;
+    if (lastHighlightsData &&
+        lastHighlightsData.baseDate === base &&
+        lastHighlightsData.cmp === (cmp || "")) {
+      renderHighlightsFromCache(lastHighlightsData);
+      return;
+    }
+    loadHighlights(base, cmp);
   }
 
   // ★ Fix 3: switchHlMode — 같은 기간이면 캐시된 데이터로 재렌더만 (DB 호출 없음)
@@ -1633,6 +1632,22 @@ function selectEtf(el) {
           holdTitleEl.innerHTML =
             `<span class="hl-icon">🏆</span>보유 현황 TOP <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조원${label})</span>`;
         }
+        // ★ Provider 탭에 AUM 표시
+        if (currentProvider !== 'active') {
+          const aumEl = document.getElementById(`aum${currentProvider === 'timefolio' ? 'Timefolio' : 'Samsungactive'}`);
+          if (aumEl && totalNav > 0) {
+            const jo = totalNav / 1_000_000_000_000;
+            aumEl.textContent = ` ${jo.toFixed(2)}조`;
+          }
+        } else {
+          // Active 모드: 양쪽 AUM 각각 계산
+          const timeNav = (navAll || []).filter(r => r.etf_idx < 200).reduce((s, r) => s + (r.nav_total || 0), 0);
+          const koactNav = (navAll || []).filter(r => r.etf_idx >= 200).reduce((s, r) => s + (r.nav_total || 0), 0);
+          const aumT = document.getElementById('aumTimefolio');
+          const aumK = document.getElementById('aumSamsungactive');
+          if (aumT && timeNav > 0) aumT.textContent = ` ${(timeNav / 1_000_000_000_000).toFixed(2)}조`;
+          if (aumK && koactNav > 0) aumK.textContent = ` ${(koactNav / 1_000_000_000_000).toFixed(2)}조`;
+        }
         const liveNavMap = {};
         (navAll || []).forEach(r => { liveNavMap[r.etf_idx] = r.nav_total || 0; });
         updateSectionCounts(liveNavMap);
@@ -1697,28 +1712,28 @@ function selectEtf(el) {
 
     // ★ Fix 1: renderCard — escapeHtml + data-* 패턴
     const renderCard = (baseId, items, fmtChange, emptyMsg) => {
-      const krList = items.filter(x => isKorean(x.code, x.name));
-      const glList = items.filter(x => !isKorean(x.code, x.name));
+      // ★ 글로벌 hlRegion에 따라 필터링
+      const list = hlRegion === 'kr'
+        ? items.filter(x => isKorean(x.code, x.name))
+        : items.filter(x => !isKorean(x.code, x.name));
 
-      [["kr", krList], ["gl", glList]].forEach(([region, list]) => {
-        const el = document.getElementById(`hl${baseId}-${region}`);
-        if (!el) return;
-        if (!list.length) {
-          el.innerHTML = `<div class="hl-empty">${escapeHtml(emptyMsg)}</div>`;
-          return;
-        }
-        el.innerHTML = list.map(x => {
-          const dispName = escapeHtml(x.name);
-          const dispCode = escapeHtml(x.code || "");
-          const etfBadge = x.etfCount > 1
-            ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
-            : "";
-          return `<div class="hl-row">
-            <span class="hl-name" data-action="open-security" data-code="${dispCode}" data-name="${dispName}">${dispName}${etfBadge}</span>
-            <span class="hl-val">${fmtChange(x)}</span>
-          </div>`;
-        }).join("");
-      });
+      const el = document.getElementById(`hl${baseId}`);
+      if (!el) return;
+      if (!list.length) {
+        el.innerHTML = `<div class="hl-empty">${escapeHtml(emptyMsg)}</div>`;
+        return;
+      }
+      el.innerHTML = list.map(x => {
+        const dispName = escapeHtml(x.name);
+        const dispCode = escapeHtml(x.code || "");
+        const etfBadge = x.etfCount > 1
+          ? `<span style="font-size:10px;color:#475569;margin-left:4px">${x.etfCount}개 ETF</span>`
+          : "";
+        return `<div class="hl-row">
+          <span class="hl-name" data-action="open-security" data-code="${dispCode}" data-name="${dispName}">${dispName}${etfBadge}</span>
+          <span class="hl-val">${fmtChange(x)}</span>
+        </div>`;
+      }).join("");
     };
 
     const holdAll = Object.values(curMap)
@@ -2651,11 +2666,10 @@ function selectEtf(el) {
   // =========================================================
   // 시작
   // =========================================================
-  (async () => {
-    renderEtfTabs();                       // ★ TIME 19종 탭 먼저 그리기
+ (async () => {
+    renderEtfTabs();
     const navMap = await sortEtfTabsByNav();
     updateSectionCounts(navMap || {});
-    updateHlTabFlags();
     renderInfo();
     initGlobalDates();
     loadNotices();
