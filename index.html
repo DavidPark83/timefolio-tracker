@@ -2212,7 +2212,7 @@ function selectEtf(el) {
     const labels = [...allDatesSet].sort();
     const recent = labels.slice(-30);
     const datasets = Object.entries(byEtf).map(([idx, info], i) => ({
-      label: info.name,
+      label: (info.name || '').replace(/^(TIME |KoAct )/g, ''),
       data: recent.map(d => info.points[d] ?? null),
       borderColor: COLORS[i % COLORS.length],
       backgroundColor: COLORS[i % COLORS.length] + "20",
