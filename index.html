@@ -901,6 +901,7 @@
 
   // ★ Fix 3: 하이라이트 데이터 캐시 (모드 토글 시 재조회 방지)
   let lastHighlightsData = null;  // { baseDate, cmp, curMap, prevMap, hasPrev }
+  let lastAnalyticsData = null;   // ★ Active Analytics 캐시 (region 전환 시 재렌더용)
 
   // =========================================================
   // ★ Fix 1: XSS 방어 헬퍼 (가장 중요)
@@ -1089,6 +1090,10 @@
         lastHighlightsData.baseDate === base &&
         lastHighlightsData.cmp === (cmp || "")) {
       renderHighlightsFromCache(lastHighlightsData);
+      // ★ Active Analytics도 region 필터 적용하여 재렌더
+      if (currentProvider === 'active' && lastAnalyticsData) {
+        renderActiveAnalytics(lastAnalyticsData);
+      }
       return;
     }
     loadHighlights(base, cmp);
@@ -1647,10 +1652,10 @@ function selectEtf(el) {
 
       renderHighlightsFromCache(lastHighlightsData);
 
-      // ★ Active 모드: edge analytics 계산 + 렌더
+      // ★ Active 모드: edge analytics 계산 + 캐시 + 렌더
       if (currentProvider === 'active' && prevAll) {
-        const analytics = computeActiveAnalytics(curAll, prevAll);
-        renderActiveAnalytics(analytics);
+        lastAnalyticsData = computeActiveAnalytics(curAll, prevAll);
+        renderActiveAnalytics(lastAnalyticsData);
       }
 
     } catch (e) {
@@ -1943,7 +1948,15 @@ function selectEtf(el) {
   }
 
   function renderActiveAnalytics(analytics) {
-    const { divergence, etfSpread, stealth, scores } = analytics;
+    // ★ 글로벌 국내/해외 탭에 따라 필터링
+    const regionFilter = hlRegion === 'kr'
+      ? (x => isKorean(x.code, x.name))
+      : (x => !isKorean(x.code, x.name));
+
+    const divergence = analytics.divergence.filter(regionFilter);
+    const etfSpread  = analytics.etfSpread.filter(regionFilter);
+    const stealth    = analytics.stealth.filter(regionFilter);
+    const scores     = analytics.scores.filter(regionFilter);
 
     // ── 스코어 색상 헬퍼 ──
     function scoreColor(s) {
