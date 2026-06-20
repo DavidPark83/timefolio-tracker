@@ -420,8 +420,8 @@
 
 <!-- 운용사 토글 (최상위) -->
   <div class="provider-switch">
-    <button class="provider-btn" data-provider="active" onclick="switchProvider('active', this)">Active ETF<span class="provider-aum" id="aumActive"></span></button>
-    <button class="provider-btn active" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME<span class="provider-aum" id="aumTimefolio"></span></button>
+    <button class="provider-btn active" data-provider="active" onclick="switchProvider('active', this)">Active ETF<span class="provider-aum" id="aumActive"></span></button>
+    <button class="provider-btn" data-provider="timefolio" onclick="switchProvider('timefolio', this)">📘 TIME<span class="provider-aum" id="aumTimefolio"></span></button>
     <button class="provider-btn" data-provider="samsungactive" onclick="switchProvider('samsungactive', this)">📗 KoAct<span class="provider-aum" id="aumSamsungactive"></span></button>
   </div>
   
@@ -809,7 +809,7 @@
   // =========================================================
   // 전역 상태
   // =========================================================
-  let currentProvider = "timefolio";   // ★ 현재 선택된 운용사 (timefolio / samsungactive)
+  let currentProvider = "active";   // ★ 현재 선택된 운용사 (active / timefolio / samsungactive)
   let currentMode = "single";
   let currentIdx = 22;
   let currentData = [];
@@ -2685,11 +2685,24 @@ function selectEtf(el) {
   // =========================================================
   // 시작
   // =========================================================
- (async () => {
-    renderEtfTabs();
-    const navMap = await sortEtfTabsByNav();
-    updateSectionCounts(navMap || {});
-    renderInfo();
+  (async () => {
+    // ★ Active 모드 기본: ETF 탭/모드 숨김
+    const isActive = (currentProvider === 'active');
+    if (isActive) {
+      ['etfTabs', 'modeSingle', 'modeAnalysis'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      const modeTabs = document.querySelector('.mode-tabs');
+      if (modeTabs) modeTabs.style.display = 'none';
+      const aaEl = document.getElementById('activeAnalytics');
+      if (aaEl) aaEl.style.display = '';
+    } else {
+      renderEtfTabs();
+      const navMap = await sortEtfTabsByNav();
+      updateSectionCounts(navMap || {});
+      renderInfo();
+    }
     initGlobalDates();
     loadNotices();
   })();
