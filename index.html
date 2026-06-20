@@ -274,7 +274,7 @@
       font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
       display: flex; align-items: center; gap: 8px;
     }
-    .aa-card-body { padding: 12px 16px; max-height: 420px; overflow-y: auto; }
+    .aa-card-body { padding: 12px 16px; max-height: 360px; overflow-y: auto; }
     .aa-card-body::-webkit-scrollbar { width: 4px; }
     .aa-card-body::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 2px; }
     .aa-row {
@@ -1912,60 +1912,49 @@ function selectEtf(el) {
       return '🧊';
     }
 
-    // ── 1. 스마트머니 스코어 ──
+// ── 1. 스마트머니 스코어 (좌: 매수, 우: 매도) ──
     const scoresEl = document.getElementById('aaScores');
     if (scoresEl) {
-      // TOP 매수 10 + BOTTOM 매도 10
-      const top10 = scores.filter(x => x.score >= 3.5).slice(0, 10);
-      const bot10 = scores.filter(x => x.score <= 2.5).sort((a, b) => a.score - b.score).slice(0, 10);
+      const buyAll = scores.filter(x => x.score >= 3.5);
+      const sellAll = scores.filter(x => x.score <= 2.5).sort((a, b) => a.score - b.score);
 
-      let html = '';
-      if (top10.length) {
-        html += `<div style="font-size:11px;color:#34d399;padding:4px 10px;font-weight:600">📈 매수 시그널 TOP</div>`;
-        html += top10.map(x => {
+      const renderScoreList = (items) => {
+        if (!items.length) return '<div class="aa-empty">해당 종목 없음</div>';
+        return items.map(x => {
           const pct = ((x.score - 1) / 4) * 100;
           const col = scoreColor(x.score);
           const factors = [];
           if (x.f.isNew) factors.push('신규');
           if (x.f.con >= 0.5) factors.push('양쪽매수');
+          else if (x.f.con <= -0.5) factors.push('양쪽매도');
           if (x.f.spr >= 0.5) factors.push('확산↑');
+          else if (x.f.spr <= -0.25) factors.push('이탈↓');
           if (x.f.stl > 0) factors.push('역발상');
+          if (x.f.mag <= -0.5 && x.score <= 2.5) factors.push('대량감소');
           const fStr = factors.length ? factors.join(' · ') : '';
           return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
             <span style="font-size:13px;flex-shrink:0">${scoreEmoji(x.score)}</span>
             <span class="aa-name">${escapeHtml(x.name)}</span>
             ${fStr ? `<span style="font-size:9px;color:#475569">${escapeHtml(fStr)}</span>` : ''}
-            <span style="font-size:10px;color:#475569">${x.cnt}개 ETF</span>
+            <span style="font-size:10px;color:#475569">${x.cnt}개</span>
             <div class="aa-score-bar"><div class="aa-score-fill" style="width:${pct}%;background:${col}"></div></div>
             <span style="font-family:monospace;font-weight:700;min-width:28px;text-align:right;color:${col}">${x.score}</span>
           </div>`;
         }).join('');
-      }
+      };
 
-      if (top10.length && bot10.length) html += '<div class="aa-divider" style="margin:8px 0"></div>';
-
-      if (bot10.length) {
-        html += `<div style="font-size:11px;color:#f87171;padding:4px 10px;font-weight:600">📉 매도 시그널 TOP</div>`;
-        html += bot10.map(x => {
-          const pct = ((x.score - 1) / 4) * 100;
-          const col = scoreColor(x.score);
-          const factors = [];
-          if (x.f.con <= -0.5) factors.push('양쪽매도');
-          if (x.f.spr <= -0.25) factors.push('이탈↓');
-          if (x.f.mag <= -0.5) factors.push('대량감소');
-          const fStr = factors.length ? factors.join(' · ') : '';
-          return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
-            <span style="font-size:13px;flex-shrink:0">${scoreEmoji(x.score)}</span>
-            <span class="aa-name">${escapeHtml(x.name)}</span>
-            ${fStr ? `<span style="font-size:9px;color:#475569">${escapeHtml(fStr)}</span>` : ''}
-            <span style="font-size:10px;color:#475569">${x.cnt}개 ETF</span>
-            <div class="aa-score-bar"><div class="aa-score-fill" style="width:${pct}%;background:${col}"></div></div>
-            <span style="font-family:monospace;font-weight:700;min-width:28px;text-align:right;color:${col}">${x.score}</span>
-          </div>`;
-        }).join('');
-      }
-
-      scoresEl.innerHTML = html || '<div class="aa-empty">비교 데이터 없음</div>';
+      scoresEl.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+          <div style="border-right:1px solid #1e2d4a">
+            <div style="font-size:11px;color:#34d399;padding:8px 10px;font-weight:600;border-bottom:1px solid #1e2d4a">📈 매수 시그널 (${buyAll.length})</div>
+            <div style="max-height:360px;overflow-y:auto">${renderScoreList(buyAll)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#f87171;padding:8px 10px;font-weight:600;border-bottom:1px solid #1e2d4a">📉 매도 시그널 (${sellAll.length})</div>
+            <div style="max-height:360px;overflow-y:auto">${renderScoreList(sellAll)}</div>
+          </div>
+        </div>
+      `;
     }
 
     // ── 2. 의견 충돌 ──
@@ -1974,7 +1963,7 @@ function selectEtf(el) {
       if (!divergence.length) {
         divEl.innerHTML = '<div class="aa-empty">운용사 간 의견 충돌 종목 없음</div>';
       } else {
-        divEl.innerHTML = divergence.slice(0, 15).map(x => {
+        divEl.innerHTML = divergence.map(x => {
           const tCls = x.timeDiff > 0 ? 'pos' : 'neg';
           const kCls = x.koactDiff > 0 ? 'pos' : 'neg';
           return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
@@ -1991,8 +1980,8 @@ function selectEtf(el) {
     // ── 3. 편입 확산 ──
     const sprEl = document.getElementById('aaSpread');
     if (sprEl) {
-      const ups = etfSpread.filter(x => x.diff > 0).slice(0, 8);
-      const downs = etfSpread.filter(x => x.diff < 0).slice(0, 5);
+      const ups = etfSpread.filter(x => x.diff > 0);
+      const downs = etfSpread.filter(x => x.diff < 0);
       let html = '';
       if (ups.length) {
         html += ups.map(x => {
@@ -2022,7 +2011,7 @@ function selectEtf(el) {
       if (!stealth.length) {
         stlEl.innerHTML = '<div class="aa-empty">역발상 매수 종목 없음 (금액↓ 수량↑)</div>';
       } else {
-        stlEl.innerHTML = stealth.slice(0, 15).map(x => {
+        stlEl.innerHTML = stealth.map(x => {
           return `<div class="aa-row" data-action="open-security" data-code="${escapeHtml(x.code)}" data-name="${escapeHtml(x.name)}">
             <span class="aa-name">${escapeHtml(x.name)}</span>
             <span class="neg" style="font-family:monospace;font-size:11px;min-width:60px;text-align:right">${fmtMoney(x.valueDiff, {signed:true})}</span>
