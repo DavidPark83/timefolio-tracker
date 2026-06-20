@@ -346,6 +346,23 @@
       .aa-grid { grid-template-columns: 1fr; }
     }
 
+    /* ===== 섹터 자금 흐름 ===== */
+    .sector-bar-row {
+      display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+      border-radius: 6px; font-size: 12px; transition: background 0.15s;
+    }
+    .sector-bar-row:hover { background: rgba(255,255,255,0.03); }
+    .sector-label { min-width: 76px; font-weight: 600; color: #e2e8f0; flex-shrink: 0; font-size: 11px; }
+    .sector-bar-wrap { flex: 1; height: 14px; background: #1e2433; border-radius: 4px; overflow: hidden; position: relative; min-width: 60px; }
+    .sector-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .sector-amt { min-width: 68px; text-align: right; font-family: monospace; font-size: 11px; flex-shrink: 0; }
+    .sector-arrow { font-size: 11px; flex-shrink: 0; min-width: 14px; }
+    .sector-compare-row {
+      display: grid; grid-template-columns: 76px 1fr 38px 1fr 38px; gap: 4px;
+      align-items: center; padding: 5px 10px; font-size: 11px; border-radius: 6px;
+    }
+    .sector-compare-row:hover { background: rgba(255,255,255,0.03); }
+    .sector-compare-pct { font-family: monospace; font-size: 10px; text-align: right; }
 
   </style>
 
@@ -466,6 +483,20 @@
   <!-- ② Active Analytics (Active 모드에서만 표시) -->
   <div id="activeAnalytics" class="active-analytics" style="display:none">
     <div class="aa-grid">
+      <!-- 섹터 자금 흐름 -->
+        <div class="aa-card">
+        <div class="aa-card-header" style="color:#06b6d4">
+          📡 섹터 자금 흐름 <span class="aa-subtitle" id="aaSectorFlowSub">테마별 보유금액 변동</span>
+        </div>
+        <div class="aa-card-body" id="aaSectorFlow"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
+      <!-- 운용사별 섹터 베팅 -->
+      <div class="aa-card">
+        <div class="aa-card-header" style="color:#a78bfa">
+          🎯 운용사별 섹터 베팅 <span class="aa-subtitle">TIME vs KoAct 비중 비교</span>
+        </div>
+        <div class="aa-card-body" id="aaSectorBet"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
        <!-- 스마트머니 스코어 — 매수 -->
       <div class="aa-card">
         <div class="aa-card-header" style="color:#34d399">
@@ -902,6 +933,44 @@
   // ★ Fix 3: 하이라이트 데이터 캐시 (모드 토글 시 재조회 방지)
   let lastHighlightsData = null;  // { baseDate, cmp, curMap, prevMap, hasPrev }
   let lastAnalyticsData = null;   // ★ Active Analytics 캐시 (region 전환 시 재렌더용)
+
+  // =========================================================
+  // ★ 섹터 분류 엔진 (stock_sectors 테이블 기반)
+  // =========================================================
+  let sectorMap = {};  // { CODE: { theme, krx } }
+
+  async function loadSectorMap() {
+    if (!db) return;
+    try {
+      const all = await fetchAllPages(() =>
+        db.from("stock_sectors").select("code, theme, krx_sector")
+      );
+      sectorMap = {};
+      all.forEach(r => {
+        sectorMap[r.code] = { theme: r.theme || '기타', krx: r.krx_sector || '' };
+      });
+      console.log(`[SectorMap] ${Object.keys(sectorMap).length}종목 로드 완료`);
+    } catch (e) {
+      console.error("[SectorMap] 로드 실패:", e);
+    }
+  }
+
+  function classifySector(code) {
+    const key = (code || '').trim().toUpperCase();
+    const entry = sectorMap[key];
+    return entry ? entry.theme : '기타';
+  }
+
+  const SECTOR_COLORS = {
+    '반도체': '#06b6d4', 'AI·SW': '#8b5cf6', '바이오·헬스': '#ec4899',
+    '방산·우주': '#f97316', '2차전지': '#84cc16', '자동차': '#14b8a6',
+    '금융': '#eab308', '에너지·인프라': '#ef4444', '엔터·소비': '#f472b6',
+    'IT·플랫폼': '#60a5fa', '조선': '#0ea5e9', '로봇': '#a78bfa',
+    '소비재': '#fb923c', '소재·화학': '#94a3b8', '통신': '#22d3ee',
+    '건설·지주': '#a3a3a3', '양자컴퓨팅': '#c084fc', 'ETF·지수': '#64748b',
+    '빅테크': '#3b82f6', '기타': '#475569',
+  };
+
 
   // =========================================================
   // ★ Fix 1: XSS 방어 헬퍼 (가장 중요)
@@ -1944,6 +2013,56 @@ function selectEtf(el) {
     }
     scores.sort((a, b) => b.score - a.score);
 
+    // ── 5. 섹터 자금 흐름 (stock_sectors 테이블 기반) ──
+    const sectorCur = {};
+    const sectorPrev = {};
+    const sectorByProv = { time: {}, koact: {} };
+
+    for (const key of Object.keys(cur)) {
+      const c = cur[key];
+      const sector = classifySector(c.code);
+      if (!sectorCur[sector]) sectorCur[sector] = { amt: 0, cnt: 0 };
+      sectorCur[sector].amt += c.total.amt;
+      sectorCur[sector].cnt += c.total.cnt;
+      if (c.time.amt > 0) {
+        if (!sectorByProv.time[sector]) sectorByProv.time[sector] = 0;
+        sectorByProv.time[sector] += c.time.amt;
+      }
+      if (c.koact.amt > 0) {
+        if (!sectorByProv.koact[sector]) sectorByProv.koact[sector] = 0;
+        sectorByProv.koact[sector] += c.koact.amt;
+      }
+    }
+    for (const key of Object.keys(prev)) {
+      const p = prev[key];
+      const sector = classifySector(p.code);
+      if (!sectorPrev[sector]) sectorPrev[sector] = { amt: 0, cnt: 0 };
+      sectorPrev[sector].amt += p.total.amt;
+      sectorPrev[sector].cnt += p.total.cnt;
+    }
+
+    const allSectors = new Set([...Object.keys(sectorCur), ...Object.keys(sectorPrev)]);
+    const sectorFlow = [];
+    for (const sector of allSectors) {
+      const cAmt = sectorCur[sector]?.amt || 0;
+      const pAmt = sectorPrev[sector]?.amt || 0;
+      sectorFlow.push({ sector, curAmt: cAmt, prevAmt: pAmt, diff: cAmt - pAmt });
+    }
+    sectorFlow.sort((a, b) => b.diff - a.diff);
+
+    // 운용사별 섹터 비중(%)
+    const timeTotal  = Object.values(sectorByProv.time).reduce((s, v) => s + v, 0) || 1;
+    const koactTotal = Object.values(sectorByProv.koact).reduce((s, v) => s + v, 0) || 1;
+    const betSectors = new Set([...Object.keys(sectorByProv.time), ...Object.keys(sectorByProv.koact)]);
+    const sectorBets = [];
+    for (const sector of betSectors) {
+      const tp = ((sectorByProv.time[sector] || 0) / timeTotal) * 100;
+      const kp = ((sectorByProv.koact[sector] || 0) / koactTotal) * 100;
+      sectorBets.push({ sector, timePct: tp, koactPct: kp, diff: tp - kp });
+    }
+    sectorBets.sort((a, b) => (b.timePct + b.koactPct) - (a.timePct + a.koactPct));
+
+
     return { divergence, etfSpread, stealth, scores };
   }
 
@@ -2085,6 +2204,77 @@ function selectEtf(el) {
             <span class="pos" style="font-family:monospace;font-size:11px;min-width:55px;text-align:right">+${Number(Math.round(x.qtyDiff)).toLocaleString('ko-KR')}주</span>
           </div>`;
         }).join('');
+      }
+    }
+
+    // ── 5. 섹터 자금 흐름 ──
+    const sectorFlow = analytics.sectorFlow || [];
+    const flowEl = document.getElementById('aaSectorFlow');
+    if (flowEl) {
+      const filtered = sectorFlow.filter(x => x.sector !== '기타' && x.sector !== 'ETF·지수' && Math.abs(x.diff) > 10_000_000);
+      if (!filtered.length) {
+        flowEl.innerHTML = '<div class="aa-empty">섹터 변동 데이터 없음</div>';
+      } else {
+        const maxAbs = Math.max(...filtered.map(x => Math.abs(x.diff)), 1);
+        flowEl.innerHTML = filtered.map(x => {
+          const pct = Math.min((Math.abs(x.diff) / maxAbs) * 100, 100);
+          const isUp = x.diff > 0;
+          const col = SECTOR_COLORS[x.sector] || '#475569';
+          const arrow = isUp ? '↑' : '↓';
+          const arrowCol = isUp ? '#34d399' : '#f87171';
+          const amtCls = isUp ? 'pos' : 'neg';
+          return `<div class="sector-bar-row">
+            <span class="sector-label" style="color:${col}">${escapeHtml(x.sector)}</span>
+            <div class="sector-bar-wrap">
+              <div class="sector-bar-fill" style="width:${pct}%;background:${col};opacity:${isUp ? 0.7 : 0.4}"></div>
+            </div>
+            <span class="sector-amt ${amtCls}">${fmtMoney(x.diff, {signed:true})}</span>
+            <span class="sector-arrow" style="color:${arrowCol}">${arrow}</span>
+          </div>`;
+        }).join('');
+        // 기타 합계
+        const etc = sectorFlow.find(x => x.sector === '기타');
+        if (etc && Math.abs(etc.diff) > 10_000_000) {
+          const cls = etc.diff > 0 ? 'pos' : 'neg';
+          flowEl.innerHTML += `<div style="text-align:right;font-size:10px;color:#475569;padding:6px 10px;border-top:1px solid #1e2d4a;margin-top:4px">
+            미분류: <span class="${cls}">${fmtMoney(etc.diff, {signed:true})}</span></div>`;
+        }
+      }
+      // 서브타이틀에 증가/감소 섹터 수
+      const subEl = document.getElementById('aaSectorFlowSub');
+      if (subEl) {
+        const ups = filtered.filter(x => x.diff > 0).length;
+        const downs = filtered.filter(x => x.diff < 0).length;
+        subEl.textContent = `${ups}개 섹터 유입 · ${downs}개 섹터 유출`;
+      }
+    }
+
+    // ── 6. 운용사별 섹터 베팅 ──
+    const sectorBets = analytics.sectorBets || [];
+    const betEl = document.getElementById('aaSectorBet');
+    if (betEl) {
+      const filtered = sectorBets.filter(x => x.sector !== '기타' && x.sector !== 'ETF·지수' && (x.timePct > 1 || x.koactPct > 1));
+      if (!filtered.length) {
+        betEl.innerHTML = '<div class="aa-empty">섹터 비교 데이터 없음</div>';
+      } else {
+        const maxPct = Math.max(...filtered.map(x => Math.max(x.timePct, x.koactPct)), 1);
+        let html = `<div style="display:flex;justify-content:flex-end;gap:16px;padding:2px 10px 8px;font-size:10px;color:#475569">
+          <span><span style="display:inline-block;width:8px;height:8px;background:#60a5fa;border-radius:2px;margin-right:4px"></span>TIME</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:2px;margin-right:4px"></span>KoAct</span>
+        </div>`;
+        html += filtered.map(x => {
+          const tw = (x.timePct / maxPct) * 100;
+          const kw = (x.koactPct / maxPct) * 100;
+          const col = SECTOR_COLORS[x.sector] || '#475569';
+          return `<div class="sector-compare-row">
+            <span class="sector-label" style="color:${col};font-size:10px">${escapeHtml(x.sector)}</span>
+            <div class="sector-bar-wrap" style="height:10px"><div style="height:100%;width:${tw}%;background:#60a5fa;opacity:0.7;border-radius:3px"></div></div>
+            <span class="sector-compare-pct" style="color:#60a5fa">${x.timePct.toFixed(1)}%</span>
+            <div class="sector-bar-wrap" style="height:10px"><div style="height:100%;width:${kw}%;background:#22c55e;opacity:0.7;border-radius:3px"></div></div>
+            <span class="sector-compare-pct" style="color:#22c55e">${x.koactPct.toFixed(1)}%</span>
+          </div>`;
+        }).join('');
+        betEl.innerHTML = html;
       }
     }
   }
@@ -2686,6 +2876,9 @@ function selectEtf(el) {
   // 시작
   // =========================================================
   (async () => {
+    // ★ 섹터 맵 로드 (stock_sectors 테이블)
+    await loadSectorMap();
+
     // ★ Active 모드 기본: ETF 탭/모드 숨김
     const isActive = (currentProvider === 'active');
     if (isActive) {
