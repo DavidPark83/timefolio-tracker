@@ -2063,7 +2063,7 @@ function selectEtf(el) {
     sectorBets.sort((a, b) => (b.timePct + b.koactPct) - (a.timePct + a.koactPct));
 
 
-    return { divergence, etfSpread, stealth, scores };
+    return { divergence, etfSpread, stealth, scores, sectorFlow, sectorBets };
   }
 
   function renderActiveAnalytics(analytics) {
