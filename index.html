@@ -2020,57 +2020,53 @@ function selectEtf(el) {
     }
     scores.sort((a, b) => b.score - a.score);
 
-    // ── 5. 섹터 자금 흐름 (stock_sectors 테이블 기반) ──
-    const sectorCur = {};
-    const sectorPrev = {};
-    const sectorByProv = { time: {}, koact: {} };
-
-    for (const key of Object.keys(cur)) {
-      const c = cur[key];
-      const sector = classifySector(c.code);
-      if (!sectorCur[sector]) sectorCur[sector] = { amt: 0, cnt: 0 };
-      sectorCur[sector].amt += c.total.amt;
-      sectorCur[sector].cnt += c.total.cnt;
-      if (c.time.amt > 0) {
-        if (!sectorByProv.time[sector]) sectorByProv.time[sector] = 0;
-        sectorByProv.time[sector] += c.time.amt;
+  // ── 5. 섹터 자금 흐름 (stock_sectors 테이블 기반, 국내/해외 분리) ──
+    function computeSectorByRegion(cur, prev, regionFn) {
+      const sCur = {}, sPrev = {}, byProv = { time: {}, koact: {} };
+      for (const key of Object.keys(cur)) {
+        const c = cur[key];
+        if (!regionFn(c)) continue;
+        const sector = classifySector(c.code);
+        if (!sCur[sector]) sCur[sector] = { amt: 0, cnt: 0 };
+        sCur[sector].amt += c.total.amt; sCur[sector].cnt += c.total.cnt;
+        if (c.time.amt > 0) { byProv.time[sector] = (byProv.time[sector] || 0) + c.time.amt; }
+        if (c.koact.amt > 0) { byProv.koact[sector] = (byProv.koact[sector] || 0) + c.koact.amt; }
       }
-      if (c.koact.amt > 0) {
-        if (!sectorByProv.koact[sector]) sectorByProv.koact[sector] = 0;
-        sectorByProv.koact[sector] += c.koact.amt;
+      for (const key of Object.keys(prev)) {
+        const p = prev[key];
+        if (!regionFn(p)) continue;
+        const sector = classifySector(p.code);
+        if (!sPrev[sector]) sPrev[sector] = { amt: 0, cnt: 0 };
+        sPrev[sector].amt += p.total.amt; sPrev[sector].cnt += p.total.cnt;
       }
-    }
-    for (const key of Object.keys(prev)) {
-      const p = prev[key];
-      const sector = classifySector(p.code);
-      if (!sectorPrev[sector]) sectorPrev[sector] = { amt: 0, cnt: 0 };
-      sectorPrev[sector].amt += p.total.amt;
-      sectorPrev[sector].cnt += p.total.cnt;
+      const allSectors = new Set([...Object.keys(sCur), ...Object.keys(sPrev)]);
+      const flow = [];
+      for (const sector of allSectors) {
+        const cAmt = sCur[sector]?.amt || 0, pAmt = sPrev[sector]?.amt || 0;
+        flow.push({ sector, curAmt: cAmt, prevAmt: pAmt, diff: cAmt - pAmt });
+      }
+      flow.sort((a, b) => b.diff - a.diff);
+
+      const tTotal = Object.values(byProv.time).reduce((s, v) => s + v, 0) || 1;
+      const kTotal = Object.values(byProv.koact).reduce((s, v) => s + v, 0) || 1;
+      const betSectors = new Set([...Object.keys(byProv.time), ...Object.keys(byProv.koact)]);
+      const bets = [];
+      for (const sector of betSectors) {
+        const tp = ((byProv.time[sector] || 0) / tTotal) * 100;
+        const kp = ((byProv.koact[sector] || 0) / kTotal) * 100;
+        bets.push({ sector, timePct: tp, koactPct: kp, timeAmt: byProv.time[sector] || 0, koactAmt: byProv.koact[sector] || 0, diff: tp - kp });
+      }
+      bets.sort((a, b) => (b.timePct + b.koactPct) - (a.timePct + a.koactPct));
+      return { flow, bets };
     }
 
-    const allSectors = new Set([...Object.keys(sectorCur), ...Object.keys(sectorPrev)]);
-    const sectorFlow = [];
-    for (const sector of allSectors) {
-      const cAmt = sectorCur[sector]?.amt || 0;
-      const pAmt = sectorPrev[sector]?.amt || 0;
-      sectorFlow.push({ sector, curAmt: cAmt, prevAmt: pAmt, diff: cAmt - pAmt });
-    }
-    sectorFlow.sort((a, b) => b.diff - a.diff);
-
-    // 운용사별 섹터 비중(%)
-    const timeTotal  = Object.values(sectorByProv.time).reduce((s, v) => s + v, 0) || 1;
-    const koactTotal = Object.values(sectorByProv.koact).reduce((s, v) => s + v, 0) || 1;
-    const betSectors = new Set([...Object.keys(sectorByProv.time), ...Object.keys(sectorByProv.koact)]);
-    const sectorBets = [];
-    for (const sector of betSectors) {
-      const tp = ((sectorByProv.time[sector] || 0) / timeTotal) * 100;
-      const kp = ((sectorByProv.koact[sector] || 0) / koactTotal) * 100;
-      sectorBets.push({ sector, timePct: tp, koactPct: kp, timeAmt: sectorByProv.time[sector] || 0, koactAmt: sectorByProv.koact[sector] || 0, diff: tp - kp });
-    }
-    sectorBets.sort((a, b) => (b.timePct + b.koactPct) - (a.timePct + a.koactPct));
+    const krData = computeSectorByRegion(cur, prev, c => isKorean(c.code, c.name));
+    const glData = computeSectorByRegion(cur, prev, c => !isKorean(c.code, c.name));
 
 
-    return { divergence, etfSpread, stealth, scores, sectorFlow, sectorBets };
+    return { divergence, etfSpread, stealth, scores,
+      sectorFlowKr: krData.flow, sectorFlowGl: glData.flow,
+      sectorBetsKr: krData.bets, sectorBetsGl: glData.bets };
   }
 
   function renderActiveAnalytics(analytics) {
@@ -2215,7 +2211,7 @@ function selectEtf(el) {
     }
 
     // ── 5. 섹터 자금 흐름 ──
-    const sectorFlow = analytics.sectorFlow || [];
+    const sectorFlow = hlRegion === 'kr' ? (analytics.sectorFlowKr || []) : (analytics.sectorFlowGl || []);
     const flowEl = document.getElementById('aaSectorFlow');
     if (flowEl) {
       const filtered = sectorFlow.filter(x => x.sector !== '기타' && x.sector !== 'ETF·지수' && Math.abs(x.diff) > 10_000_000);
@@ -2257,7 +2253,7 @@ function selectEtf(el) {
     }
 
     // ── 6. 운용사별 섹터 베팅 ──
-    const sectorBets = analytics.sectorBets || [];
+    const sectorBets = hlRegion === 'kr' ? (analytics.sectorBetsKr || []) : (analytics.sectorBetsGl || []);
     const betEl = document.getElementById('aaSectorBet');
     if (betEl) {
       const filtered = sectorBets.filter(x => x.sector !== '기타' && x.sector !== 'ETF·지수' && (x.timePct > 1 || x.koactPct > 1));
