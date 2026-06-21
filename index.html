@@ -47,7 +47,13 @@
     .hl-card {
       background: #0d1526; border: 1px solid #1e2d4a; border-radius: 12px; padding: 14px 16px;
     }
-    .hl-title { font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .hl-title {
+      font-size: 11px; color: #64748b; letter-spacing: 1px; text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
+      margin: -14px -16px 12px;          /* 카드 패딩 상쇄 → 라인 좌우 풀폭 */
+      padding: 12px 16px;                /* .aa-card-header와 동일한 내부 여백 */
+      border-bottom: 1px solid #1e2d4a;  /* ★ 상단 라인 (aa-card-header와 동일) */
+    }
     .hl-title .hl-icon { font-size: 14px; }
     .hl-list { font-size: 12px; }
     .hl-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; gap: 6px; }
