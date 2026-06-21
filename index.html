@@ -13,7 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0a0e1a; color: #e2e8f0; font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+    body { background: #0a0e1a; color: #e2e8f0; font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
 
     /* ===== 헤더 ===== */
     header { background: #111827; border-bottom: 1px solid #1e2d4a; padding: 16px 32px; position: sticky; top: 0; z-index: 50; }
@@ -373,19 +373,21 @@
 
 /* ===== 하단 네비게이션 ===== */
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
       background: #111827; border-top: 1px solid #1e2d4a;
       display: flex; justify-content: space-around; align-items: center;
-      padding: 6px 0 env(safe-area-inset-bottom, 6px);
+      height: 56px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
     }
     .bottom-nav a {
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
       text-decoration: none; color: #64748b; font-size: 10px; font-weight: 600;
-      padding: 4px 0; flex: 1; transition: color 0.15s;
+      flex: 1; height: 100%; transition: color 0.15s;
     }
     .bottom-nav a:hover, .bottom-nav a.active { color: #00D4AA; }
     .bottom-nav .nav-icon { font-size: 20px; line-height: 1; }
-    body { padding-bottom: 64px; }
 
 
   </style>
@@ -3069,11 +3071,11 @@ function selectEtf(el) {
 </footer>
 
 <nav class="bottom-nav">
+  <a href="/briefing/"><span class="nav-icon">📊</span>브리핑</a>
+  <a href="/blog/"><span class="nav-icon">📝</span>블로그</a>
   <a href="/guide.html"><span class="nav-icon">📚</span>가이드</a>
   <a href="/glossary.html"><span class="nav-icon">📖</span>용어사전</a>
   <a href="/etf/"><span class="nav-icon">📋</span>ETF 목록</a>
-  <a href="/briefing/"><span class="nav-icon">📊</span>브리핑</a>
-  <a href="/blog/"><span class="nav-icon">📝</span>블로그</a>
 </nav>
 </body>
 </html>
