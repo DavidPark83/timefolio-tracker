@@ -934,6 +934,7 @@
   let lastHighlightsData = null;  // { baseDate, cmp, curMap, prevMap, hasPrev }
   let lastAnalyticsData = null;   // ★ Active Analytics 캐시 (region 전환 시 재렌더용)
   let lastCurAll = null;          // ★ 섹터 모달용 원시 데이터
+  let lastNavMap = {};            // ★ 섹터 모달용 ETF별 NAV { etf_idx: nav_total }
 
   // =========================================================
   // ★ 섹터 분류 엔진 (stock_sectors 테이블 기반)
@@ -1698,6 +1699,10 @@ function selectEtf(el) {
         const { data: navAll } = await db.from("etf_daily")
           .select("nav_total, etf_idx").eq("date", baseDate);
 
+        // ★ 섹터 모달용 NAV 캐시
+        lastNavMap = {};
+        (navAll || []).forEach(r => { lastNavMap[r.etf_idx] = r.nav_total || 0; });
+
         const timeNav  = (navAll || []).filter(r => r.etf_idx < 200).reduce((s, r) => s + (r.nav_total || 0), 0);
         const koactNav = (navAll || []).filter(r => r.etf_idx >= 200).reduce((s, r) => s + (r.nav_total || 0), 0);
         const allNav   = timeNav + koactNav;
@@ -2435,20 +2440,29 @@ function selectEtf(el) {
     if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
   }
 
-  // =========================================================
+// =========================================================
   // 섹터 모달 — 섹터에 속한 ETF별 보유 현황
   // =========================================================
+
+  // ETF idx → 풀네임 변환 (PROVIDERS 메타에서 조회)
+  function getEtfFullName(etfIdx) {
+    const idx = Number(etfIdx);
+    const provKey = idx >= 200 ? 'samsungactive' : 'timefolio';
+    const prov = PROVIDERS[provKey];
+    if (!prov) return `ETF ${idx}`;
+    const all = [...prov.overseas, ...prov.domestic];
+    const found = all.find(e => e.idx === idx);
+    return found ? `${prov.prefix} ${found.name}` : `${prov.prefix} ETF ${idx}`;
+  }
+
   function openSectorModal(sectorName) {
     if (!lastCurAll || !lastCurAll.length) return;
 
-    // 섹터에 해당하는 종목 필터
     const sectorRows = lastCurAll.filter(r => {
       const nm = (r.name || '').trim();
       if (/^(현금|원화현금|원화예금|예금|기타|미수금|미지급금|설정현금)/.test(nm)) return false;
-      const code = normalizeCode(r.code);
-      return classifySector(code) === sectorName;
+      return classifySector(normalizeCode(r.code)) === sectorName;
     });
-
     if (!sectorRows.length) return;
 
     // ETF별 집계
@@ -2456,56 +2470,82 @@ function selectEtf(el) {
     for (const r of sectorRows) {
       const key = r.etf_idx;
       if (!etfMap[key]) {
-        const prov = r.etf_idx >= 200 ? 'KoAct' : 'TIME';
-        const eName = (r.etf_name || '').trim();
-        const display = eName.startsWith(prov) ? eName : prov + ' ' + eName;
-        etfMap[key] = { etf_idx: key, name: display, qty: 0, weight: 0, amt: 0, stocks: [] };
+        etfMap[key] = {
+          etf_idx: key,
+          name: getEtfFullName(key),
+          nav: lastNavMap[key] || 0,
+          sectorWeight: 0,
+          sectorQty: 0,
+          stockCodes: new Set(),
+          topStocks: []
+        };
       }
-      etfMap[key].qty += (Number(r.qty) || 0);
-      etfMap[key].weight += (r.weight || 0);
-      etfMap[key].amt += (r._amount || 0);
-      etfMap[key].stocks.push({ code: r.code, name: r.name, weight: r.weight, qty: r.qty });
+      etfMap[key].sectorWeight += (r.weight || 0);
+      etfMap[key].sectorQty += (Number(r.qty) || 0);
+      etfMap[key].stockCodes.add(normalizeCode(r.code));
+      etfMap[key].topStocks.push({ name: r.name, weight: r.weight || 0 });
     }
 
-    const etfList = Object.values(etfMap).sort((a, b) => b.weight - a.weight);
-    const totalAmt = etfList.reduce((s, e) => s + e.amt, 0);
-    const stockCount = new Set(sectorRows.map(r => normalizeCode(r.code))).size;
+    const etfList = Object.values(etfMap)
+      .map(e => ({ ...e, stockCount: e.stockCodes.size }))
+      .sort((a, b) => b.sectorWeight - a.sectorWeight);
+
+    const totalStocks = new Set(sectorRows.map(r => normalizeCode(r.code))).size;
     const col = SECTOR_COLORS[sectorName] || '#475569';
 
-    // 모달 표시
+    // 모달 세팅
     document.getElementById("modalTitle").textContent = `📡 ${sectorName} 섹터`;
     document.getElementById("modalOverlay").classList.add("show");
 
-    // 차트 섹션 숨기기
+    // 차트/뉴스 숨기기
     const chartSection = document.querySelector('#trendChart')?.closest('.modal-section');
     if (chartSection) chartSection.style.display = 'none';
-
-    // 뉴스 섹션 숨기기
     const newsSection = document.querySelector('#newsLinks')?.closest('.modal-section');
     if (newsSection) newsSection.style.display = 'none';
 
-    // ETF 목록 섹션
+    // 헤더
     const holdSection = document.querySelector('#holdingList')?.closest('.modal-section');
     if (holdSection) {
       const h3 = holdSection.querySelector('h3');
-      if (h3) h3.innerHTML = `📦 이 섹터를 보유한 ETF <span style="color:${col};margin-left:8px">${stockCount}종목 · ${etfList.length}개 ETF · ${fmtMoney(totalAmt)}</span>`;
+      if (h3) h3.innerHTML = `📦 이 섹터를 보유한 ETF <span style="color:${col};margin-left:8px">${totalStocks}종목 · ${etfList.length}개 ETF</span>`;
     }
 
+    // ETF 리스트 렌더
     const el = document.getElementById("holdingList");
     el.innerHTML = etfList.map(e => {
-      // 상위 3개 종목 미리보기
-      const topStocks = e.stocks.sort((a, b) => (b.weight || 0) - (a.weight || 0)).slice(0, 3);
-      const preview = topStocks.map(s => escapeHtml(s.name)).join(', ');
-      const moreCount = e.stocks.length - 3;
+      // 상위 3개 종목
+      const top3 = e.topStocks.sort((a, b) => b.weight - a.weight).slice(0, 3);
+      const preview = top3.map(s => escapeHtml(s.name)).join(', ');
+      const moreCount = e.stockCount - 3;
       const previewText = moreCount > 0 ? preview + ` 외 ${moreCount}개` : preview;
 
-      return `<div class="holding-row" style="grid-template-columns:1fr auto auto;cursor:default">
-        <div>
-          <span class="hr-etf">${escapeHtml(e.name)}</span>
-          <div style="font-size:10px;color:#475569;margin-top:2px">${escapeHtml(previewText)}</div>
+      const provColor = e.etf_idx >= 200 ? '#22c55e' : '#60a5fa';
+      const provLabel = e.etf_idx >= 200 ? 'KoAct' : 'TIME';
+
+      return `<div style="padding:12px 16px;background:#111827;border-radius:10px;margin-bottom:8px;border-left:3px solid ${provColor}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${provColor}20;color:${provColor}">${provLabel}</span>
+              <span style="font-size:14px;font-weight:600;color:#f1f5f9">${escapeHtml(e.name.replace(/^(TIME|KoAct)\s*/, ''))}</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin-top:4px">${escapeHtml(previewText)}</div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:center;flex-shrink:0">
+            <div style="text-align:right">
+              <div style="font-size:10px;color:#64748b">총자산</div>
+              <div style="font-family:monospace;font-size:12px;color:#94a3b8">${fmtMoney(e.nav)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:#64748b">종목수</div>
+              <div style="font-family:monospace;font-size:12px;color:#94a3b8">${e.stockCount}개</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:#64748b">섹터비중</div>
+              <div style="font-family:monospace;font-size:14px;font-weight:700;color:${col}">${e.sectorWeight.toFixed(2)}%</div>
+            </div>
+          </div>
         </div>
-        <span class="hr-q">수량 ${fmt(Math.round(e.qty))}</span>
-        <span class="hr-w" style="color:${col}">${e.weight.toFixed(2)}%</span>
       </div>`;
     }).join('');
 
