@@ -483,19 +483,19 @@
   <!-- ② Active Analytics (Active 모드에서만 표시) -->
   <div id="activeAnalytics" class="active-analytics" style="display:none">
     <div class="aa-grid">
-      <!-- 섹터 자금 흐름 -->
-        <div class="aa-card">
-        <div class="aa-card-header" style="color:#06b6d4">
-          📡 섹터 자금 흐름 <span class="aa-subtitle" id="aaSectorFlowSub">테마별 보유금액 변동</span>
-        </div>
-        <div class="aa-card-body" id="aaSectorFlow"><div class="aa-empty">데이터 계산 중...</div></div>
-      </div>
-      <!-- 운용사별 섹터 베팅 -->
+  <!-- 운용사별 섹터 베팅 (먼저) -->
       <div class="aa-card">
         <div class="aa-card-header" style="color:#a78bfa">
           🎯 운용사별 섹터 베팅 <span class="aa-subtitle">TIME vs KoAct 비중 비교</span>
         </div>
         <div class="aa-card-body" id="aaSectorBet"><div class="aa-empty">데이터 계산 중...</div></div>
+      </div>
+      <!-- 섹터 자금 흐름 -->
+      <div class="aa-card">
+        <div class="aa-card-header" style="color:#06b6d4">
+          📡 섹터 자금 흐름 <span class="aa-subtitle" id="aaSectorFlowSub">테마별 보유금액 변동</span>
+        </div>
+        <div class="aa-card-body" id="aaSectorFlow"><div class="aa-empty">데이터 계산 중...</div></div>
       </div>
        <!-- 스마트머니 스코어 — 매수 -->
       <div class="aa-card">
@@ -2065,7 +2065,7 @@ function selectEtf(el) {
     for (const sector of betSectors) {
       const tp = ((sectorByProv.time[sector] || 0) / timeTotal) * 100;
       const kp = ((sectorByProv.koact[sector] || 0) / koactTotal) * 100;
-      sectorBets.push({ sector, timePct: tp, koactPct: kp, diff: tp - kp });
+      sectorBets.push({ sector, timePct: tp, koactPct: kp, timeAmt: sectorByProv.time[sector] || 0, koactAmt: sectorByProv.koact[sector] || 0, diff: tp - kp });
     }
     sectorBets.sort((a, b) => (b.timePct + b.koactPct) - (a.timePct + a.koactPct));
 
@@ -2273,12 +2273,14 @@ function selectEtf(el) {
           const tw = (x.timePct / maxPct) * 100;
           const kw = (x.koactPct / maxPct) * 100;
           const col = SECTOR_COLORS[x.sector] || '#475569';
-          return `<div class="sector-compare-row">
+          const tAmt = fmtMoney(x.timeAmt);
+          const kAmt = fmtMoney(x.koactAmt);
+          return `<div style="display:grid;grid-template-columns:76px 1fr 80px 1fr 80px;gap:4px;align-items:center;padding:5px 10px;font-size:11px;border-radius:6px" class="sector-compare-row">
             <span class="sector-label" style="color:${col};font-size:10px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px" data-action="open-sector" data-sector="${escapeHtml(x.sector)}">${escapeHtml(x.sector)}</span>
             <div class="sector-bar-wrap" style="height:10px"><div style="height:100%;width:${tw}%;background:#60a5fa;opacity:0.7;border-radius:3px"></div></div>
-            <span class="sector-compare-pct" style="color:#60a5fa">${x.timePct.toFixed(1)}%</span>
+            <span style="font-family:monospace;font-size:10px;text-align:right"><span style="color:#60a5fa">${x.timePct.toFixed(1)}%</span> <span style="color:#475569">${tAmt}</span></span>
             <div class="sector-bar-wrap" style="height:10px"><div style="height:100%;width:${kw}%;background:#22c55e;opacity:0.7;border-radius:3px"></div></div>
-            <span class="sector-compare-pct" style="color:#22c55e">${x.koactPct.toFixed(1)}%</span>
+            <span style="font-family:monospace;font-size:10px;text-align:right"><span style="color:#22c55e">${x.koactPct.toFixed(1)}%</span> <span style="color:#475569">${kAmt}</span></span>
           </div>`;
         }).join('');
         betEl.innerHTML = html;
@@ -2512,7 +2514,38 @@ function selectEtf(el) {
 
     // ETF 리스트 렌더
     const el = document.getElementById("holdingList");
-    el.innerHTML = etfList.map(e => {
+
+    // 컬럼 헤더 (고정)
+    let html = `<div style="display:flex;align-items:center;justify-content:flex-end;gap:0;padding:4px 16px 8px;font-size:10px;color:#64748b;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #1e2d4a;margin-bottom:8px">
+      <span style="flex:1"></span>
+      <span style="min-width:70px;text-align:right">총자산</span>
+      <span style="min-width:56px;text-align:right">종목수</span>
+      <span style="min-width:72px;text-align:right">섹터비중</span>
+    </div>`;
+
+    html += etfList.map(e => {
+      const top3 = e.topStocks.sort((a, b) => b.weight - a.weight).slice(0, 3);
+      const preview = top3.map(s => escapeHtml(s.name)).join(', ');
+      const moreCount = e.stockCount - 3;
+      const previewText = moreCount > 0 ? preview + ` 외 ${moreCount}개` : preview;
+      const provColor = e.etf_idx >= 200 ? '#22c55e' : '#60a5fa';
+      const provLabel = e.etf_idx >= 200 ? 'KoAct' : 'TIME';
+
+      return `<div style="padding:10px 16px;background:#111827;border-radius:10px;margin-bottom:6px;border-left:3px solid ${provColor};display:flex;align-items:center;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${provColor}20;color:${provColor};flex-shrink:0">${provLabel}</span>
+            <span style="font-size:13px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(e.name.replace(/^(TIME|KoAct)\s*/, ''))}</span>
+          </div>
+          <div style="font-size:10px;color:#475569;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(previewText)}</div>
+        </div>
+        <span style="font-family:monospace;font-size:11px;color:#94a3b8;min-width:70px;text-align:right">${fmtMoney(e.nav)}</span>
+        <span style="font-family:monospace;font-size:11px;color:#94a3b8;min-width:56px;text-align:right">${e.stockCount}개</span>
+        <span style="font-family:monospace;font-size:14px;font-weight:700;color:${col};min-width:72px;text-align:right">${e.sectorWeight.toFixed(2)}%</span>
+      </div>`;
+    }).join('');
+
+    el.innerHTML = html;
       // 상위 3개 종목
       const top3 = e.topStocks.sort((a, b) => b.weight - a.weight).slice(0, 3);
       const preview = top3.map(s => escapeHtml(s.name)).join(', ');
