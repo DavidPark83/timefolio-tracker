@@ -2518,12 +2518,7 @@ function selectEtf(el) {
     const el = document.getElementById("holdingList");
 
     // 컬럼 헤더 (고정)
-    let html = `<div style="display:flex;align-items:center;justify-content:flex-end;gap:0;padding:4px 16px 8px;font-size:10px;color:#64748b;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #1e2d4a;margin-bottom:8px">
-      <span style="flex:1"></span>
-      <span style="min-width:70px;text-align:right">총자산</span>
-      <span style="min-width:56px;text-align:right">종목수</span>
-      <span style="min-width:72px;text-align:right">섹터비중</span>
-    </div>`;
+    let html = '';
 
     html += etfList.map(e => {
       const top3 = e.topStocks.sort((a, b) => b.weight - a.weight).slice(0, 3);
