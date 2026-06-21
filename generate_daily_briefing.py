@@ -1,0 +1,1 @@
+pbpaste > generate_daily_briefing.py
