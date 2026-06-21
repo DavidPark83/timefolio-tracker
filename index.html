@@ -1028,9 +1028,9 @@
     const sign = v < 0 ? "-" : (signed && v > 0 ? "+" : "");
     const abs = Math.abs(v);
     const eok = abs / 100_000_000;
-    if (eok >= 10000) return sign + (eok / 10000).toFixed(2) + "조원";
-    if (eok >= 1)     return sign + Math.round(eok).toLocaleString("ko-KR") + "억원";
-    return sign + eok.toFixed(1) + "억원";
+    if (eok >= 10000) return sign + (eok / 10000).toFixed(2) + "조";
+    if (eok >= 1)     return sign + Math.round(eok).toLocaleString("ko-KR") + "억";
+    return sign + eok.toFixed(1) + "억";
   }
   const fmtNav = (v) => fmtMoney(v);
 
@@ -1142,7 +1142,7 @@
       const sectionNav = tabs.reduce((sum, t) => sum + (navMap[parseInt(t.dataset.idx)] || 0), 0);
       const jo = sectionNav / 1_000_000_000_000;
       const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      el.textContent = `${baseText} (${count}개, ${joStr}조원)`;
+      el.textContent = `${baseText} (${count}개, ${joStr}조)`;
     });
   }
 
@@ -1758,13 +1758,13 @@ function selectEtf(el) {
       const joStr = jo.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const provLabel = currentProvider === 'active' ? ' · TIME+KoAct' : '';
       holdTitleEl.innerHTML =
-        `<span class="hl-icon">🏆</span>보유 현황 TOP ${regionLabel} <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조원${provLabel})</span>`;
+        `<span class="hl-icon">🏆</span>보유 현황 TOP ${regionLabel} <span style="color:#00D4AA;font-weight:600;margin-left:4px">(${escapeHtml(joStr)}조${provLabel})</span>`;
     }
 
     let newItems = [], upItems = [], downItems = [], goneItems = [];
 
     if (hasPrev && prevMap) {
-      const THRESHOLD_AMT = 100_000_000;  // 1억원
+      const THRESHOLD_AMT = 100_000_000;  // 1억
       const THRESHOLD_QTY = 1_000;        // 1,000주
 
       for (const key of Object.keys(curMap)) {
