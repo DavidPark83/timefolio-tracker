@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일일 브리핑 — 42개 액티브 ETF 매일 분석 | Active ETF Tracker</title>
+  <meta name="description" content="TIME 19종 + KoAct 23종, 총 42개 한국 액티브 ETF의 보유종목 변화를 매일 분석합니다. 신규 편입, 비중 변화, 운용사 의견 충돌까지.">
+  <link rel="canonical" href="https://etftracker.co.kr/briefing/">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.8;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px}
+    header h1{font-size:18px;font-weight:700}
+    .container{max-width:800px;margin:0 auto;padding:48px 0 80px}
+    .page-title{font-size:28px;font-weight:800;margin-bottom:8px}
+    .page-desc{color:var(--muted);font-size:15px;margin-bottom:12px}
+    .page-stats{display:flex;gap:20px;margin-bottom:40px;flex-wrap:wrap}
+    .stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:13px;color:var(--muted)}
+    .stat strong{color:var(--text);font-size:16px;margin-right:4px}
+
+    /* 월별 그룹 */
+    .month-group{margin-bottom:32px}
+    .month-label{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:12px;padding-left:4px}
+
+    /* 브리핑 카드 */
+    .briefing-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:10px;text-decoration:none;display:block;transition:border-color .2s}
+    .briefing-card:hover{border-color:var(--accent);text-decoration:none}
+    .briefing-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .briefing-date-badge{background:rgba(99,102,241,.12);color:var(--accent);padding:3px 12px;border-radius:6px;font-size:13px;font-weight:700}
+    .briefing-day{color:var(--muted);font-size:12px}
+    .briefing-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.5}
+    .briefing-tags{display:flex;gap:8px;flex-wrap:wrap}
+    .briefing-tag{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600}
+    .tag-up{background:rgba(16,185,129,.12);color:var(--green)}
+    .tag-down{background:rgba(248,113,113,.12);color:#f87171}
+    .tag-new{background:rgba(251,191,36,.12);color:#fbbf24}
+    .tag-diverge{background:rgba(168,85,247,.12);color:#a855f7}
+
+    /* 하단 링크 */
+    .bottom-links{text-align:center;margin-top:48px;padding-top:24px;border-top:1px solid var(--border)}
+    .bottom-links a{color:var(--accent);font-size:15px;text-decoration:none;margin:0 16px}
+
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+
+    @media(max-width:600px){
+      .page-title{font-size:22px}
+      .page-stats{gap:10px}
+      .stat{padding:8px 12px;font-size:12px}
+      .briefing-card{padding:16px 18px}
+      .briefing-title{font-size:14px}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/">← 메인으로</a>
+  <h1>📊 ACTIVE ETF Tracker</h1>
+</header>
+
+<div class="container">
+  <h1 class="page-title">📊 일일 브리핑</h1>
+  <p class="page-desc">42개 액티브 ETF(TIME 19종 + KoAct 23종)의 보유종목 변화를 매일 분석합니다.</p>
+
+  <div class="page-stats">
+    <div class="stat"><strong>42개</strong> 추적 ETF</div>
+    <div class="stat"><strong>TIME</strong> 9.7조 AUM</div>
+    <div class="stat"><strong>KoAct</strong> 3.5조 AUM</div>
+  </div>
+
+  <!-- ===== 2026년 6월 ===== -->
+  <div class="month-group">
+    <div class="month-label">2026년 6월</div>
+
+    <!-- BRIEFING_INSERT_POINT -->
+
+    <a href="/briefing/2026-06-19.html" class="briefing-card">
+      <div class="briefing-top">
+        <span class="briefing-date-badge">6월 19일</span>
+        <span class="briefing-day">목요일</span>
+      </div>
+      <div class="briefing-title">SpaceX 비중 급감 -6.2%p, SK하이닉스 14개 ETF 최다 보유 — 디펜시브 로테이션 뚜렷</div>
+      <div class="briefing-tags">
+        <span class="briefing-tag tag-down">SpaceX -6.2%p</span>
+        <span class="briefing-tag tag-new">SK스퀘어 신규편입</span>
+        <span class="briefing-tag tag-diverge">운용사 의견충돌 2건</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="bottom-links">
+    <a href="/blog/">📝 블로그 분석글 보기</a>
+    <a href="/">🏠 대시보드 바로가기</a>
+  </div>
+</div>
+
+<footer>
+  <a href="/">홈</a>
+  <a href="/blog/">블로그</a>
+  <a href="/briefing/">일일 브리핑</a>
+  <a href="/about.html">서비스 소개</a>
+  <br><br>
+  © 2026 Active ETF Tracker. All rights reserved.
+</footer>
+
+</body>
+</html>
