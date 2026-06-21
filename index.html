@@ -2546,41 +2546,6 @@ function selectEtf(el) {
     }).join('');
 
     el.innerHTML = html;
-      // 상위 3개 종목
-      const top3 = e.topStocks.sort((a, b) => b.weight - a.weight).slice(0, 3);
-      const preview = top3.map(s => escapeHtml(s.name)).join(', ');
-      const moreCount = e.stockCount - 3;
-      const previewText = moreCount > 0 ? preview + ` 외 ${moreCount}개` : preview;
-
-      const provColor = e.etf_idx >= 200 ? '#22c55e' : '#60a5fa';
-      const provLabel = e.etf_idx >= 200 ? 'KoAct' : 'TIME';
-
-      return `<div style="padding:12px 16px;background:#111827;border-radius:10px;margin-bottom:8px;border-left:3px solid ${provColor}">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-          <div style="flex:1;min-width:200px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${provColor}20;color:${provColor}">${provLabel}</span>
-              <span style="font-size:14px;font-weight:600;color:#f1f5f9">${escapeHtml(e.name.replace(/^(TIME|KoAct)\s*/, ''))}</span>
-            </div>
-            <div style="font-size:10px;color:#475569;margin-top:4px">${escapeHtml(previewText)}</div>
-          </div>
-          <div style="display:flex;gap:16px;align-items:center;flex-shrink:0">
-            <div style="text-align:right">
-              <div style="font-size:10px;color:#64748b">총자산</div>
-              <div style="font-family:monospace;font-size:12px;color:#94a3b8">${fmtMoney(e.nav)}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:10px;color:#64748b">종목수</div>
-              <div style="font-family:monospace;font-size:12px;color:#94a3b8">${e.stockCount}개</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:10px;color:#64748b">섹터비중</div>
-              <div style="font-family:monospace;font-size:14px;font-weight:700;color:${col}">${e.sectorWeight.toFixed(2)}%</div>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
 
     trackEvent('sector_modal_open', { sector: sectorName, etf_count: etfList.length });
   }
