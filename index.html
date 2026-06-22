@@ -923,11 +923,12 @@
     if (modeCompare && isActive) modeCompare.classList.add('hidden');
 
     if (!isActive) {
-      // TIME/KoAct: 기존 동작 그대로
+      // TIME/KoAct: 정렬(async) 완료 후 화면을 그려 탭-내용 불일치 방지
       renderEtfTabs();
-      sortEtfTabsByNav();
-      renderInfo();
-      refreshAll();
+      sortEtfTabsByNav().then(() => {
+        renderInfo();
+        refreshAll();
+      });
     } else {
       // Active: 하이라이트만 새로고침
       const base = document.getElementById("globalDateSelect")?.value;
@@ -1234,6 +1235,27 @@
     document.getElementById("modeSingle").classList.toggle("hidden", mode !== "single");
     document.getElementById("modeCompare").classList.toggle("hidden", mode !== "compare");
     document.getElementById("modeAnalysis").classList.toggle("hidden", mode !== "analysis");
+    if (mode === "single") {
+      // 화면에 active인 탭을 기준으로 currentIdx 강제 동기화 (탭 표시와 상세 내용 불일치 방지)
+      const activeTab = document.querySelector('.etf-tab.active');
+      if (activeTab) currentIdx = parseInt(activeTab.dataset.idx);
+      if (currentIdx) {
+        renderInfo();
+        const base = document.getElementById("globalDateSelect")?.value;
+        const cmp  = document.getElementById("globalCompareSelect")?.value;
+        if (base) loadDataWithDates(base, cmp);
+      }
+    }
+    if (mode === "single") {
+      const activeTab = document.querySelector('.etf-tab.active');
+      if (activeTab) currentIdx = parseInt(activeTab.dataset.idx);
+      if (currentIdx) {
+        renderInfo();
+        const base = document.getElementById("globalDateSelect")?.value;
+        const cmp  = document.getElementById("globalCompareSelect")?.value;
+        if (base) loadDataWithDates(base, cmp);
+      }
+    }
     if (mode === "analysis") {
       // 화면에 active인 탭을 기준으로 currentIdx 강제 동기화 (탭 표시와 brief 내용 불일치 방지)
       const activeTab = document.querySelector('.etf-tab.active');
