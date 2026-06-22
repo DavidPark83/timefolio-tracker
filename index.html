@@ -1234,8 +1234,11 @@
     document.getElementById("modeSingle").classList.toggle("hidden", mode !== "single");
     document.getElementById("modeCompare").classList.toggle("hidden", mode !== "compare");
     document.getElementById("modeAnalysis").classList.toggle("hidden", mode !== "analysis");
-    if (mode === "analysis" && currentIdx) {
-      loadAnalysisBrief(currentIdx, getEtfName(currentIdx));
+    if (mode === "analysis") {
+      // 화면에 active인 탭을 기준으로 currentIdx 강제 동기화 (탭 표시와 brief 내용 불일치 방지)
+      const activeTab = document.querySelector('.etf-tab.active');
+      if (activeTab) currentIdx = parseInt(activeTab.dataset.idx);
+      if (currentIdx) loadAnalysisBrief(currentIdx, getEtfName(currentIdx));
     }
     if (mode === "compare") {
       if (!cmpEtfA) cmpEtfA = currentIdx;
@@ -2948,6 +2951,8 @@ function selectEtf(el) {
 
       // 브리핑 텍스트 (마크다운 → HTML 변환)
       const briefHtml = (data.brief_text || '')
+        .replace(/^.*(?:제외|신규),?\s*언급하지\s*않음.*$/gm, '')
+        .replace(/\s*\(2026-\d{2}-\d{2}\)/g, '')
         .replace(/\s*\(2026-\d{2}-\d{2}\)/g, '')
         .replace(/\s*\(\d{4}년\s*\d{1,2}월\s*\d{1,2}일\)/g, '')
         .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#00D4AA">$1</strong>')
