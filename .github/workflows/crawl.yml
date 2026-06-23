@@ -91,45 +91,9 @@ jobs:
             python crawler.py
           fi
 
-      # ============================================================
-      # 2) 삼성액티브(KoAct) 크롤링 — timeetf 완료 '후' 실행
-      #    timeetf 와 동일하게 daily / backfill 두 모드를 모두 지원:
-      #      - daily   : crawler_samsung.py  (오늘 또는 target_date)
-      #      - backfill: backfill_samsung.py "$START" "$END"
-      #    - continue-on-error: 삼성이 실패/차단되어도 이후 step과
-      #      워크플로우 전체는 정상(초록) 유지 → timeetf 결과 보존
-      #    - 두 스크립트 모두 최상위에서 exit 0 처리하지만, 이중 안전장치로
-      #      여기서도 실패를 흡수한다.
-      # ============================================================
-      - name: Run Samsung Active crawler
-        continue-on-error: true
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          TARGET_DATE: ${{ github.event.inputs.target_date }}
-        run: |
-          MODE="${{ github.event.inputs.mode }}"
-          START="${{ github.event.inputs.start_date }}"
-          END="${{ github.event.inputs.end_date }}"
-          if [ "$MODE" = "backfill" ]; then
-            if [ -n "$START" ] && [ -n "$END" ]; then
-              echo "🔄 삼성 청크 백필: $START ~ $END"
-              python backfill_samsung.py "$START" "$END"
-            elif [ -n "$START" ]; then
-              YESTERDAY=$(date -u -d 'yesterday' '+%Y-%m-%d')
-              echo "🔄 삼성 백필: $START ~ $YESTERDAY"
-              python backfill_samsung.py "$START" "$YESTERDAY"
-            else
-              echo "🔄 삼성 전체 백필: 기본 시작일 ~ 어제"
-              python backfill_samsung.py
-            fi
-          else
-            echo "📊 삼성액티브 일일 크롤링 (timeetf 완료 후 실행)"
-            python crawler_samsung.py
-          fi
 
       # ============================================================
-      # 3) ETF 정적 페이지 생성 (기존과 동일)
+      # 2) ETF 정적 페이지 생성 (기존과 동일)
       # ============================================================
       - name: Generate ETF pages
         run: |

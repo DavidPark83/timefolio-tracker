@@ -497,9 +497,20 @@ def update_index(date, title, day_name):
 
     content = index_path.read_text(encoding="utf-8")
 
-    # 중복 체크
+    # 이미 존재하면 기존 카드를 새 내용으로 교체 (제목/태그/요일 갱신)
     if f"/briefing/{date}.html" in content:
-        print(f"⚠ {date} 카드가 이미 존재합니다 — 건너뜀")
+        import re
+        # 해당 날짜의 <a ...>...</a> 카드 블록 전체를 찾아 교체
+        pattern = re.compile(
+            r'\s*<a href="/briefing/' + re.escape(date) + r'\.html".*?</a>',
+            re.DOTALL
+        )
+        if pattern.search(content):
+            content = pattern.sub(new_card.rstrip("\n"), content, count=1)
+            index_path.write_text(content, encoding="utf-8")
+            print(f"🔄 index.html의 {date} 카드 갱신 완료")
+        else:
+            print(f"⚠ {date} 링크는 있으나 카드 블록을 못 찾음 — 건너뜀")
         return
 
     # 월 그룹 존재 여부 확인
@@ -556,11 +567,18 @@ def main():
     import sys
     arg_date = sys.argv[1] if len(sys.argv) > 1 else None
     if arg_date:
-        # 과거 날짜 재생성: 폴링 생략, 전일은 holdings에서 직전 영업일 조회
+        # 과거 날짜 재생성: 폴링 생략
         base_date = arg_date
-        prev_dates, _ = get_latest_dates()  # 최신순 날짜 리스트
-        prev_date = next((d for d in prev_dates if d < base_date), None)
+        time_dates, koact_dates = get_latest_dates()
+        # 전일 = base_date보다 이전인 가장 가까운 날짜 (양쪽 공통 우선, 없으면 TIME 기준)
+        common = sorted(set(time_dates) & set(koact_dates), reverse=True)
+        candidates = common if common else time_dates
+        prev_date = next((d for d in candidates if d < base_date), None)
         print(f"📅 수동 지정 날짜: {base_date} (전일: {prev_date})")
+        # 지정 날짜 데이터 존재 확인
+        if base_date not in time_dates or base_date not in koact_dates:
+            print(f"⚠ 경고: {base_date} 데이터가 한쪽 이상 없습니다 "
+                  f"(TIME={base_date in time_dates}, KoAct={base_date in koact_dates})")
     else:
         base_date, prev_date = wait_for_both_providers()
     if not base_date:
