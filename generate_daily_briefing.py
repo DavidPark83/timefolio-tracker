@@ -28,7 +28,7 @@ BRIEFING_DIR = PROJECT_ROOT / "briefing"
 DAY_NAMES = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
 
 # ── 현금/예금 필터 ──
-CASH_NAMES = {"원화현금", "설정현금", "원화예금", "예금", "기타", "미수금", "미지급금"}
+CASH_NAMES = {"현금", "원화현금", "설정현금", "원화예금", "예금", "기타", "미수금", "미지급금"}
 
 try:
     import requests
@@ -83,11 +83,11 @@ def get_latest_dates():
     return time_dates, koact_dates
 
 
-def wait_for_both_providers(max_wait_minutes=60, poll_interval=120):
+def wait_for_both_providers(max_wait_minutes=60, poll_interval=120, target_date=None):
     """양쪽 프로바이더 모두 오늘 데이터가 있을 때까지 대기"""
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = target_date or datetime.now().strftime("%Y-%m-%d")
     # 주말 체크 (토=5, 일=6)
-    weekday = datetime.now().weekday()
+    weekday = datetime.strptime(today, "%Y-%m-%d").weekday()
     if weekday >= 5:
         print(f"⏭ 오늘은 {'토요일' if weekday == 5 else '일요일'}이라 브리핑을 생성하지 않습니다.")
         return None, None
@@ -552,8 +552,17 @@ def main():
     print("📊 일일 브리핑 생성 시작")
     print("=" * 50)
 
-    # 1. 데이터 대기
-    base_date, prev_date = wait_for_both_providers()
+    # 1. 데이터 대기 (인자로 날짜 지정 시 폴링 없이 해당 날짜로 재생성)
+    import sys
+    arg_date = sys.argv[1] if len(sys.argv) > 1 else None
+    if arg_date:
+        # 과거 날짜 재생성: 폴링 생략, 전일은 holdings에서 직전 영업일 조회
+        base_date = arg_date
+        prev_dates, _ = get_latest_dates()  # 최신순 날짜 리스트
+        prev_date = next((d for d in prev_dates if d < base_date), None)
+        print(f"📅 수동 지정 날짜: {base_date} (전일: {prev_date})")
+    else:
+        base_date, prev_date = wait_for_both_providers()
     if not base_date:
         return
 
