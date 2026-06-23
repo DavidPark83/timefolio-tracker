@@ -2,8 +2,8 @@ name: Daily Samsung Active (KoAct) Crawler
 
 on:
   schedule:
-    - cron: '0 0 * * 1-5'
-    - cron: '0 1 * * 1-5'
+    - cron: '15 22 * * 0-4'
+    - cron: '30 22 * * 0-4'
 
   workflow_dispatch:
     inputs:
