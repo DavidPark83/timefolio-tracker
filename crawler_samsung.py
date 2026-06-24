@@ -22,7 +22,7 @@ timeetf 크롤러와의 차이:
 import os
 import sys
 import time
-from datetime import date
+from datetime import date, datetime, timezone, timedelta
 from typing import List, Dict, Optional
 
 import requests
@@ -424,7 +424,8 @@ def update_standard_price(etf_idx: int, eval_date: str, f_p: float) -> str:
 # ============================================================
 def main():
     # API는 'YYYY.MM.DD' 형식 요구
-    raw = os.environ.get("TARGET_DATE") or str(date.today())  # 'YYYY-MM-DD'
+    KST = timezone(timedelta(hours=9))
+    raw = os.environ.get("TARGET_DATE") or datetime.now(KST).strftime("%Y-%m-%d")  # KST 기준
     target_date = raw.replace("-", ".")                       # 'YYYY.MM.DD'
 
     print(f"🚀 삼성액티브 크롤링 시작: {target_date}")
