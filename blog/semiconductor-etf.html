@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>반도체 ETF 깊이 보기 — HBM부터 밸류체인까지 | Active ETF Tracker</title>
+  <meta name="description" content="반도체 액티브 ETF가 담는 종목을 HBM, 메모리, 장비, 소재로 분류하고, TIME·KoAct의 반도체 ETF 전략 차이를 데이터로 분석합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/semiconductor-etf.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">종목분석</span><span>2026.06.25</span><span>·</span><span>읽는 시간 7분</span></div>
+
+  <h1>반도체 ETF 깊이 보기 — HBM부터 밸류체인까지</h1>
+
+  <p>반도체는 한국 액티브 ETF 시장에서 가장 큰 비중을 차지하는 테마입니다. SK하이닉스와 삼성전자가 각각 14개 ETF에 동시 편입될 만큼 핵심 종목으로 자리잡았습니다. 하지만 "반도체 ETF"라고 다 같은 것이 아닙니다. 이 글에서는 반도체 ETF가 담는 종목을 분류하고, 어떤 ETF가 어떤 영역에 집중하는지 분석합니다.</p>
+
+  <h2>반도체 밸류체인의 구조</h2>
+
+  <p>반도체 산업은 여러 단계로 이루어져 있고, 각 단계마다 대표 기업이 다릅니다. ETF가 어느 단계에 집중하는지에 따라 성격이 크게 달라집니다.</p>
+
+  <table class="ct">
+    <thead><tr><th>단계</th><th>역할</th><th>대표 기업</th></tr></thead>
+    <tbody>
+      <tr><td>메모리</td><td>D램, 낸드, HBM 제조</td><td>SK하이닉스, 삼성전자, Micron</td></tr>
+      <tr><td>파운드리</td><td>위탁 생산</td><td>TSMC, 삼성전자</td></tr>
+      <tr><td>설계(팹리스)</td><td>칩 설계</td><td>NVIDIA, AMD, ARM, 브로드컴</td></tr>
+      <tr><td>장비</td><td>제조 장비</td><td>LAM Research, ASML, 어플라이드머티어리얼즈</td></tr>
+      <tr><td>소재·부품</td><td>웨이퍼, 화학물질</td><td>한솔케미칼, 동진쎄미켐</td></tr>
+    </tbody>
+  </table>
+
+  <h2>HBM이 만든 새로운 판도</h2>
+
+  <p>2024년 이후 AI 붐과 함께 HBM(고대역폭메모리)이 반도체 투자의 핵심으로 떠올랐습니다. HBM은 AI 가속기에 필수적인 메모리로, SK하이닉스가 시장을 주도하고 있습니다. 이것이 SK하이닉스가 거의 모든 반도체 ETF에서 최상위 비중을 차지하는 이유입니다.</p>
+
+  <div class="info-box">
+    <strong>💡 데이터로 본 HBM 효과:</strong><br><br>
+    SK하이닉스는 14개 ETF에 편입되어 삼성전자와 공동 1위입니다. 단순히 반도체 ETF뿐 아니라 AI, 코스피, 밸류업, 수출 ETF에서도 핵심 종목으로 선정되었습니다. HBM이라는 단일 제품이 기업 전체의 투자 매력을 끌어올린 대표 사례입니다.
+  </div>
+
+  <h2>TIME vs KoAct 반도체 ETF 비교</h2>
+
+  <h3>TIMEFOLIO 글로벌반도체액티브</h3>
+  <p>글로벌 반도체 밸류체인 전반에 투자하는 ETF입니다. 국내 메모리(SK하이닉스, 삼성전자)부터 해외 설계·장비 기업까지 폭넓게 담습니다. 운용역이 시장 상황에 따라 메모리와 비메모리 비중을 조절하는 것이 특징입니다.</p>
+
+  <h3>KoAct 글로벌AI메모리반도체액티브</h3>
+  <p>이름에서 알 수 있듯 "AI 메모리"에 특화된 ETF입니다. HBM을 중심으로 한 AI용 메모리 반도체 밸류체인에 집중합니다. 더 좁은 테마이지만, AI 메모리 성장에 대한 확신이 있다면 더 정밀한 노출을 제공합니다.</p>
+
+  <h3>KoAct 브로드컴밸류체인액티브</h3>
+  <p>브로드컴을 중심으로 한 AI 네트워크·커스텀 칩 생태계에 투자합니다. NVIDIA 일변도에서 벗어나 AI 인프라의 다른 축에 베팅하는 독특한 접근법입니다.</p>
+
+  <h2>장비·소재 기업의 부상</h2>
+
+  <p>최근 보유종목 데이터에서 주목할 점은 장비·소재 기업의 편입이 늘고 있다는 것입니다. LAM Research는 8개 ETF에, ARM은 7개 ETF에 편입되어 있습니다. "곡괭이와 삽" 전략, 즉 반도체 호황의 수혜를 직접적으로 받는 장비 기업에 투자하는 흐름입니다.</p>
+
+  <ul>
+    <li><strong>LAM Research:</strong> 식각·증착 장비 강자, 8개 ETF 편입</li>
+    <li><strong>ARM Holdings:</strong> 모바일·AI 칩 설계 IP, 7개 ETF 편입</li>
+    <li><strong>AMD:</strong> CPU·GPU 설계, 7개 ETF 편입</li>
+  </ul>
+
+  <h2>반도체 ETF 선택 가이드</h2>
+
+  <p>반도체 ETF를 고를 때는 다음을 고려하세요.</p>
+
+  <ol>
+    <li><strong>메모리 집중도:</strong> SK하이닉스·삼성전자 비중이 높으면 HBM/메모리 사이클에 민감</li>
+    <li><strong>해외 비중:</strong> NVIDIA, TSMC 등 해외 비중이 높으면 글로벌 반도체 사이클에 노출</li>
+    <li><strong>장비·소재 비중:</strong> 변동성은 크지만 호황기에 높은 수익 가능</li>
+    <li><strong>밸류체인 ETF 여부:</strong> 특정 기업(브로드컴 등) 생태계에 집중하면 그 기업 의존도가 높음</li>
+  </ol>
+
+  <p>반도체는 사이클 산업입니다. 같은 반도체 ETF라도 메모리 중심인지, 장비 중심인지, 설계 중심인지에 따라 수익 패턴이 완전히 다릅니다. 보유종목을 직접 확인하고 자신의 시각과 맞는 ETF를 선택하는 것이 중요합니다.</p>
+
+  <div class="cta"><a href="/">반도체 ETF 보유종목 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/isa-active-etf.html">← ISA 활용법</a>
+    <a href="/blog/dca-strategy.html">다음: 적립식 투자 가이드 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 특정 종목에 대한 투자 권유가 아닙니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>
