@@ -14,16 +14,22 @@
     header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
     .container{max-width:800px;margin:0 auto;padding:48px 0 80px}
     .page-title{font-size:28px;font-weight:800;margin-bottom:8px}
-    .page-desc{color:var(--muted);font-size:15px;margin-bottom:40px}
+    .page-desc{color:var(--muted);font-size:15px;margin-bottom:32px}
+    .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+    .filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+    .filter-btn:hover{border-color:var(--accent);color:var(--text)}
+    .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .filter-count{opacity:.7;margin-left:4px;font-size:12px}
     .post-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-bottom:16px;text-decoration:none;display:block;transition:border-color .2s}
     .post-card:hover{border-color:var(--accent);text-decoration:none}
     .post-meta{display:flex;gap:12px;align-items:center;margin-bottom:10px;font-size:13px;color:var(--muted)}
     .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
     .post-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
     .post-excerpt{color:var(--muted);font-size:14px;line-height:1.7}
+    .no-result{text-align:center;color:var(--muted);padding:60px 0;font-size:15px;display:none}
     footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
     footer a{color:var(--accent);text-decoration:none;margin:0 8px}
-    @media(max-width:600px){.page-title{font-size:22px}.post-card{padding:20px}}
+    @media(max-width:600px){.page-title{font-size:22px}.post-card{padding:20px}.filter-btn{padding:6px 12px;font-size:12px}}
   </style>
 </head>
 <body>
@@ -36,155 +42,121 @@
   <h1 class="page-title">📝 블로그</h1>
   <p class="page-desc">한국 액티브 ETF 시장의 구조, 전략, 시그널을 분석합니다.</p>
 
+  <div class="filter-bar">
+    <button class="filter-btn active" data-cat="all">전체<span class="filter-count">12</span></button>
+    <button class="filter-btn" data-cat="guide">📚 기초·가이드<span class="filter-count">3</span></button>
+    <button class="filter-btn" data-cat="market">📊 시장·분석<span class="filter-count">3</span></button>
+    <button class="filter-btn" data-cat="theme">🎯 종목·테마<span class="filter-count">2</span></button>
+    <button class="filter-btn" data-cat="strategy">💡 투자전략<span class="filter-count">1</span></button>
+    <button class="filter-btn" data-cat="tax">💰 세금·연금<span class="filter-count">2</span></button>
+  </div>
 
+  <div id="post-list">
 
-  <a href="/blog/etf-vs-fund.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">가이드</span>
-      <span>2026.06.28</span>
-      <span>·</span>
-      <span>읽는 시간 5분</span>
-    </div>
-    <div class="post-title">액티브 ETF vs 일반 펀드 — 무엇이 더 나을까</div>
-    <div class="post-excerpt">실시간 거래, 매일 보유종목 공시, 낮은 비용. 액티브 ETF와 공모펀드를 거래방식·비용·투명성·세금 측면에서 비교합니다.</div>
-  </a>
+    <a href="/blog/etf-vs-fund.html" class="post-card" data-cat="guide">
+      <div class="post-meta"><span class="post-tag">기초·가이드</span><span>2026.06.28</span><span>·</span><span>읽는 시간 5분</span></div>
+      <div class="post-title">액티브 ETF vs 일반 펀드 — 무엇이 더 나을까</div>
+      <div class="post-excerpt">실시간 거래, 매일 보유종목 공시, 낮은 비용. 액티브 ETF와 공모펀드를 거래방식·비용·투명성·세금 측면에서 비교합니다.</div>
+    </a>
 
-  <a href="/blog/semiconductor-etf.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">종목분석</span>
-      <span>2026.06.27</span>
-      <span>·</span>
-      <span>읽는 시간 7분</span>
-    </div>
-    <div class="post-title">반도체 ETF 깊이 보기 — HBM부터 밸류체인까지</div>
-    <div class="post-excerpt">반도체 ETF가 담는 종목을 메모리·파운드리·설계·장비·소재로 분류하고, TIME·KoAct의 반도체 전략 차이를 데이터로 분석합니다.</div>
-  </a>
-  
-  <a href="/blog/defense-shipbuilding-etf.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">테마분석</span>
-      <span>2026.06.27</span>
-      <span>·</span>
-      <span>읽는 시간 6분</span>
-    </div>
-    <div class="post-title">K-방산·조선 ETF — 2026년 가장 뜨거운 테마 분석</div>
-    <div class="post-excerpt">HD현대중공업·LIG디펜스가 각 7개 ETF에 편입됐습니다. 데이터로 본 방산·조선 테마의 부상과 투자 방법을 분석합니다.</div>
-  </a>
+    <a href="/blog/defense-shipbuilding-etf.html" class="post-card" data-cat="theme">
+      <div class="post-meta"><span class="post-tag">종목·테마</span><span>2026.06.27</span><span>·</span><span>읽는 시간 6분</span></div>
+      <div class="post-title">K-방산·조선 ETF — 2026년 가장 뜨거운 테마 분석</div>
+      <div class="post-excerpt">HD현대중공업·LIG디펜스가 각 7개 ETF에 편입됐습니다. 데이터로 본 방산·조선 테마의 부상과 투자 방법을 분석합니다.</div>
+    </a>
 
-  <a href="/blog/dca-strategy.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">투자전략</span>
-      <span>2026.06.21</span>
-      <span>·</span>
-      <span>읽는 시간 6분</span>
-    </div>
-    <div class="post-title">액티브 ETF 적립식 투자(DCA) 완벽 가이드</div>
-    <div class="post-excerpt">"언제 사야 할까"의 고민을 줄이는 적립식 투자. 거치식과의 비교, 자동화 설정, 추가 매수 전략까지 실전 가이드.</div>
-  </a>
+    <a href="/blog/dca-strategy.html" class="post-card" data-cat="strategy">
+      <div class="post-meta"><span class="post-tag">투자전략</span><span>2026.06.25</span><span>·</span><span>읽는 시간 6분</span></div>
+      <div class="post-title">액티브 ETF 적립식 투자(DCA) 완벽 가이드</div>
+      <div class="post-excerpt">"언제 사야 할까"의 고민을 줄이는 적립식 투자. 거치식과의 비교, 자동화 설정, 추가 매수 전략까지 실전 가이드.</div>
+    </a>
 
-  <a href="/blog/isa-active-etf.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">세금</span>
-      <span>2026.06.21</span>
-      <span>·</span>
-      <span>읽는 시간 6분</span>
-    </div>
-    <div class="post-title">ISA 계좌로 액티브 ETF 투자하기 — 절세 200만원 활용법</div>
-    <div class="post-excerpt">ISA의 비과세 200만원 + 9.9% 분리과세 혜택을 액티브 ETF에 적용하는 법. 일반형·서민형 차이와 실전 활용 전략.</div>
-  </a>
- 
-  <a href="/blog/time-vs-koact.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">분석</span>
-      <span>2026.06.20</span>
-      <span>·</span>
-      <span>읽는 시간 7분</span>
-    </div>
-    <div class="post-title">TIME vs KoAct — 두 액티브 ETF 운용사의 전략 차이를 데이터로 비교한다</div>
-    <div class="post-excerpt">같은 테마(AI, 반도체, 바이오)를 추적하면서도 보유 종목과 비중이 상당히 다릅니다. 실제 포트폴리오 데이터를 기반으로 타임폴리오와 삼성액티브의 운용 스타일 차이를 분석합니다.</div>
-  </a>
+    <a href="/blog/semiconductor-etf.html" class="post-card" data-cat="theme">
+      <div class="post-meta"><span class="post-tag">종목·테마</span><span>2026.06.25</span><span>·</span><span>읽는 시간 7분</span></div>
+      <div class="post-title">반도체 ETF 깊이 보기 — HBM부터 밸류체인까지</div>
+      <div class="post-excerpt">반도체 ETF가 담는 종목을 메모리·파운드리·설계·장비·소재로 분류하고, TIME·KoAct의 반도체 전략 차이를 데이터로 분석합니다.</div>
+    </a>
 
-  <a href="/blog/what-is-active-etf.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">가이드</span>
-      <span>2026.06.20</span>
-      <span>·</span>
-      <span>읽는 시간 5분</span>
-    </div>
-    <div class="post-title">액티브 ETF 완전 가이드 — 패시브와 무엇이 다르고, 왜 주목해야 하나</div>
-    <div class="post-excerpt">인덱스를 그대로 따라가는 패시브 ETF와 달리, 액티브 ETF는 운용역이 직접 종목을 고르고 비중을 조절합니다. 한국 시장에서 TIME과 KoAct가 주도하는 액티브 ETF의 구조와 장단점을 정리합니다.</div>
-  </a>
+    <a href="/blog/isa-active-etf.html" class="post-card" data-cat="tax">
+      <div class="post-meta"><span class="post-tag">세금·연금</span><span>2026.06.25</span><span>·</span><span>읽는 시간 6분</span></div>
+      <div class="post-title">ISA 계좌로 액티브 ETF 투자하기 — 절세 200만원 활용법</div>
+      <div class="post-excerpt">ISA의 비과세 200만원 + 9.9% 분리과세 혜택을 액티브 ETF에 적용하는 법. 일반형·서민형 차이와 실전 활용 전략.</div>
+    </a>
 
-  <a href="/blog/2026-market-trends.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">시장분석</span>
-      <span>2026.06.14</span>
-      <span>·</span>
-      <span>읽는 시간 7분</span>
-    </div>
-    <div class="post-title">2026년 한국 액티브 자산운용사(타임폴리오, 삼성액티브)의 ETF 시장 트렌드 — 13조 시대의 특징과 전망</div>
-    <div class="post-excerpt">AI·반도체 쏠림, 밸류체인 ETF 등장, 디펜시브 로테이션 시그널까지. 42개 ETF 데이터로 본 2026년 시장 현황과 하반기 전망.</div>
-  </a>
+    <a href="/blog/2026-market-trends.html" class="post-card" data-cat="market">
+      <div class="post-meta"><span class="post-tag">시장·분석</span><span>2026.06.25</span><span>·</span><span>읽는 시간 7분</span></div>
+      <div class="post-title">2026년 한국 액티브 ETF 시장 트렌드 — 13조 시대의 특징과 전망</div>
+      <div class="post-excerpt">AI·반도체 쏠림, 밸류체인 ETF 등장, 디펜시브 로테이션 시그널까지. 42개 ETF 데이터로 본 2026년 시장 현황과 하반기 전망.</div>
+    </a>
 
-  <a href="/blog/how-to-read-holdings.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">실전</span>
-      <span>2026.06.14</span>
-      <span>·</span>
-      <span>읽는 시간 5분</span>
-    </div>
-    <div class="post-title">ETF 보유종목 공시 데이터 읽는 법 — 실전 가이드</div>
-    <div class="post-excerpt">비중, 수량, 평가금액 — 이 숫자들이 의미하는 바를 알면 운용역의 의도가 보입니다. 역발상 매수 시그널까지 잡는 실전 읽기법.</div>
-  </a>
+    <a href="/blog/how-to-read-holdings.html" class="post-card" data-cat="guide">
+      <div class="post-meta"><span class="post-tag">기초·가이드</span><span>2026.06.25</span><span>·</span><span>읽는 시간 5분</span></div>
+      <div class="post-title">ETF 보유종목 공시 데이터 읽는 법 — 실전 가이드</div>
+      <div class="post-excerpt">비중, 수량, 평가금액 — 이 숫자들이 의미하는 바를 알면 운용역의 의도가 보입니다. 역발상 매수 시그널까지 잡는 실전 읽기법.</div>
+    </a>
 
-  <a href="/blog/active-etf-fees.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">비용</span>
-      <span>2026.06.13</span>
-      <span>·</span>
-      <span>읽는 시간 5분</span>
-    </div>
-    <div class="post-title">액티브 ETF 보수율 완전 비교 — 비용이 수익을 갉아먹을까</div>
-    <div class="post-excerpt">패시브 대비 0.5~0.8%p 높은 보수, 20년 복리로 얼마나 차이 날까? 숨은 비용까지 포함한 실질 비용 분석과 판단 체크리스트.</div>
-  </a>
+    <a href="/blog/active-etf-fees.html" class="post-card" data-cat="cost">
+      <div class="post-meta"><span class="post-tag">기초·가이드</span><span>2026.06.25</span><span>·</span><span>읽는 시간 5분</span></div>
+      <div class="post-title">액티브 ETF 보수율 완전 비교 — 비용이 수익을 갉아먹을까</div>
+      <div class="post-excerpt">패시브 대비 0.5~0.8%p 높은 보수, 20년 복리로 얼마나 차이 날까? 숨은 비용까지 포함한 실질 비용 분석과 판단 체크리스트.</div>
+    </a>
 
-  <a href="/blog/pension-active-etf.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">연금</span>
-      <span>2026.06.13</span>
-      <span>·</span>
-      <span>읽는 시간 6분</span>
-    </div>
-    <div class="post-title">퇴직연금(IRP/DC)에서 액티브 ETF 100% 투자하는 법</div>
-    <div class="post-excerpt">위험자산 70% 한도에 막혀 고민이라면, 채권혼합형 액티브 ETF를 활용해 사실상 85%까지 주식 비중을 높이는 전략을 알려드립니다.</div>
-  </a>
+    <a href="/blog/pension-active-etf.html" class="post-card" data-cat="tax">
+      <div class="post-meta"><span class="post-tag">세금·연금</span><span>2026.06.25</span><span>·</span><span>읽는 시간 6분</span></div>
+      <div class="post-title">퇴직연금(IRP/DC)에서 액티브 ETF 100% 투자하는 법</div>
+      <div class="post-excerpt">위험자산 70% 한도에 막혀 고민이라면, 채권혼합형 액티브 ETF를 활용해 사실상 85%까지 주식 비중을 높이는 전략을 알려드립니다.</div>
+    </a>
 
-  <a href="/blog/smart-money-signal.html" class="post-card">
-    <div class="post-meta">
-      <span class="post-tag">전략</span>
-      <span>2026.06.07</span>
-      <span>·</span>
-      <span>읽는 시간 6분</span>
-    </div>
-    <div class="post-title">스마트머니 시그널 읽는 법 — 액티브 ETF 보유종목 변화에서 투자 힌트 찾기</div>
-    <div class="post-excerpt">여러 ETF에 동시 편입된 종목, 갑자기 비중이 급변한 종목, 운용사 간 의견이 엇갈리는 종목. 이 세 가지 패턴에서 시장의 방향성을 읽는 방법을 설명합니다.</div>
-  </a>
+    <a href="/blog/smart-money-signal.html" class="post-card" data-cat="market">
+      <div class="post-meta"><span class="post-tag">시장·분석</span><span>2026.06.19</span><span>·</span><span>읽는 시간 6분</span></div>
+      <div class="post-title">스마트머니 시그널 읽는 법 — 액티브 ETF 보유종목 변화에서 투자 힌트 찾기</div>
+      <div class="post-excerpt">여러 ETF에 동시 편입된 종목, 갑자기 비중이 급변한 종목, 운용사 간 의견이 엇갈리는 종목. 이 세 가지 패턴에서 시장의 방향성을 읽는 방법을 설명합니다.</div>
+    </a>
 
+    <a href="/blog/time-vs-koact.html" class="post-card" data-cat="market">
+      <div class="post-meta"><span class="post-tag">시장·분석</span><span>2026.06.19</span><span>·</span><span>읽는 시간 7분</span></div>
+      <div class="post-title">TIME vs KoAct — 두 액티브 ETF 운용사의 전략 차이를 데이터로 비교한다</div>
+      <div class="post-excerpt">같은 테마(AI, 반도체, 바이오)를 추적하면서도 보유 종목과 비중이 상당히 다릅니다. 실제 포트폴리오 데이터를 기반으로 타임폴리오와 삼성액티브의 운용 스타일 차이를 분석합니다.</div>
+    </a>
 
+    <a href="/blog/what-is-active-etf.html" class="post-card" data-cat="guide">
+      <div class="post-meta"><span class="post-tag">기초·가이드</span><span>2026.06.19</span><span>·</span><span>읽는 시간 5분</span></div>
+      <div class="post-title">액티브 ETF 완전 가이드 — 패시브와 무엇이 다르고, 왜 주목해야 하나</div>
+      <div class="post-excerpt">인덱스를 그대로 따라가는 패시브 ETF와 달리, 액티브 ETF는 운용역이 직접 종목을 고르고 비중을 조절합니다. 한국 시장에서 TIME과 KoAct가 주도하는 액티브 ETF의 구조와 장단점을 정리합니다.</div>
+    </a>
 
+  </div>
 
-
-
-
+  <div class="no-result" id="no-result">선택한 카테고리에 글이 없습니다.</div>
 </div>
 
 <footer>
   <a href="/">홈</a>
-  <a href="/briefing/">일일 브리핑</a>
   <a href="/blog/">블로그</a>
+  <a href="/briefing/">일일 브리핑</a>
   <a href="/about.html">서비스 소개</a>
   <br><br>
   © 2026 Active ETF Tracker. All rights reserved.
 </footer>
+
+<script>
+  const buttons = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('#post-list .post-card');
+  const noResult = document.getElementById('no-result');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      let visible = 0;
+      cards.forEach(card => {
+        const show = (cat === 'all' || card.dataset.cat === cat);
+        card.style.display = show ? 'block' : 'none';
+        if (show) visible++;
+      });
+      noResult.style.display = visible === 0 ? 'block' : 'none';
+    });
+  });
+</script>
 </body>
 </html>
