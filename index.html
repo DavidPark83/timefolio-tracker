@@ -715,6 +715,15 @@
           <div class="chart-empty-overlay" id="chartEmpty">추이 데이터 없음</div>
         </div>
       </div>
+      
+      <div class="modal-section">
+        <h3>📈 주식수 추이 (최근 30일)</h3>
+        <div class="chart-container">
+          <canvas id="qtyTrendChart"></canvas>
+          <div class="chart-empty-overlay" id="qtyChartEmpty">추이 데이터 없음</div>
+        </div>
+      </div>
+      
       <div class="modal-section">
         <h3>📦 이 종목을 보유한 ETF (최신일 기준)</h3>
         <div class="holding-list" id="holdingList"><div class="hl-empty">로딩 중...</div></div>
@@ -888,6 +897,7 @@
   let cmpEtfA = null;
   let cmpEtfB = null;
   let trendChartInstance = null;
+  let qtyTrendChartInstance = null;
   let hlMode = 'amount';
   let hlRegion = 'kr';   // ★ 글로벌 국내/해외 선택
 
@@ -2374,6 +2384,7 @@ function selectEtf(el) {
     if (cached && (Date.now() - cached.ts) < MODAL_CACHE_TTL) {
       renderModalHoldings(cached.holdings);
       drawTrendChart(cached.trend, name);
+      drawQtyTrendChart(cached.trend, name);
       loadStockNews(name);
       return;
     }
@@ -2396,7 +2407,7 @@ function selectEtf(el) {
       .eq("date", latest)
       .ilike("code", normCode);
     let trendQ = db.from("holdings")
-      .select("date, etf_idx, etf_name, weight")
+      .select("date, etf_idx, etf_name, weight, qty")
       .ilike("code", normCode)
       .order("date", { ascending: true })
       .limit(2000);
@@ -2417,6 +2428,7 @@ function selectEtf(el) {
 
     renderModalHoldings(holdings);
     drawTrendChart(trend, name);
+    drawQtyTrendChart(trend, name);
     loadStockNews(name);
   }
 
@@ -2496,6 +2508,59 @@ function selectEtf(el) {
     });
   }
 
+  // ★ 주식수 추이 차트 — drawTrendChart와 동일 구조, qty 기반 (단위: 주)
+  function drawQtyTrendChart(rows, securityName) {
+    const ctxEl = document.getElementById("qtyTrendChart");
+    const placeholderEl = document.getElementById("qtyChartEmpty");
+
+    if (qtyTrendChartInstance) {
+      qtyTrendChartInstance.destroy();
+      qtyTrendChartInstance = null;
+    }
+
+    if (!rows.length) {
+      if (ctxEl) ctxEl.style.display = "none";
+      if (placeholderEl) placeholderEl.classList.add("show");
+      return;
+    }
+
+    if (ctxEl) ctxEl.style.display = "block";
+    if (placeholderEl) placeholderEl.classList.remove("show");
+
+    const ctx = ctxEl.getContext("2d");
+    const byEtf = {};
+    rows.forEach(r => {
+      if (!byEtf[r.etf_idx]) byEtf[r.etf_idx] = { name: r.etf_name, points: {} };
+      byEtf[r.etf_idx].points[r.date] = r.qty;   // ← weight 대신 qty
+    });
+    const allDatesSet = new Set();
+    rows.forEach(r => allDatesSet.add(r.date));
+    const labels = [...allDatesSet].sort();
+    const recent = labels.slice(-30);
+    const datasets = Object.entries(byEtf).map(([idx, info], i) => ({
+      label: (info.name || '').replace(/^(TIME |KoAct )/g, ''),
+      data: recent.map(d => info.points[d] ?? null),
+      borderColor: COLORS[i % COLORS.length],
+      backgroundColor: COLORS[i % COLORS.length] + "20",
+      tension: 0.3, spanGaps: true, pointRadius: 2, borderWidth: 2,
+    }));
+    qtyTrendChartInstance = new Chart(ctx, {
+      type: "line",
+      data: { labels: recent, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 }, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${(ctx.parsed.y ?? 0).toLocaleString("ko-KR", { maximumFractionDigits: 0 })}주` } }
+        },
+        scales: {
+          x: { ticks: { color: "#64748b", font: { size: 10 }, maxTicksLimit: 8 }, grid: { color: "#1e2433" } },
+          y: { ticks: { color: "#64748b", callback: v => Number(v).toLocaleString("ko-KR") }, grid: { color: "#1e2433" } }
+        }
+      }
+    });
+  }
+ 
   function closeModal() {
     document.getElementById("modalOverlay").classList.remove("show");
     if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
@@ -2561,6 +2626,8 @@ function selectEtf(el) {
     // 차트/뉴스 숨기기
     const chartSection = document.querySelector('#trendChart')?.closest('.modal-section');
     if (chartSection) chartSection.style.display = 'none';
+    const qtyChartSection = document.querySelector('#qtyTrendChart')?.closest('.modal-section');
+    if (qtyChartSection) qtyChartSection.style.display = 'none';   
     const newsSection = document.querySelector('#newsLinks')?.closest('.modal-section');
     if (newsSection) newsSection.style.display = 'none';
 
