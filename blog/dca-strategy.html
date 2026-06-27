@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>액티브 ETF 적립식 투자(DCA) 완벽 가이드 | Active ETF Tracker</title>
+  <meta name="description" content="적립식 투자(DCA)로 액티브 ETF에 투자하는 방법. 거치식과의 비교, 변동성 활용, 자동화 설정, 리밸런싱까지 실전 전략을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/dca-strategy.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">투자전략</span><span>2026.06.25</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>액티브 ETF 적립식 투자(DCA) 완벽 가이드</h1>
+
+  <p>"언제 사야 할까?"는 모든 투자자의 영원한 고민입니다. 적립식 투자(DCA, Dollar Cost Averaging)는 이 고민을 줄여주는 강력한 전략입니다. 매달 일정 금액을 꾸준히 투자해 매수 시점을 분산하는 방식으로, 변동성이 큰 액티브 ETF에 특히 적합합니다.</p>
+
+  <h2>DCA란 무엇인가</h2>
+
+  <p>적립식 투자는 정해진 주기(매월, 매주)에 정해진 금액을 투자하는 방법입니다. 가격이 높을 때는 적은 수량을, 가격이 낮을 때는 많은 수량을 자동으로 매수하게 되어, 평균 매입 단가가 낮아지는 효과가 있습니다.</p>
+
+  <div class="info-box">
+    <strong>💡 DCA의 평균 단가 효과:</strong><br><br>
+    매달 30만원씩 ETF를 산다고 가정합시다.<br>
+    • 1월 (10,000원) → 30주<br>
+    • 2월 (6,000원) → 50주<br>
+    • 3월 (12,000원) → 25주<br><br>
+    총 90만원으로 105주 매수, 평균 단가는 8,571원. 단순 평균가(9,333원)보다 낮습니다. 가격이 쌀 때 더 많이 사기 때문입니다.
+  </div>
+
+  <h2>거치식 vs 적립식</h2>
+
+  <table class="ct">
+    <thead><tr><th>구분</th><th>거치식 (목돈)</th><th>적립식 (DCA)</th></tr></thead>
+    <tbody>
+      <tr><td>투자 방식</td><td>한 번에 전액 투자</td><td>나눠서 정기 투자</td></tr>
+      <tr><td>장점</td><td>상승장에서 수익 극대화</td><td>변동성 위험 분산, 심리적 안정</td></tr>
+      <tr><td>단점</td><td>고점 매수 위험</td><td>상승장에서 기회비용</td></tr>
+      <tr><td>적합한 상황</td><td>장기 우상향 확신</td><td>변동성 크거나 시점 불확실</td></tr>
+    </tbody>
+  </table>
+
+  <p>통계적으로 장기 우상향 자산은 거치식이 유리한 경우가 많지만, 액티브 ETF처럼 변동성이 큰 자산은 적립식이 심리적 부담을 줄이면서 안정적으로 자산을 쌓을 수 있습니다.</p>
+
+  <h2>액티브 ETF에 DCA가 적합한 이유</h2>
+
+  <ul>
+    <li><strong>높은 변동성:</strong> AI·반도체 등 테마형 액티브 ETF는 변동성이 큽니다. DCA는 이 변동성을 오히려 기회로 활용합니다.</li>
+    <li><strong>장기 성장 테마:</strong> 액티브 ETF는 대부분 장기 성장 테마(AI, 바이오 등)를 추종하므로, 시간을 두고 모아가기에 적합합니다.</li>
+    <li><strong>운용역의 종목 관리:</strong> 개별 종목 DCA와 달리, 액티브 ETF는 운용역이 부실 종목을 걸러주므로 개별 기업 리스크가 줄어듭니다.</li>
+  </ul>
+
+  <h2>실전 DCA 설정 방법</h2>
+
+  <h3>1단계: 투자 금액과 주기 결정</h3>
+  <p>월 소득의 일정 비율(예: 10~20%)을 매월 같은 날 투자하도록 정합니다. 급여일 다음 날로 설정하면 "선저축 후지출" 습관이 만들어집니다.</p>
+
+  <h3>2단계: ETF 선택</h3>
+  <p>장기 보유할 핵심 테마 ETF를 1~3개 선택합니다. 너무 많은 ETF에 분산하면 관리가 어렵습니다. 예를 들어 "글로벌AI + 미국나스닥100 + Korea배당" 조합으로 성장과 안정을 균형 있게 가져갈 수 있습니다.</p>
+
+  <h3>3단계: 자동 매수 설정</h3>
+  <p>증권사 앱의 "ETF 자동 투자" 또는 "적금식 매수" 기능을 활용하면 매달 자동으로 매수됩니다. 수동으로 사면 "이번 달은 비싸니까 다음에" 하는 유혹에 빠지기 쉬우므로 자동화를 권장합니다.</p>
+
+  <h3>4단계: 정기 리밸런싱</h3>
+  <p>분기 또는 반기마다 포트폴리오 비중을 점검합니다. 특정 ETF가 너무 커졌다면 비중을 조절합니다.</p>
+
+  <h2>DCA + 추가 매수 전략</h2>
+
+  <p>기본 DCA에 더해, 시장이 크게 하락할 때 추가 매수하는 전략을 결합할 수 있습니다. 예를 들어 보유 ETF가 고점 대비 -15% 하락하면 그 달에 평소의 2배를 투자하는 식입니다. 단, 이 전략은 충분한 여유 자금이 있을 때만 사용해야 하며, 무리한 추가 매수는 오히려 위험을 키울 수 있습니다.</p>
+
+  <div class="info-box">
+    <strong>💡 추가 매수 시점 판단:</strong><br><br>
+    Active ETF Tracker의 보유종목 데이터를 활용하면, 운용역이 하락장에서 오히려 매수를 늘리는 "역발상 매수" 종목을 확인할 수 있습니다. 프로들이 저가 매수에 나서는 시점은 개인 투자자에게도 참고가 됩니다.
+  </div>
+
+  <h2>DCA의 핵심은 꾸준함</h2>
+
+  <p>적립식 투자의 가장 큰 적은 시장이 아니라 "중단"입니다. 하락장에서 무서워서 멈추면 가장 싸게 살 기회를 놓치고, 상승장에서 욕심내서 한 번에 넣으면 고점 매수 위험이 커집니다. 정해진 규칙을 기계적으로 지키는 것이 DCA의 핵심입니다.</p>
+
+  <p>매달 자동으로 투자하되, 보유종목 변화는 정기적으로 확인하면서 자신이 투자하는 ETF가 어떻게 운용되고 있는지 이해하는 것이 장기 성공의 열쇠입니다.</p>
+
+  <div class="cta"><a href="/">적립할 액티브 ETF 살펴보기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/semiconductor-etf.html">← 반도체 ETF 심화</a>
+    <a href="/blog/defense-shipbuilding-etf.html">다음: K-방산·조선 분석 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>
