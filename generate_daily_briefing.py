@@ -462,7 +462,7 @@ def generate_html(date, prev_date, data):
     return html, title, day_name
 
 
-def update_index(date, title, day_name):
+def update_index(date, title, day_name, time_aum=0, koact_aum=0):
     """briefing/index.html에 새 카드 삽입"""
     index_path = BRIEFING_DIR / "index.html"
     if not index_path.exists():
@@ -539,6 +539,22 @@ def update_index(date, title, day_name):
                 1
             )
 
+    # AUM 자동 갱신
+    if time_aum and koact_aum:
+        import re
+        time_str = f'{time_aum / 1e12:.1f}조'
+        koact_str = f'{koact_aum / 1e12:.1f}조'
+        content = re.sub(
+            r'(<strong>TIME</strong>\s+)[\d.]+조(\s+AUM)',
+            rf'\g<1>{time_str}\g<2>',
+            content
+        )
+        content = re.sub(
+            r'(<strong>KoAct</strong>\s+)[\d.]+조(\s+AUM)',
+            rf'\g<1>{koact_str}\g<2>',
+            content
+        )
+
     index_path.write_text(content, encoding="utf-8")
     print(f"✅ index.html에 {date} 카드 추가 완료")
 
@@ -606,7 +622,7 @@ def main():
     print(f"✅ {output_path} 생성 완료")
 
     # 6. index.html 업데이트
-    update_index(base_date, title, day_name)
+    update_index(base_date, title, day_name, data['time_aum'], data['koact_aum'])
 
     # 7. git push
     git_push(base_date)
