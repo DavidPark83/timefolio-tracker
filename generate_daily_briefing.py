@@ -125,7 +125,7 @@ def wait_for_both_providers(max_wait_minutes=60, poll_interval=120, target_date=
 def fetch_holdings(date):
     """특정 날짜의 전체 보유종목 조회"""
     return supabase_get("holdings", {
-        "select": "etf_idx,etf_name,code,name,weight,value,qty,provider",
+        "select": "etf_idx,etf_name,code,name,weight,value,holding_amount,qty,provider",
         "date": f"eq.{date}",
         "order": "weight.desc"
     })
@@ -187,7 +187,7 @@ def analyze(cur_rows, prev_rows, daily_rows):
         if key not in stock_map:
             stock_map[key] = {"name": r["name"], "code": r["code"], "etfs": set(), "value": 0, "providers": set()}
         stock_map[key]["etfs"].add(r.get("etf_name", ""))
-        stock_map[key]["value"] += r.get("value", 0) or 0
+        stock_map[key]["value"] += r.get("holding_amount", 0) or 0
         stock_map[key]["providers"].add(r.get("provider", ""))
 
     smart_money = sorted(
@@ -515,16 +515,13 @@ def update_index(date, title, day_name):
 
     # 월 그룹 존재 여부 확인
     if month_label in content:
-        # 기존 월 그룹에 삽입 (BRIEFING_INSERT_POINT 또는 월 라벨 다음)
-        marker = "<!-- BRIEFING_INSERT_POINT -->"
-        if marker in content:
-            content = content.replace(marker, marker + new_card)
-        else:
-            # 월 라벨 다음 줄에 삽입
-            content = content.replace(
-                f'<div class="month-label">{month_label}</div>',
-                f'<div class="month-label">{month_label}</div>{new_card}'
-            )
+        # 해당 월의 month-label 바로 뒤에 삽입
+        label_tag = f'<div class="month-label">{month_label}</div>'
+        content = content.replace(
+            label_tag,
+            label_tag + new_card,
+            1
+        )
     else:
         # 새 월 그룹 생성
         new_month = f"""
