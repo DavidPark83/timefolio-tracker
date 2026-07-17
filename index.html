@@ -387,6 +387,10 @@
     .bottom-nav .nav-icon { font-size: 20px; line-height: 1; }
     /* 모바일: 하단 네비 숨김, 헤더 링크 표시 */
     .header-links { display: none; }
+    .sns-row { display: flex; gap: 12px; margin-top: 8px; }
+    .sns-row a { color: #64748b; transition: color 0.15s; display: flex; align-items: center; }
+    .sns-row a:hover { color: #00D4AA; }
+    .sns-row svg { width: 18px; height: 18px; }
     @media (max-width: 768px) {
       .bottom-nav { display: none; }
       .header-links { display: block; margin-top: 6px; }
@@ -421,6 +425,11 @@
     <div class="header-title">
       <h1>Active ETF Tracker</h1>
       <p>액티브 운용사의 ETF 구성종목 변화 추적 (평일 오전 8시 30분 업데이트)</p>
+      <div class="sns-row">
+        <a href="https://www.instagram.com/active.etf.tracker/" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line></svg>
+        </a>
+      </div>
       <div class="header-links">
         <a href="/briefing/">📊 브리핑</a>
         <a href="/blog/">📝 블로그</a>
