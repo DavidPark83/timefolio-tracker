@@ -4023,13 +4023,15 @@ function selectEtf(el) {
     rows.forEach(r => allDatesSet.add(r.date));
     const labels = [...allDatesSet].sort();
     const recent = labels.slice(-30);
-    const datasets = Object.entries(byEtf).map(([idx, info], i) => ({
-      label: (info.name || '').replace(/^(TIME |KoAct )/g, ''),
-      data: recent.map(d => info.points[d] ?? null),
-      borderColor: COLORS[i % COLORS.length],
-      backgroundColor: COLORS[i % COLORS.length] + "20",
-      tension: 0.3, spanGaps: true, pointRadius: 2, borderWidth: 2,
-    }));
+    const datasets = Object.entries(byEtf)
+      .filter(([idx, info]) => recent.some(d => info.points[d] != null))   // ★ 최근 30일 내 실보유 없으면 제외
+      .map(([idx, info], i) => ({
+        label: (info.name || '').replace(/^(TIME |KoAct )/g, ''),
+        data: recent.map(d => info.points[d] ?? null),
+        borderColor: COLORS[i % COLORS.length],
+        backgroundColor: COLORS[i % COLORS.length] + "20",
+        tension: 0.3, spanGaps: true, pointRadius: 2, borderWidth: 2,
+      }));
     trendChartInstance = new Chart(ctx, {
       type: "line",
       data: { labels: recent, datasets },
@@ -4076,7 +4078,9 @@ function selectEtf(el) {
     rows.forEach(r => allDatesSet.add(r.date));
     const labels = [...allDatesSet].sort();
     const recent = labels.slice(-30);
-    const datasets = Object.entries(byEtf).map(([idx, info], i) => ({
+    const datasets = Object.entries(byEtf)
+      .filter(([idx, info]) => recent.some(d => info.points[d] != null))
+      .map(([idx, info], i) => ({
       label: (info.name || '').replace(/^(TIME |KoAct )/g, ''),
       data: recent.map(d => info.points[d] ?? null),
       borderColor: COLORS[i % COLORS.length],
