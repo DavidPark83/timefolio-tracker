@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>신규 상장 액티브 ETF 체크리스트 — 상장 첫 달 뭘 봐야 하나 | Active ETF Tracker</title>
+  <meta name="description" content="새로 상장한 액티브 ETF에 투자하기 전 확인해야 할 체크리스트. AUM 초기 성장 속도, 괴리율, 초기 보유종목 구성까지 실전 판단 기준을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/new-etf-checklist.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .warn{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .warn strong{color:#fbbf24}
+    .checklist{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:20px 0}
+    .checklist li{list-style:none;padding-left:28px;position:relative;margin-bottom:12px;font-size:14.5px}
+    .checklist li::before{content:"☐";position:absolute;left:0;color:var(--accent);font-size:18px}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">기초·가이드</span><span>2026.07.18</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>신규 상장 액티브 ETF 체크리스트 — 상장 첫 달 뭘 봐야 하나</h1>
+
+  <p>TIME과 KoAct는 분기마다 새로운 테마의 액티브 ETF를 출시합니다. "AI 로봇", "양자컴퓨팅"처럼 화제성 있는 이름을 달고 나오면 투자자의 관심이 쏠리지만, 신규 상장 ETF는 검증되지 않은 리스크도 함께 가지고 있습니다. 이 글에서는 신규 ETF 투자 전 확인해야 할 체크리스트를 정리합니다.</p>
+
+  <h2>왜 신규 ETF는 다르게 봐야 하나</h2>
+
+  <p>기존 ETF는 최소 몇 개월에서 몇 년치의 운용 트랙레코드가 있어 판단 근거가 풍부합니다. 반면 신규 ETF는 상장 직후 데이터가 거의 없어, 다른 기준으로 접근해야 합니다.</p>
+
+  <h2>상장 첫 달 체크리스트</h2>
+
+  <div class="checklist">
+    <ul>
+      <li><strong>초기 AUM과 성장 속도:</strong> 상장 직후 AUM이 너무 작으면(50억 미만) 유동성 리스크가 있습니다. 첫 2주간 AUM이 꾸준히 증가하는지 확인하세요.</li>
+      <li><strong>괴리율 안정성:</strong> 신규 ETF는 유동성이 낮아 괴리율이 크게 벌어지기 쉽습니다. 상장 후 1~2주간 괴리율이 ±1% 이내로 안정화되는지 지켜보세요.</li>
+      <li><strong>초기 보유종목 구성:</strong> ETF명이 표방하는 테마와 실제 보유종목이 일치하는지 확인합니다. "AI 로봇" ETF인데 관련성 낮은 종목이 많다면 주의가 필요합니다.</li>
+      <li><strong>거래대금:</strong> 일평균 거래대금이 너무 적으면 원하는 시점에 매도하기 어려울 수 있습니다.</li>
+      <li><strong>운용역 이력:</strong> 같은 운용사의 기존 ETF 성과를 참고해, 해당 운용팀의 신뢰도를 가늠합니다.</li>
+      <li><strong>보수 수준:</strong> 신규 테마 ETF는 보수가 기존 ETF보다 높게 책정되는 경우가 많습니다. 총보수를 확인하세요.</li>
+    </ul>
+  </div>
+
+  <h2>신규 ETF 투자의 함정</h2>
+
+  <h3>함정 1: 테마 유행 막차 타기</h3>
+  <p>화제성 테마(양자컴퓨팅, 휴머노이드 등)로 상장하는 ETF는 이미 관련 종목들의 주가가 많이 오른 상태에서 출시되는 경우가 있습니다. 테마가 뜨거울 때 상장한다는 것 자체가 "이미 늦었을 수 있다"는 신호일 수 있습니다.</p>
+
+  <h3>함정 2: 얇은 유동성으로 인한 매도 어려움</h3>
+  <p>AUM이 작은 상태에서 급하게 매도하려 하면, 원하는 가격에 팔기 어려울 수 있습니다. 특히 시장이 급락하는 시기에는 신규·소형 ETF일수록 유동성 리스크가 커집니다.</p>
+
+  <h3>함정 3: 트랙레코드 부재</h3>
+  <p>"이 운용역이 정말 이 테마를 잘 아는가"를 판단할 데이터가 없습니다. 화려한 마케팅 자료만 보고 투자하면, 실제 운용 역량은 검증되지 않은 상태로 베팅하는 것입니다.</p>
+
+  <div class="warn">
+    <strong>⚠️ 권장 접근법</strong><br><br>
+    신규 ETF에 관심이 있다면, 상장 직후 전액 투자하기보다 소액으로 시작해 최소 1~2개월 보유종목 변화와 성과를 지켜본 후 비중을 늘리는 것을 고려하세요. "먼저 지켜보고, 검증되면 늘린다"는 원칙이 신규 상품 투자의 기본입니다.
+  </div>
+
+  <h2>신규 ETF vs 기존 ETF, 언제 신규를 선택할까</h2>
+
+  <table class="ct">
+    <thead><tr><th>상황</th><th>추천</th></tr></thead>
+    <tbody>
+      <tr><td>이미 성장 중인 대중적 테마 (AI, 반도체)</td><td>기존 검증된 ETF</td></tr>
+      <tr><td>아직 초기 단계인 신흥 테마 (양자컴퓨팅 등)</td><td>신규 ETF 소액 투자 고려</td></tr>
+      <tr><td>안정적 장기 보유 목적</td><td>기존 검증된 ETF</td></tr>
+      <tr><td>공격적 성장 베팅 (포트폴리오 일부)</td><td>신규 ETF 고려 가능</td></tr>
+    </tbody>
+  </table>
+
+  <h2>상장 후 첫 3개월 관찰 포인트</h2>
+
+  <ol>
+    <li><strong>1개월차:</strong> 초기 보유종목 구성과 AUM 성장 속도 확인</li>
+    <li><strong>2개월차:</strong> 괴리율 안정화 여부, 거래량 추이 확인</li>
+    <li><strong>3개월차:</strong> 벤치마크 대비 초과 수익 여부, 종목 교체 빈도 확인</li>
+  </ol>
+
+  <p>신규 ETF는 새로운 기회일 수 있지만, 동시에 검증되지 않은 리스크이기도 합니다. 화려한 테마명에 휩쓸리기보다, 보유종목과 초기 운용 데이터를 직접 확인하고 신중하게 접근하는 것이 중요합니다.</p>
+
+  <div class="cta"><a href="/">신규 ETF 보유종목 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/sector-rotation.html">← 섹터별 자금 흐름</a>
+    <a href="/blog/etf-by-generation.html">다음: 세대별 투자법 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stealth Accumulation 포착법 — 조용히 사들이는 종목 찾기 | Active ETF Tracker</title>
+  <meta name="description" content="주가는 빠졌는데 운용역이 오히려 수량을 늘리는 '조용한 매집'. 실제 보유종목 데이터로 스텔스 어큐뮬레이션 패턴을 찾는 법을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/stealth-accumulation.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .down{color:var(--accent-red,#f87171)} .up{color:#10b981}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">종목·테마</span><span>2026.07.18</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>Stealth Accumulation 포착법 — 조용히 사들이는 종목 찾기</h1>
+
+  <p>주가가 떨어지는 종목을 보면 대부분의 투자자는 불안해합니다. 하지만 액티브 ETF 운용역 중 일부는 주가 하락을 오히려 매수 기회로 삼아 조용히 수량을 늘립니다. 이 글에서는 이런 "스텔스 어큐뮬레이션(Stealth Accumulation)" 패턴을 실제 보유종목 데이터에서 어떻게 찾아내는지 설명합니다.</p>
+
+  <h2>스텔스 어큐뮬레이션이란</h2>
+
+  <p>이름 그대로 "조용한 매집"입니다. 보유 종목의 <strong>평가금액(비중)은 줄었는데, 실제 보유 수량은 오히려 늘어난</strong> 상태를 말합니다. 주가가 빠지는 동안 운용역이 뉴스에 나오지 않게, 티 안 나게 물량을 쌓는 패턴입니다.</p>
+
+  <div class="info-box">
+    <strong>💡 왜 "조용히"인가:</strong><br><br>
+    비중(평가금액) 기준으로 보면 이 종목은 오히려 줄어든 것처럼 보입니다. 대부분의 투자자가 비중 증가만 보고 매수 시그널을 찾기 때문에, 이 패턴은 눈에 잘 띄지 않습니다. 그러나 수량 데이터를 함께 보면 운용역의 진짜 의도가 드러납니다.
+  </div>
+
+  <h2>실제 데이터에서 포착된 사례</h2>
+
+  <p>최근 일주일 보유종목 데이터를 비교하면, 다음과 같은 스텔스 어큐뮬레이션 패턴이 관찰되었습니다.</p>
+
+  <table class="ct">
+    <thead><tr><th>종목</th><th>ETF</th><th>비중 변화</th><th>수량 변화</th></tr></thead>
+    <tbody>
+      <tr><td>디앤디파마텍</td><td>KoAct 바이오헬스케어</td><td class="down">7.83% → 6.94%</td><td class="up">+9.4%</td></tr>
+      <tr><td>에스티팜</td><td>KoAct 바이오헬스케어</td><td class="down">7.76% → 7.51%</td><td class="up">+9.4%</td></tr>
+      <tr><td>오스코텍</td><td>KoAct 바이오헬스케어</td><td class="down">3.38% → 3.20%</td><td class="up">+9.4%</td></tr>
+      <tr><td>Micron Technology</td><td>KoAct AI메모리반도체</td><td class="down">13.36% → 13.25%</td><td class="up">+7.8%</td></tr>
+      <tr><td>서진시스템</td><td>KoAct 수소전력ESS인프라</td><td class="down">11.19% → 10.95%</td><td class="up">+5.3%</td></tr>
+    </tbody>
+  </table>
+
+  <p>흥미로운 점은 바이오헬스케어 ETF에서 디앤디파마텍, 에스티팜, 오스코텍 세 종목이 동시에 같은 패턴을 보였다는 것입니다. 개별 종목의 우연이 아니라, 운용역이 바이오 섹터 전반의 조정을 저가 매수 기회로 판단하고 포트폴리오 전체에 걸쳐 물량을 늘린 것으로 해석할 수 있습니다.</p>
+
+  <h2>왜 이 패턴이 중요한가</h2>
+
+  <p>일반적인 "비중 증가 TOP" 리스트만 보면 이런 종목은 걸러지지 않습니다. 오히려 "비중 감소" 리스트에 나타나기 때문에, 표면적으로는 매도 시그널처럼 보입니다. 하지만 실제로는 정반대입니다.</p>
+
+  <ul>
+    <li><strong>단순 비중 감소:</strong> 주가 하락 + 수량 동일 → 운용역의 액션 없음, 시장에 그냥 노출된 상태</li>
+    <li><strong>스텔스 어큐뮬레이션:</strong> 주가 하락 + 수량 증가 → 운용역이 적극적으로 저가 매수, 강한 확신 시그널</li>
+  </ul>
+
+  <p>이 차이를 구분하지 못하면, 정작 프로들이 사모으고 있는 종목을 "빠지고 있으니 별로인가 보다"라고 오해하고 지나칠 수 있습니다.</p>
+
+  <h2>스텔스 어큐뮬레이션 vs 손절 지연의 구분</h2>
+
+  <p>주의할 점도 있습니다. 수량이 늘었다고 무조건 긍정적 시그널은 아닙니다. 다음 기준으로 구분해야 합니다.</p>
+
+  <ol>
+    <li><strong>증가 폭:</strong> 수량이 5% 이상 늘었다면 의도적 매수 가능성이 높습니다. 1~2% 수준의 미세한 변화는 리밸런싱 노이즈일 수 있습니다.</li>
+    <li><strong>지속성:</strong> 하루만 늘었다가 다음날 다시 줄면 일시적 조정입니다. 3일 이상 연속으로 수량이 증가하는지 확인하세요.</li>
+    <li><strong>동시성:</strong> 같은 ETF 내 여러 종목이 동시에 이 패턴을 보이면(위 바이오 사례처럼), 섹터 전체에 대한 운용역의 판단일 가능성이 큽니다.</li>
+    <li><strong>낙폭 대비 매수 강도:</strong> 주가가 20% 빠졌는데 수량이 2%만 늘었다면 소극적 대응입니다. 낙폭 대비 매수 강도가 클수록 강한 시그널입니다.</li>
+  </ol>
+
+  <h2>실전 활용법</h2>
+
+  <p>스텔스 어큐뮬레이션 종목을 발견했다면, 다음 순서로 검증하세요.</p>
+
+  <ol>
+    <li>해당 종목의 하락 이유를 확인합니다 (실적 부진인지, 섹터 전반의 조정인지, 일시적 이슈인지)</li>
+    <li>다른 액티브 ETF에서도 비슷한 매집이 있는지 비교합니다</li>
+    <li>운용사가 KoAct인지 TIME인지 확인해, 어느 쪽의 판단인지 파악합니다</li>
+    <li>1~2주간 추이를 지켜보며 매집이 계속되는지, 멈추는지 확인합니다</li>
+  </ol>
+
+  <p>이 패턴은 하루 데이터만으로 판단하기보다, 최소 5거래일 이상의 흐름을 함께 봐야 신뢰도가 높아집니다. Active ETF Tracker에서 종목별 비중·수량 추이를 함께 확인하면 이런 패턴을 놓치지 않을 수 있습니다.</p>
+
+  <div class="cta"><a href="/">보유종목 수량 변화 직접 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/smart-money-signal.html">← 스마트머니 시그널</a>
+    <a href="/blog/etf-spread-signal.html">다음: ETF 스프레드 시그널 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 특정 종목에 대한 투자 권유가 아닙니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>섹터별 자금 흐름 — 1,000개 종목 데이터로 본 로테이션 | Active ETF Tracker</title>
+  <meta name="description" content="42개 액티브 ETF, 1,000개 이상 종목의 섹터 분류 데이터로 본 자금 흐름. 어느 섹터에서 자금이 빠지고, 어느 섹터로 몰리는지 분석합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/sector-rotation.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .up{color:#10b981} .down{color:#f87171}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">시장·분석</span><span>2026.07.18</span><span>·</span><span>읽는 시간 7분</span></div>
+
+  <h1>섹터별 자금 흐름 — 1,000개 종목 데이터로 본 로테이션</h1>
+
+  <p>개별 종목의 움직임만 보면 숲을 놓치기 쉽습니다. 42개 액티브 ETF가 보유한 1,000개 이상의 종목을 업종별로 묶어서 보면, 운용역들이 어느 섹터에서 발을 빼고 어느 섹터로 옮겨가는지 큰 그림이 보입니다. 이 글에서는 섹터 단위 자금 흐름을 읽는 방법을 정리합니다.</p>
+
+  <h2>왜 섹터 단위로 봐야 하나</h2>
+
+  <p>개별 종목의 비중 변화는 그 종목만의 이슈일 수도 있고, 섹터 전체의 흐름일 수도 있습니다. 이를 구분하려면 같은 업종에 속한 여러 종목을 묶어서 합산 자금 흐름을 봐야 합니다.</p>
+
+  <div class="info-box">
+    <strong>💡 개별 종목 vs 섹터 분석의 차이:</strong><br><br>
+    A라는 반도체 종목의 비중이 줄었다면, "A 기업에 문제가 있나?"라고 생각하기 쉽습니다. 하지만 같은 시기에 반도체 섹터 전체의 자금이 줄고 있다면, A 기업의 개별 문제가 아니라 "운용역들이 반도체 섹터 전반에 대해 보수적으로 돌아섰다"는 훨씬 큰 시그널입니다.
+  </div>
+
+  <h2>최근 관찰된 섹터 로테이션 패턴</h2>
+
+  <p>최근 일주일간(6/18~6/25) 42개 ETF의 업종별 보유 비중 변화를 분석한 결과, 다음과 같은 흐름이 관찰되었습니다.</p>
+
+  <table class="ct">
+    <thead><tr><th>섹터</th><th>흐름</th><th>해석</th></tr></thead>
+    <tbody>
+      <tr><td>지주·건설</td><td class="up">자금 유입 확대</td><td>밸류업·저평가 테마 재조명</td></tr>
+      <tr><td>금융·보험</td><td>보합</td><td>안정적 유지, 큰 변화 없음</td></tr>
+      <tr><td>의약품·바이오</td><td>소폭 감소</td><td>단, 개별 종목 매집은 지속 (스텔스 패턴)</td></tr>
+      <tr><td>전기전자</td><td>소폭 감소</td><td>대형주 중심 차익실현 가능성</td></tr>
+      <tr><td>소비재·유통</td><td class="down">감소</td><td>내수 소비 둔화 우려 반영</td></tr>
+      <tr><td>2차전지·소재</td><td class="down">뚜렷한 감소</td><td>전기차 성장 둔화 우려 지속</td></tr>
+      <tr><td>에너지·전력</td><td class="down">감소</td><td>단기 차익실현 흐름</td></tr>
+      <tr><td>반도체·전자부품</td><td class="down">감소</td><td>일부 대형주 위주 재편</td></tr>
+      <tr><td>운수장비</td><td class="down">뚜렷한 감소</td><td>자동차·조선 업종 조정</td></tr>
+    </tbody>
+  </table>
+
+  <p>표면적으로는 대부분의 섹터에서 자금이 빠지는 것처럼 보이지만, 이는 특정 시점의 스냅샷 비교입니다. 중요한 것은 "상대적으로 어느 섹터가 덜 빠졌는가"와 "어느 섹터로 자금이 재배치되는가"를 함께 보는 것입니다.</p>
+
+  <h2>섹터 로테이션과 개별 종목 시그널의 결합</h2>
+
+  <p>앞서 다룬 스텔스 어큐뮬레이션 사례를 떠올려 보면, 바이오헬스케어 섹터에서는 표면적 자금 흐름이 소폭 감소했지만, 개별 종목(디앤디파마텍, 에스티팜, 오스코텍)에서는 오히려 수량을 늘리는 매집이 관찰되었습니다.</p>
+
+  <p>이는 섹터 단위 데이터만 보면 놓치는 지점입니다. "섹터 전체는 조정받고 있지만, 그 안에서 운용역이 선별적으로 특정 종목만 매집한다"는 이중 시그널을 읽으려면 섹터 분석과 종목 분석을 함께 활용해야 합니다.</p>
+
+  <h2>섹터 로테이션 읽는 3단계</h2>
+
+  <ol>
+    <li><strong>1단계 - 섹터 전체 흐름 파악:</strong> 어느 섹터에서 자금이 빠지고, 어느 섹터로 유입되는지 전체 그림을 봅니다.</li>
+    <li><strong>2단계 - 섹터 내 종목별 편차 확인:</strong> 섹터가 감소해도 그 안의 개별 종목까지 모두 감소하는 것은 아닙니다. 오히려 매집되는 종목이 있는지 확인합니다.</li>
+    <li><strong>3단계 - 운용사별 시각 비교:</strong> TIME과 KoAct가 같은 섹터에 대해 같은 판단을 하는지, 다른 판단을 하는지 비교합니다.</li>
+  </ol>
+
+  <h2>섹터 로테이션이 주는 투자 힌트</h2>
+
+  <p>섹터 자금 흐름은 단기 매매 신호라기보다, 중장기 포트폴리오 배분을 결정할 때 참고할 배경 정보입니다.</p>
+
+  <ul>
+    <li>특정 섹터에 자금이 지속적으로 유입되면, 신규 투자 시 해당 섹터 비중을 고려할 근거가 됩니다.</li>
+    <li>여러 ETF에서 동시에 특정 섹터를 줄이고 있다면, 그 섹터에 대한 신규 투자는 신중해야 합니다.</li>
+    <li>섹터가 조정받는 와중에도 개별 종목 매집이 있다면, 그 종목은 섹터 반등 시 더 크게 움직일 가능성이 있습니다.</li>
+  </ul>
+
+  <p>1,000개가 넘는 종목을 개별적으로 다 확인하기는 현실적으로 어렵습니다. 섹터 단위로 압축해서 큰 흐름을 먼저 파악하고, 관심 있는 섹터 안에서 개별 종목의 세부 시그널을 확인하는 순서로 접근하는 것이 효율적입니다.</p>
+
+  <div class="cta"><a href="/">섹터별 보유 현황 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/etf-spread-signal.html">← ETF 스프레드 시그널</a>
+    <a href="/blog/new-etf-checklist.html">다음: 신규 상장 ETF 체크리스트 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>
