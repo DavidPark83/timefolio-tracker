@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>포트폴리오 리밸런싱 주기 — 언제, 얼마나 자주 조정해야 할까 | Active ETF Tracker</title>
+  <meta name="description" content="액티브 ETF 포트폴리오의 적정 리밸런싱 주기와 방법. 시간 기반·비중 이탈 기반 리밸런싱의 장단점과 실전 적용법을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/rebalancing-frequency.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">투자전략</span><span>2026.07.18</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>포트폴리오 리밸런싱 주기 — 언제, 얼마나 자주 조정해야 할까</h1>
+
+  <p>여러 액티브 ETF에 분산 투자하다 보면, 시간이 지나면서 처음 정한 비중이 흐트러집니다. 잘나가는 ETF는 비중이 커지고, 부진한 ETF는 비중이 줄어듭니다. 이를 원래 계획한 비율로 되돌리는 작업이 리밸런싱입니다. 이 글에서는 적정 리밸런싱 주기와 방법을 정리합니다.</p>
+
+  <h2>리밸런싱이 필요한 이유</h2>
+
+  <p>리밸런싱을 하지 않으면 포트폴리오가 의도치 않게 특정 자산에 쏠립니다. 예를 들어 AI 테마 ETF 30%, 배당 ETF 70%로 시작했는데, AI가 크게 오르면 6개월 후 AI 50%, 배당 50%가 될 수 있습니다. 이는 처음 설계했던 위험 수준을 벗어난 상태입니다.</p>
+
+  <div class="info-box">
+    <strong>💡 리밸런싱의 이중 효과:</strong><br><br>
+    리밸런싱은 위험 관리 효과뿐 아니라, 기계적으로 "오른 자산을 팔고 내린 자산을 사는" 효과가 있습니다. 이는 저가 매수·고가 매도를 자동으로 실행하는 셈이라, 장기적으로 수익률을 개선하는 경우가 많습니다.
+  </div>
+
+  <h2>리밸런싱 방식 두 가지</h2>
+
+  <h3>1. 시간 기반 리밸런싱</h3>
+  <p>분기, 반기, 연 1회처럼 정해진 주기마다 리밸런싱합니다. 단순하고 실행하기 쉬우며, 감정에 휘둘리지 않는다는 장점이 있습니다.</p>
+
+  <table class="ct">
+    <thead><tr><th>주기</th><th>장점</th><th>단점</th></tr></thead>
+    <tbody>
+      <tr><td>분기(3개월)</td><td>변화에 빠르게 대응</td><td>매매 비용·세금 부담 증가</td></tr>
+      <tr><td>반기(6개월)</td><td>비용과 대응력의 균형</td><td>급격한 시장 변화엔 다소 늦음</td></tr>
+      <tr><td>연 1회</td><td>비용 최소화, 장기 투자에 적합</td><td>큰 쏠림이 오래 방치될 수 있음</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2. 비중 이탈 기반 리밸런싱</h3>
+  <p>목표 비중에서 일정 % 이상 벗어나면 리밸런싱하는 방식입니다. 예를 들어 "목표 비중에서 ±5%p 이탈 시 리밸런싱"으로 정하면, 시장이 급변할 때만 대응하고 평상시엔 불필요한 매매를 줄일 수 있습니다.</p>
+
+  <h2>액티브 ETF 포트폴리오에서 주의할 점</h2>
+
+  <p>액티브 ETF는 패시브보다 변동성이 크기 때문에, 리밸런싱 주기를 너무 짧게 잡으면 오히려 운용역의 판단이 성과로 이어지기 전에 매도하게 되는 역효과가 날 수 있습니다.</p>
+
+  <ul>
+    <li><strong>핵심 성장 테마 ETF:</strong> 최소 6개월~1년 단위로 리밸런싱해 운용역의 전략이 실현될 시간을 줍니다.</li>
+    <li><strong>배당·안정형 ETF:</strong> 상대적으로 변동성이 적어 연 1회 리밸런싱으로 충분합니다.</li>
+    <li><strong>신규 상장 ETF:</strong> 최소 3개월은 지켜본 후 리밸런싱 대상에 포함하는 것을 권장합니다.</li>
+  </ul>
+
+  <h2>리밸런싱 시 비용 고려하기</h2>
+
+  <p>일반 계좌에서는 리밸런싱을 위한 매도 시 매매차익에 세금이 부과됩니다. ISA나 연금계좌에서는 이런 부담이 적으므로, 리밸런싱이 잦은 전략은 절세 계좌에 배치하는 것이 유리합니다.</p>
+
+  <h2>실전 리밸런싱 체크리스트</h2>
+
+  <ol>
+    <li>포트폴리오 시작 시 목표 비중을 명확히 기록해둡니다.</li>
+    <li>분기 또는 반기마다 현재 비중과 목표 비중의 차이를 확인합니다.</li>
+    <li>±5%p 이상 이탈했다면 리밸런싱을 실행합니다.</li>
+    <li>리밸런싱 시 세금·수수료를 고려해 절세 계좌를 우선 활용합니다.</li>
+    <li>리밸런싱 이유(단순 시간 경과 vs 특정 ETF 성과 부진)를 구분해 기록해둡니다.</li>
+  </ol>
+
+  <p>리밸런싱은 정답이 하나인 공식이 아닙니다. 자신의 투자 성향과 세금 상황에 맞는 주기를 정하고, 일관되게 지키는 것이 감정적 매매를 줄이는 가장 좋은 방법입니다.</p>
+
+  <div class="cta"><a href="/">내 포트폴리오 ETF 비중 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/valuation-basics.html">← 밸류에이션 이해하기</a>
+    <a href="/blog/k-bio-pipeline.html">다음: K-바이오 ETF 심층분석 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>

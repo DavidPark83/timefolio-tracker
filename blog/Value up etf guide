@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>밸류업 ETF 완전정복 — 저평가 대형주는 어떻게 선정되나 | Active ETF Tracker</title>
+  <meta name="description" content="코리아 밸류업 프로그램과 액티브 ETF의 관계. 저평가 대형주가 밸류업 ETF에 편입되는 기준과 TIME·KoAct의 접근 차이를 분석합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/value-up-etf-guide.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">종목·테마</span><span>2026.07.18</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>밸류업 ETF 완전정복 — 저평가 대형주는 어떻게 선정되나</h1>
+
+  <p>코리아 밸류업 프로그램 도입 이후, "밸류업"은 한국 증시의 핵심 화두가 되었습니다. TIME과 KoAct 모두 밸류업 테마 액티브 ETF를 운용하고 있는데, 패시브 밸류업 지수와 달리 운용역의 재량으로 종목을 선별한다는 점이 특징입니다. 이 글에서는 액티브 밸류업 ETF의 종목 선정 기준을 살펴봅니다.</p>
+
+  <h2>밸류업이란 무엇인가</h2>
+
+  <p>코리아 밸류업 프로그램은 상장기업의 저평가 해소를 위해 정부가 주도하는 기업가치 제고 정책입니다. 배당 확대, 자사주 매입·소각, 지배구조 개선 등을 유도해 한국 증시의 만성적 저평가(코리아 디스카운트)를 해소하는 것이 목표입니다.</p>
+
+  <h2>패시브 밸류업 지수 vs 액티브 밸류업 ETF</h2>
+
+  <table class="ct">
+    <thead><tr><th>구분</th><th>패시브 (코리아 밸류업 지수)</th><th>액티브 밸류업 ETF</th></tr></thead>
+    <tbody>
+      <tr><td>종목 선정</td><td>정량 기준(PBR, ROE 등) 기계적 적용</td><td>운용역 재량 + 정성적 판단 결합</td></tr>
+      <tr><td>변경 주기</td><td>정기 리밸런싱 (분기·반기)</td><td>수시 조정 가능</td></tr>
+      <tr><td>장점</td><td>투명하고 예측 가능</td><td>시장 상황에 유연하게 대응</td></tr>
+      <tr><td>단점</td><td>편입 기준에만 맞으면 편입, 세부 옥석 가리기 어려움</td><td>운용역 판단에 의존</td></tr>
+    </tbody>
+  </table>
+
+  <h2>액티브 밸류업 ETF가 종목을 선별하는 기준</h2>
+
+  <ul>
+    <li><strong>PBR 1배 미만:</strong> 장부가치보다 낮게 거래되는 저평가 신호</li>
+    <li><strong>배당 성향 개선:</strong> 최근 배당을 늘리거나 배당 정책을 명확히 발표한 기업</li>
+    <li><strong>자사주 매입·소각 계획:</strong> 주주환원 의지를 보이는 기업</li>
+    <li><strong>지배구조 개선 노력:</strong> 이사회 독립성 강화, 소액주주 보호 정책 등</li>
+    <li><strong>업종 내 상대적 매력:</strong> 같은 업종에서도 밸류업 실행 의지가 강한 기업을 선별</li>
+  </ul>
+
+  <div class="info-box">
+    <strong>💡 정량 + 정성의 결합:</strong><br><br>
+    패시브 지수는 PBR, ROE 같은 정량 기준만 적용해 기계적으로 종목을 편입합니다. 반면 액티브 ETF는 여기에 "이 기업이 실제로 밸류업을 실행할 의지와 능력이 있는가"라는 정성적 판단을 더합니다. 발표만 하고 실행하지 않는 "밸류업 워싱" 기업을 걸러내는 것이 액티브 운용의 핵심 가치입니다.
+  </div>
+
+  <h2>밸류업 ETF에서 관찰되는 섹터 편중</h2>
+
+  <p>밸류업 테마는 특정 섹터에 집중되는 경향이 있습니다. 특히 금융지주, 지주회사, 건설·중공업처럼 전통적으로 저평가받아온 섹터의 비중이 높습니다. 최근 지주·건설 섹터로 자금 유입이 확대되는 흐름도 이러한 밸류업 기대감과 맞물려 있는 것으로 해석할 수 있습니다.</p>
+
+  <h2>밸류업 ETF 투자 시 유의점</h2>
+
+  <ol>
+    <li><strong>정책 리스크:</strong> 밸류업은 정부 정책과 연동된 테마이므로, 정책 기조 변화에 영향을 받을 수 있습니다.</li>
+    <li><strong>실행력 검증 필요:</strong> 밸류업 계획을 발표했다고 모두 실행하는 것은 아닙니다. 운용역이 이를 걸러내는지가 성과를 좌우합니다.</li>
+    <li><strong>단기 vs 장기:</strong> 밸류업은 지배구조 개선처럼 장기간에 걸쳐 실현되는 테마이므로, 단기 성과에 일희일비하지 않는 것이 중요합니다.</li>
+    <li><strong>운용사별 접근 비교:</strong> TIME과 KoAct가 같은 밸류업 테마에서 어떤 종목을 다르게 선택하는지 비교하면 각 운용사의 판단 기준을 파악할 수 있습니다.</li>
+  </ol>
+
+  <p>밸류업은 단순히 "싸다"는 이유만으로 투자하기보다, 그 기업이 실제로 가치 제고를 실행하고 있는지를 확인하는 것이 핵심입니다. 액티브 ETF의 보유종목 변화를 지속적으로 관찰하면, 운용역이 어떤 기업의 밸류업 실행력을 높게 평가하는지 파악할 수 있습니다.</p>
+
+  <div class="cta"><a href="/">밸류업 ETF 보유종목 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/k-bio-pipeline.html">← K-바이오 ETF 심층분석</a>
+    <a href="/blog/currency-hedge-vs-unhedge.html">다음: 환헤지 vs 환노출 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 특정 종목에 대한 투자 권유가 아닙니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>

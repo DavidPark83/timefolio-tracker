@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>같은 테마, 다른 보수 — ETF 보수 비교 실전법 | Active ETF Tracker</title>
+  <meta name="description" content="동일 테마를 표방하는 TIME·KoAct ETF도 보수가 다릅니다. 보수 차이를 확인하고, 비용 대비 가치를 판단하는 실전 비교법을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/compare-fees-same-theme.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">비용</span><span>2026.07.18</span><span>·</span><span>읽는 시간 5분</span></div>
+
+  <h1>같은 테마, 다른 보수 — ETF 보수 비교 실전법</h1>
+
+  <p>"AI", "반도체", "바이오"처럼 같은 테마를 표방해도 운용사마다 보수는 다릅니다. 겉보기엔 비슷한 상품이라도 몇 년 보유하면 보수 차이가 누적되어 최종 수익에 영향을 줍니다. 이 글에서는 같은 테마 ETF의 보수를 비교하는 실전 방법을 정리합니다.</p>
+
+  <h2>왜 같은 테마인데 보수가 다를까</h2>
+
+  <ul>
+    <li><strong>운용 난이도:</strong> 해외 종목 비중이 높거나, 밸류체인처럼 세분화된 전략일수록 리서치 비용이 커져 보수가 높은 경향이 있습니다.</li>
+    <li><strong>AUM 규모:</strong> 규모의 경제가 작동해, AUM이 큰 ETF는 상대적으로 낮은 보수를 책정할 여력이 있습니다.</li>
+    <li><strong>운용사 브랜드력:</strong> 선점 효과가 있는 운용사는 보수를 낮춰도 자금이 몰리지만, 후발 운용사는 차별화를 위해 오히려 공격적인 보수 정책을 펼 수 있습니다.</li>
+    <li><strong>부가 서비스:</strong> 리서치 리포트, 투자자 교육 콘텐츠 등을 함께 제공하는 상품은 보수가 높게 책정되기도 합니다.</li>
+  </ul>
+
+  <h2>보수 비교 3단계</h2>
+
+  <h3>1단계: 총보수 확인</h3>
+  <p>ETF 상세 페이지나 자산운용사 홈페이지에서 총보수를 확인합니다. 액티브 ETF는 보통 연 0.5~0.9% 범위입니다.</p>
+
+  <h3>2단계: 실질 구성 비교</h3>
+  <p>이름은 같아도 실제 보유종목 구성이 다를 수 있습니다. 보수가 더 높은 ETF가 더 정교한 종목 선별을 하고 있는지, 아니면 단순히 보수만 높은지 보유종목을 직접 비교해야 합니다.</p>
+
+  <h3>3단계: 성과 대비 비용 검증</h3>
+  <p>보수가 0.2%p 더 높은 ETF가 그만큼의 초과 수익을 내고 있는지 확인합니다. 최소 6개월~1년 단위로 벤치마크 대비 성과를 비교하세요.</p>
+
+  <div class="info-box">
+    <strong>💡 실전 팁:</strong><br><br>
+    보수가 낮다고 무조건 좋은 것도, 높다고 나쁜 것도 아닙니다. "동일한 위험을 감수했을 때, 어느 쪽이 더 많은 알파를 냈는가"가 핵심 질문입니다. 특히 밸류체인 ETF처럼 세분화된 상품은 보수가 다소 높아도 정밀한 노출이 필요한 투자자에게는 합리적일 수 있습니다.
+  </div>
+
+  <h2>보수 비교 체크리스트</h2>
+
+  <table class="ct">
+    <thead><tr><th>확인 항목</th><th>확인 방법</th></tr></thead>
+    <tbody>
+      <tr><td>총보수(%)</td><td>운용사 홈페이지, 증권사 앱 상품 정보</td></tr>
+      <tr><td>보유종목 구성 차이</td><td>Active ETF Tracker에서 실시간 비교</td></tr>
+      <tr><td>AUM 규모</td><td>규모가 클수록 유동성·매매충격비용 유리</td></tr>
+      <tr><td>최근 6개월 수익률</td><td>증권사 앱 또는 운용사 공시</td></tr>
+      <tr><td>매매회전율(추정)</td><td>일별 보유종목 변화 빈도로 유추</td></tr>
+    </tbody>
+  </table>
+
+  <h2>결론</h2>
+
+  <p>같은 테마의 ETF를 여러 개 놓고 비교할 때, 보수는 첫 번째 필터일 뿐입니다. 최종 판단은 "보수를 포함한 실질 비용 대비, 어떤 ETF가 더 나은 종목을 담고 더 나은 성과를 내는가"로 내려야 합니다. 이를 위해서는 보유종목을 직접 비교하는 습관이 가장 확실한 방법입니다.</p>
+
+  <div class="cta"><a href="/">테마별 ETF 보유종목 비교하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/turnover-hidden-cost.html">← 매매회전율과 숨은 비용</a>
+    <a href="/blog/valuation-basics.html">다음: 밸류에이션 이해하기 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>

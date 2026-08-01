@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>해외투자 ETF 환헤지 vs 환노출 — 세금과 수익률에 미치는 영향 | Active ETF Tracker</title>
+  <meta name="description" content="해외투자 액티브 ETF 선택 시 환헤지형과 환노출형의 차이. 환율 변동이 수익률에 미치는 영향과 상황별 선택 기준을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/currency-hedge-vs-unhedge.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">세금·연금</span><span>2026.07.18</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>해외투자 ETF 환헤지 vs 환노출 — 세금과 수익률에 미치는 영향</h1>
+
+  <p>미국 나스닥, 글로벌 AI 등 해외 자산에 투자하는 액티브 ETF를 고를 때, 환헤지형(H)과 환노출형 중 어느 쪽을 선택할지 고민되는 경우가 많습니다. 이 선택은 단순한 취향 문제가 아니라 실제 수익률에 상당한 영향을 미칩니다. 이 글에서는 두 방식의 차이와 상황별 선택 기준을 정리합니다.</p>
+
+  <h2>환헤지와 환노출의 기본 개념</h2>
+
+  <table class="ct">
+    <thead><tr><th>구분</th><th>환헤지형 (H)</th><th>환노출형</th></tr></thead>
+    <tbody>
+      <tr><td>환율 변동 영향</td><td>제거 (원화 기준 자산 가격 변동만 반영)</td><td>그대로 반영</td></tr>
+      <tr><td>원/달러 상승 시</td><td>환차익 없음</td><td>추가 수익 발생</td></tr>
+      <tr><td>원/달러 하락 시</td><td>환손실 없음</td><td>손실 발생 가능</td></tr>
+      <tr><td>보수</td><td>헤지 비용만큼 약간 높음</td><td>상대적으로 낮음</td></tr>
+      <tr><td>변동성</td><td>낮음 (환율 변수 제거)</td><td>높음 (환율+주가 이중 변동)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>환노출형이 유리한 상황</h2>
+
+  <p>원화 약세(원/달러 상승) 국면에서는 환노출형이 유리합니다. 해외 자산 가격이 그대로거나 하락해도, 환율 상승분만큼 원화 환산 수익이 늘어나기 때문입니다. 특히 한국은 경제 위기 시 원화가 약세를 보이는 경향이 있어, 해외 자산 환노출은 일종의 "위기 헤지" 역할을 하기도 합니다.</p>
+
+  <div class="info-box">
+    <strong>💡 환노출의 분산 효과:</strong><br><br>
+    글로벌 금융위기나 국내 특수 리스크가 발생하면 원화가 약세를 보이는 경우가 많습니다. 이때 환노출형 해외 ETF를 보유하고 있다면, 원화 약세로 인한 환차익이 국내 자산 하락을 일부 상쇄하는 효과를 기대할 수 있습니다.
+  </div>
+
+  <h2>환헤지형이 유리한 상황</h2>
+
+  <p>원화 강세(원/달러 하락)가 예상되거나, 환율 변동성 자체를 피하고 순수하게 해외 자산의 성과만 추종하고 싶다면 환헤지형이 적합합니다. 특히 단기 투자자나, 포트폴리오의 변동성을 최소화하고 싶은 투자자에게 유리합니다.</p>
+
+  <h2>액티브 ETF에서 환 선택이 더 중요한 이유</h2>
+
+  <p>액티브 ETF는 이미 종목 선정과 비중 조절이라는 한 겹의 변동성 레이어가 있습니다. 여기에 환노출까지 더해지면 변동성이 배가될 수 있습니다. 특히 나스닥100처럼 이미 변동성이 큰 자산을 액티브로 운용하면서 환노출까지 겹치면, 상승장에서는 수익이 극대화되지만 하락장에서는 손실도 커질 수 있습니다.</p>
+
+  <h2>세금 측면의 고려사항</h2>
+
+  <p>환헤지·환노출 여부가 세금 구조 자체를 바꾸지는 않습니다. 국내 상장 해외투자 ETF는 매매차익에 배당소득세(15.4%)가 부과되는 것이 원칙이며, 이는 환헤지형과 환노출형 모두 동일합니다. 다만 환차익이 수익에 포함되는 만큼, 환노출형은 과세 대상 수익 자체가 커질 수 있다는 점은 알아둘 필요가 있습니다.</p>
+
+  <h2>실전 선택 가이드</h2>
+
+  <ol>
+    <li><strong>장기 투자 + 환율 예측 어려움:</strong> 환헤지형으로 변동성을 낮추는 것을 고려</li>
+    <li><strong>원화 약세 국면 예상:</strong> 환노출형으로 추가 수익 기회 확보</li>
+    <li><strong>포트폴리오 전체 분산 목적:</strong> 환노출형을 일부 편입해 원화 약세 리스크 헤지</li>
+    <li><strong>단기 트레이딩 목적:</strong> 환헤지형으로 순수 자산 성과에 집중</li>
+  </ol>
+
+  <p>정답은 없습니다. 자신의 투자 목적과 환율 전망, 그리고 전체 자산 중 원화 자산과 외화 자산의 비율을 고려해 선택하는 것이 중요합니다. 확신이 없다면 환헤지형과 환노출형을 절반씩 보유하는 것도 합리적인 절충안입니다.</p>
+
+  <div class="cta"><a href="/">해외투자 액티브 ETF 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/value-up-etf-guide.html">← 밸류업 ETF 완전정복</a>
+    <a href="/blog/kospi-vs-kosdaq-etf.html">다음: 코스피 vs 코스닥 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>

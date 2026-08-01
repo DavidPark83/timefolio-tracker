@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>액티브 ETF 매매회전율과 숨은 비용 — 왜 어떤 ETF는 더 비싸게 느껴질까 | Active ETF Tracker</title>
+  <meta name="description" content="총보수 외에 매매회전율이 만드는 숨은 비용을 분석합니다. 보유종목 교체 빈도가 실질 수익률에 미치는 영향과 확인 방법을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/turnover-hidden-cost.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">비용</span><span>2026.07.18</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>액티브 ETF 매매회전율과 숨은 비용 — 왜 어떤 ETF는 더 비싸게 느껴질까</h1>
+
+  <p>총보수가 같은 두 액티브 ETF라도 실제 투자자가 부담하는 비용은 다를 수 있습니다. 그 차이를 만드는 핵심 변수가 바로 매매회전율입니다. 이 글에서는 총보수에 잡히지 않는 숨은 비용의 정체와, 이를 확인하는 방법을 정리합니다.</p>
+
+  <h2>매매회전율이란</h2>
+
+  <p>매매회전율은 일정 기간 동안 포트폴리오 내 종목이 얼마나 자주 교체되는지를 나타내는 지표입니다. 연간 매매회전율 100%는 평균적으로 1년에 한 번 포트폴리오 전체가 교체된다는 의미이고, 300%라면 4개월마다 전체가 바뀌는 셈입니다.</p>
+
+  <div class="info-box">
+    <strong>💡 왜 총보수만으로는 부족한가:</strong><br><br>
+    총보수는 운용사가 가져가는 수수료입니다. 하지만 매매가 발생할 때마다 별도로 붙는 거래세, 매매수수료, 시장충격비용은 총보수에 포함되지 않습니다. 이런 비용은 펀드 순자산에서 조용히 빠져나가기 때문에 눈에 잘 띄지 않지만, 회전율이 높을수록 누적 효과가 커집니다.
+  </div>
+
+  <h2>회전율이 높을 때 발생하는 숨은 비용</h2>
+
+  <table class="ct">
+    <thead><tr><th>비용 항목</th><th>발생 시점</th><th>대략적 수준</th></tr></thead>
+    <tbody>
+      <tr><td>증권거래세</td><td>국내 주식 매도 시</td><td>매도금액의 0.18% 내외 (점진 인하 중)</td></tr>
+      <tr><td>매매수수료</td><td>매수·매도 시 각각</td><td>거래대금의 0.01~0.05%</td></tr>
+      <tr><td>시장충격비용</td><td>대량 매매 시</td><td>유동성에 따라 변동, 소형주일수록 큼</td></tr>
+      <tr><td>환전 스프레드</td><td>해외 종목 매매 시</td><td>거래마다 소폭 발생</td></tr>
+    </tbody>
+  </table>
+
+  <p>이 비용들은 개별적으로는 작아 보이지만, 회전율이 200~300%에 달하는 ETF라면 연간 누적 비용이 총보수와 맞먹거나 초과할 수 있습니다.</p>
+
+  <h2>회전율은 어떻게 확인하나</h2>
+
+  <p>공식 회전율 수치는 운용보고서에서 확인할 수 있지만, 발간 주기가 느려 실시간성이 떨어집니다. 대신 매일 공시되는 보유종목 데이터를 활용하면 훨씬 빠르게 회전율 수준을 가늠할 수 있습니다.</p>
+
+  <ul>
+    <li><strong>일별 신규 편입·제외 종목 수:</strong> 하루에 1~2개면 안정적, 5개 이상이면 활발한 매매</li>
+    <li><strong>상위 10종목 유지 기간:</strong> 핵심 종목이 몇 주, 몇 달간 유지되는지 확인</li>
+    <li><strong>주간 누적 변화율:</strong> 일주일간 전체 포트폴리오 중 몇 %가 교체됐는지 합산</li>
+  </ul>
+
+  <h2>회전율이 항상 나쁜 것은 아니다</h2>
+
+  <p>회전율이 높다고 무조건 나쁜 ETF는 아닙니다. 시장 변화에 기민하게 대응해 초과 수익을 내는 전략이라면, 회전율에 따른 비용 이상의 가치를 창출할 수 있습니다. 문제는 <strong>비용 대비 성과가 정당화되는지</strong>입니다.</p>
+
+  <ol>
+    <li>회전율이 높은 ETF는 6개월 이상 벤치마크 대비 초과 수익이 나는지 확인</li>
+    <li>같은 테마의 낮은 회전율 ETF와 성과를 비교</li>
+    <li>급격한 종목 교체가 실제 시장 변화에 대응한 것인지, 단순히 잦은 매매인지 판단</li>
+  </ol>
+
+  <p>결국 매매회전율은 액티브 ETF의 "숨은 가격표"입니다. 총보수만 비교하지 말고, 실제 보유종목이 얼마나 자주 바뀌는지 함께 확인하는 것이 진짜 비용을 파악하는 방법입니다.</p>
+
+  <div class="cta"><a href="/">ETF별 보유종목 변화 빈도 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/active-etf-fees.html">← 보수율 완전 비교</a>
+    <a href="/blog/compare-fees-same-theme.html">다음: 같은 테마 보수 비교법 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>

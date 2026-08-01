@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>밸류에이션 이해하기 — 액티브 ETF 편입 종목 저평가 판단법 | Active ETF Tracker</title>
+  <meta name="description" content="PER, PBR 같은 기초 밸류에이션 지표를 활용해 액티브 ETF가 편입한 종목이 저평가인지 판단하는 방법을 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/valuation-basics.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">투자전략</span><span>2026.07.18</span><span>·</span><span>읽는 시간 6분</span></div>
+
+  <h1>밸류에이션 이해하기 — 액티브 ETF 편입 종목 저평가 판단법</h1>
+
+  <p>액티브 ETF가 어떤 종목을 새로 편입하면, "왜 이 종목을 지금 담았을까?"라는 궁금증이 생깁니다. 그 답을 찾는 기초 도구가 밸류에이션 지표입니다. 이 글에서는 PER, PBR 등 기본 지표로 종목의 저평가 여부를 가늠하는 방법을 정리합니다.</p>
+
+  <h2>가장 기본적인 밸류에이션 지표</h2>
+
+  <table class="ct">
+    <thead><tr><th>지표</th><th>의미</th><th>낮을수록</th></tr></thead>
+    <tbody>
+      <tr><td>PER (주가수익비율)</td><td>주가 ÷ 주당순이익</td><td>이익 대비 저평가</td></tr>
+      <tr><td>PBR (주가순자산비율)</td><td>주가 ÷ 주당순자산</td><td>자산 대비 저평가</td></tr>
+      <tr><td>PSR (주가매출비율)</td><td>시가총액 ÷ 매출액</td><td>매출 대비 저평가 (적자 기업 평가에 유용)</td></tr>
+      <tr><td>배당수익률</td><td>연간 배당금 ÷ 주가</td><td>높을수록 배당 매력 (밸류에이션과 역방향 해석)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>지표를 그대로 믿으면 안 되는 이유</h2>
+
+  <p>PER이 낮다고 항상 저평가는 아닙니다. 성장성이 정체되었거나, 산업 자체가 구조적으로 쇠퇴하는 기업도 PER이 낮게 나타날 수 있습니다. 이를 "밸류 트랩(가치 함정)"이라 부릅니다.</p>
+
+  <div class="info-box">
+    <strong>💡 업종 내 비교가 핵심:</strong><br><br>
+    PER 10배가 저평가인지 고평가인지는 업종에 따라 다릅니다. 성장주 위주인 반도체 업종의 평균 PER이 20배라면, 같은 업종에서 PER 10배 종목은 상대적으로 저평가입니다. 반대로 성숙 산업(유틸리티 등)에서는 PER 10배가 평균 수준일 수 있습니다. 항상 같은 업종, 같은 성장 단계의 기업과 비교해야 합니다.
+  </div>
+
+  <h2>액티브 ETF 신규 편입 종목에 밸류에이션 적용하기</h2>
+
+  <p>Active ETF Tracker에서 신규 편입 종목을 발견했다면, 다음 순서로 밸류에이션을 점검해보세요.</p>
+
+  <ol>
+    <li><strong>업종 확인:</strong> 어느 섹터에 속하는지 파악합니다.</li>
+    <li><strong>동종업계 평균과 비교:</strong> 같은 섹터의 대표 종목들과 PER, PBR을 비교합니다.</li>
+    <li><strong>실적 추세 확인:</strong> 최근 분기 실적이 성장하는지, 정체 또는 감소하는지 봅니다. 밸류 트랩을 피하려면 필수입니다.</li>
+    <li><strong>편입 이유 추론:</strong> 저평가+실적 개선 조합이라면 "가치 재평가" 베팅일 가능성이 높습니다.</li>
+  </ol>
+
+  <h2>밸류업 테마와 밸류에이션의 관계</h2>
+
+  <p>최근 액티브 ETF 시장에서 "밸류업"이 핵심 테마로 부상했습니다. 이는 정부 정책 지원과 함께, PBR 1배 미만의 저평가 대형주가 재평가받을 것이라는 기대를 반영합니다. 밸류업 ETF의 보유종목을 보면, 대체로 PBR이 낮으면서 배당 성향이 개선되고 있는 기업들이 다수 포함되어 있습니다.</p>
+
+  <h2>성장주에는 다른 잣대가 필요하다</h2>
+
+  <p>AI, 반도체처럼 고성장 섹터의 종목들은 전통적인 PER, PBR 기준으로는 항상 "고평가"처럼 보입니다. 이런 경우 미래 성장률 대비 현재 밸류에이션이 합리적인지를 봐야 하며, PEG 비율(PER ÷ 이익성장률)이나 PSR이 더 적합한 지표가 될 수 있습니다.</p>
+
+  <p>밸류에이션은 정답을 알려주는 공식이 아니라, 판단의 출발점입니다. 운용역이 왜 특정 종목을 편입했는지 이해하는 데 활용하되, 최종 판단은 여러 지표와 정성적 요소를 함께 고려해야 합니다.</p>
+
+  <div class="cta"><a href="/">신규 편입 종목 확인하기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/compare-fees-same-theme.html">← 같은 테마 보수 비교법</a>
+    <a href="/blog/rebalancing-frequency.html">다음: 리밸런싱 주기 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 특정 종목에 대한 투자 권유가 아닙니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>
