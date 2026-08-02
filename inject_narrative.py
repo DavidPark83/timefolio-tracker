@@ -133,18 +133,32 @@ def build_section(base_date: str, rows) -> str:
 
 
 # ---------------------------------------------------------------- 주입
+LEAD_CLASS = "briefing-lead"   # '📝 오늘의 요약' 섹션 식별용 (briefing_angle.build_lead가 붙임)
+
+
 def inject(page: str, section: str) -> str:
     # 이미 주입돼 있으면 교체 (멱등)
     if MARK_S in page and MARK_E in page:
         pre, rest = page.split(MARK_S, 1)
         _, post = rest.split(MARK_E, 1)
         return pre + section + post
-    # '스마트머니 시그널' 제목 앞(= 시장 스냅샷 뒤)에 삽입
+
+    # 1순위: '📝 오늘의 요약'(briefing-lead) 섹션이 끝난 바로 뒤
+    #   → 요약 → 운용 코멘터리 → 스마트머니 순서가 항상 보장된다
+    li = page.find(LEAD_CLASS)
+    if li != -1:
+        end = page.find("</section>", li)
+        if end != -1:
+            pos = end + len("</section>")
+            return page[:pos] + section + page[pos:]
+
+    # 2순위(구버전 브리핑 호환): '스마트머니 시그널' 제목 앞
     idx = page.find("스마트머니 시그널")
     if idx != -1:
         anchor = max(page.rfind("<h2", 0, idx), page.rfind("<section", 0, idx))
         if anchor != -1:
             return page[:anchor] + section + page[anchor:]
+
     # 폴백: 첫 </h1> 바로 뒤
     m = re.search(r"</h1>", page, re.I)
     if m:

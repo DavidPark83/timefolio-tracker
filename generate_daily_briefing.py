@@ -24,6 +24,8 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV
 PROJECT_ROOT = Path(__file__).parent
 BRIEFING_DIR = PROJECT_ROOT / "briefing"
 
+from briefing_angle import build_headline, build_lead   # ← 추가
+
 # ── 요일 한글 ──
 DAY_NAMES = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
 
@@ -309,15 +311,9 @@ def generate_html(date, prev_date, data):
     day = d.day
     year = d.year
 
-    # 제목 생성
-    title_parts = []
-    if data["weight_down"]:
-        top_down = data["weight_down"][0]
-        title_parts.append(f"{top_down['name']} {top_down['diff']:+.1f}%p")
-    if data["smart_money"]:
-        top_sm = data["smart_money"][0]
-        title_parts.append(f"{top_sm['name']} {top_sm['etf_count']}개 ETF 최다 보유")
-    title = ", ".join(title_parts) if title_parts else f"{month}월 {day}일 액티브 ETF 브리핑"
+    # 제목 생성 — 그날 가장 특이한 사건을 앵글로 선택(26.8.1 수정)
+    title, angle = build_headline(data, date)
+    lead_html = build_lead(data, date, angle)
 
     # ── 스마트머니 테이블 ──
     smart_rows = ""
@@ -381,7 +377,7 @@ def generate_html(date, prev_date, data):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>액티브 ETF 일일 브리핑 — {year}년 {month}월 {day}일 | Active ETF Tracker</title>
+  <title>{title} — {month}월 {day}일 액티브 ETF 브리핑 | Active ETF Tracker</title>
   <meta name="description" content="{year}년 {month}월 {day}일 국내 액티브 ETF 42종 보유종목 변화 브리핑. {title}">
   <link rel="canonical" href="https://etftracker.co.kr/briefing/{date}.html">
   <style>
@@ -431,6 +427,8 @@ def generate_html(date, prev_date, data):
       <div class="summary-card"><div class="label">추적 ETF</div><div class="value">42개</div></div>
     </div>
   </section>
+
+  {lead_html}   <!-- ← 이 한 줄 추가 -->
 
   {"<section class='section'><h2>🏅 스마트머니 시그널</h2><table><thead><tr><th>종목</th><th>보유 ETF 수</th><th>합산 보유액</th></tr></thead><tbody>" + smart_rows + "</tbody></table></section>" if smart_rows else ""}
 
