@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>코어-새틀라이트 전략 — 액티브 ETF로 포트폴리오 설계하기 | Active ETF Tracker</title>
+  <meta name="description" content="핵심 자산(코어)과 위성 자산(새틀라이트)으로 나누는 포트폴리오 설계법. 액티브 ETF를 코어와 새틀라이트에 각각 어떻게 배치할지 정리합니다.">
+  <link rel="canonical" href="https://etftracker.co.kr/blog/028.core-satellite-strategy.html">
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d2e;--border:#2a2d3e;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;line-height:1.9;padding:0 16px}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px}
+    header a{color:var(--accent);text-decoration:none;font-size:14px} header h1{font-size:18px;font-weight:700}
+    .container{max-width:720px;margin:0 auto;padding:48px 0 80px}
+    .post-meta{color:var(--muted);font-size:13px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+    .post-tag{background:rgba(99,102,241,.12);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600}
+    article h1{font-size:26px;font-weight:800;line-height:1.4;margin-bottom:32px}
+    article h2{font-size:20px;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    article h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--accent)}
+    article p{margin-bottom:16px;font-size:15.5px}
+    article ul,article ol{margin:0 0 16px 20px;font-size:15px} article li{margin-bottom:8px}
+    .info-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:24px 0;font-size:14px}
+    .info-box strong{color:var(--accent)}
+    .ct{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+    .ct th{background:var(--surface);color:var(--muted);padding:10px 14px;text-align:left;font-weight:600;font-size:13px}
+    .ct td{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .layer{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin:18px 0}
+    .layer .badge{display:inline-block;background:rgba(99,102,241,.15);color:var(--accent);padding:2px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:8px}
+    .cta{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:20px;text-align:center;margin:40px 0}
+    .cta a{color:var(--accent);font-weight:600;font-size:16px;text-decoration:none}
+    .nav-links{display:flex;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-size:14px}
+    .nav-links a{color:var(--accent);text-decoration:none}
+    footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 0;border-top:1px solid var(--border);margin-top:40px}
+    footer a{color:var(--accent);text-decoration:none;margin:0 8px}
+    @media(max-width:600px){article h1{font-size:21px}.ct{font-size:12px}.ct th,.ct td{padding:8px 10px}}
+  </style>
+</head>
+<body>
+<header><a href="/blog/">← 블로그</a><h1>📊 ACTIVE ETF Tracker</h1></header>
+<div class="container">
+<article>
+  <div class="post-meta"><span class="post-tag">투자전략</span><span>2026.08.10</span><span>·</span><span>읽는 시간 7분</span></div>
+
+  <h1>028.코어-새틀라이트 전략 — 액티브 ETF로 포트폴리오 설계하기</h1>
+
+  <p>포트폴리오를 짤 때 "안정성"과 "성장성"을 동시에 잡고 싶다면, 코어-새틀라이트(Core-Satellite) 전략이 좋은 틀이 됩니다. 포트폴리오의 중심(코어)은 안정적으로, 일부(새틀라이트)는 공격적으로 운용하는 방식입니다. 이 글에서는 액티브 ETF를 활용한 코어-새틀라이트 포트폴리오 설계법을 정리합니다.</p>
+
+  <h2>코어-새틀라이트 전략이란</h2>
+
+  <p>이름 그대로 행성(코어)과 위성(새틀라이트) 구조에 비유한 전략입니다. 포트폴리오의 70~80%를 차지하는 코어는 광범위하게 분산되고 안정적인 자산으로 구성하고, 나머지 20~30%인 새틀라이트는 특정 테마나 성장 기회에 공격적으로 베팅합니다.</p>
+
+  <div class="info-box">
+    <strong>💡 왜 이 구조가 효과적인가:</strong><br><br>
+    코어가 포트폴리오 전체의 변동성을 낮춰주는 안전판 역할을 하기 때문에, 투자자는 새틀라이트 부분에서 더 과감한 베팅을 할 수 있습니다. 설령 새틀라이트 자산에서 손실이 나더라도, 전체 포트폴리오에 미치는 영향은 제한적입니다. 반대로 새틀라이트가 크게 성공하면 전체 수익률을 끌어올리는 역할을 합니다.
+  </div>
+
+  <h2>코어 자산: 무엇을 담아야 하나</h2>
+
+  <div class="layer">
+    <span class="badge">코어 (70~80%)</span>
+    <p>넓게 분산되고, 특정 이슈에 크게 흔들리지 않는 자산입니다. 액티브 ETF 중에서는 대형주 중심의 코스피 ETF, 배당·밸류업 ETF, 글로벌 대형 지수 추종형 액티브 ETF가 코어에 적합합니다.</p>
+    <ul>
+      <li>넓은 분산: 특정 종목·섹터 쏠림이 적은 ETF</li>
+      <li>낮은 변동성: 대형 우량주 중심 구성</li>
+      <li>꾸준한 운용 트랙레코드: 최소 1년 이상 검증된 ETF</li>
+    </ul>
+  </div>
+
+  <h2>새틀라이트 자산: 무엇을 담아야 하나</h2>
+
+  <div class="layer">
+    <span class="badge">새틀라이트 (20~30%)</span>
+    <p>특정 테마나 성장 스토리에 집중 베팅하는 자산입니다. AI, 반도체, 바이오, 밸류체인 ETF, 신규 상장 ETF 등이 여기에 해당합니다. 변동성은 크지만 코어가 받쳐주기 때문에 감내할 수 있는 구조입니다.</p>
+    <ul>
+      <li>고성장 테마 집중형 ETF (AI, 로봇, 양자컴퓨팅 등)</li>
+      <li>밸류체인처럼 세분화된 정밀 노출 ETF</li>
+      <li>신규 상장 ETF로 신흥 테마 선점</li>
+    </ul>
+  </div>
+
+  <h2>실전 배치 예시</h2>
+
+  <table class="ct">
+    <thead><tr><th>구분</th><th>배치 예시</th><th>비중</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="3">코어 (75%)</td><td>TIME 코스피액티브</td><td>30%</td></tr>
+      <tr><td>TIME Korea플러스배당액티브</td><td>25%</td></tr>
+      <tr><td>KoAct 코리아밸류업액티브</td><td>20%</td></tr>
+      <tr><td rowspan="2">새틀라이트 (25%)</td><td>TIME 글로벌AI인공지능액티브</td><td>15%</td></tr>
+      <tr><td>KoAct 브로드컴밸류체인액티브</td><td>10%</td></tr>
+    </tbody>
+  </table>
+
+  <h2>운용사 조합으로 코어-새틀라이트 응용하기</h2>
+
+  <p>TIME과 KoAct의 운용 스타일 차이를 활용해 응용할 수도 있습니다. 안정적인 대형주 중심 ETF를 코어로, 밸류체인처럼 정밀하게 세분화된 KoAct의 테마 ETF를 새틀라이트로 배치하면, 두 운용사의 강점을 각각 살리는 구조가 됩니다.</p>
+
+  <h2>리밸런싱과 결합하기</h2>
+
+  <p>새틀라이트 자산이 크게 성장해 비중이 30%를 넘어서면, 코어-새틀라이트 구조 자체가 무너집니다. 정기적으로(분기 또는 반기) 비중을 점검하고, 목표 비율(70~80% 대 20~30%)로 되돌리는 리밸런싱이 필요합니다. 이는 자연스럽게 "오른 자산의 일부를 팔아 이익을 실현하고, 코어를 재보강하는" 효과도 냅니다.</p>
+
+  <h2>생애 주기에 따른 비율 조정</h2>
+
+  <ul>
+    <li><strong>20~30대:</strong> 코어 60% + 새틀라이트 40%로 공격적 구성 가능</li>
+    <li><strong>40대:</strong> 코어 70~75% + 새틀라이트 25~30%로 균형</li>
+    <li><strong>50대 이후:</strong> 코어 85% 이상 + 새틀라이트 15% 이하로 보수적 구성</li>
+  </ul>
+
+  <p>코어-새틀라이트 전략의 핵심은 "안정성과 성장성을 한 포트폴리오 안에서 구조적으로 분리한다"는 것입니다. 이렇게 하면 시장이 흔들려도 코어가 버텨주고, 시장이 좋을 때는 새틀라이트가 추가 수익을 만들어주는 균형 잡힌 포트폴리오를 유지할 수 있습니다.</p>
+
+  <div class="cta"><a href="/">코어·새틀라이트용 ETF 찾아보기 →</a></div>
+
+  <div class="nav-links">
+    <a href="/blog/027.small-amount-cost-efficiency.html">← 이전: 소액 투자 비용 효율</a>
+    <a href="/blog/">다음: 블로그 목록 →</a>
+  </div>
+</article>
+</div>
+<footer>
+  <p>※ 본 글은 정보 제공 목적이며, 투자 판단의 책임은 본인에게 있습니다.</p><br>
+  <a href="/">홈</a><a href="/blog/">블로그</a><a href="/briefing/">브리핑</a><a href="/about.html">서비스 소개</a>
+  <br><br>© 2026 Active ETF Tracker. All rights reserved.
+</footer>
+</body>
+</html>
